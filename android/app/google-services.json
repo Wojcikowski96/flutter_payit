@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "134130269608",
+    "firebase_url": "https://the-bill-collector.firebaseio.com",
+    "project_id": "the-bill-collector",
+    "storage_bucket": "the-bill-collector.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:134130269608:android:1fac17c41468806ebc319d",
+        "android_client_info": {
+          "package_name": "com.example.flutter_payit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "134130269608-3oo2qcudud6pdrhjdkc88455t6sl3odd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbBAITH1Tc6PwnhfOE7BISlvN4AHIfFuY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "134130269608-3oo2qcudud6pdrhjdkc88455t6sl3odd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
