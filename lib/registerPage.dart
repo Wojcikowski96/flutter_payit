@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 
@@ -9,6 +11,8 @@ class registerPage extends StatelessWidget {
   final TextEditingController password2Controller = new TextEditingController();
   int i = 0;
   final DBRef = FirebaseDatabase.instance.reference();
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -152,9 +156,12 @@ class registerPage extends StatelessWidget {
 
                       onPressed: (){
                         if(password1Controller.text == password2Controller.text){
+                          //i = getUsersNum();
+                          print('Gówno z bazy danych');
+                          print(i);
                           i=i+1;
                           writeData(i);
-                          print(i);
+
                         }else{
                           print('hasła niezgodne');
                         }
@@ -198,11 +205,26 @@ class registerPage extends StatelessWidget {
     String login = loginController.text;
     String password = password1Controller.text;
 
-    DBRef.child('User'+num.toString()).set({
+    DBRef.child('Users').child('User'+num.toString()).set({
       'id':'ID'+num.toString(),
       'login': login,
       'password': password,
     });
 
+    DBRef.child('Statistics').set({
+      'userCount':num,
+    });
+  }
+
+Future<int> getUsersNum() async {
+
+    var userCount = await DBRef.child('Statistics').child('userCount').once();
+
+    if(userCount.value == null){
+      return 0;
+    }else{
+      print(userCount.value);
+      return userCount.value;
+    }
   }
 }
