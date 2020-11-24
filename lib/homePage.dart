@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_payit/registerPage.dart';
 import 'package:flutter_payit/urgentPay.dart';
 
+import 'emailBoxesPanel.dart';
 import 'mediumUrgentPay.dart';
 import 'notUrgentPay.dart';
 
@@ -11,6 +13,7 @@ class homePage extends StatelessWidget {
     PageController pageController = PageController(initialPage: 0);
 
     return Scaffold(
+      backgroundColor: Colors.blue,
       body: PageView(
         controller: pageController,
         children: [
@@ -36,10 +39,10 @@ class homePage extends StatelessWidget {
             ListTile(
               title: Text('Zarządzaj adresami e-mail'),
               onTap: () {
-                // Update the state of the app
-                // ...
-                // Then close the drawer
-                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => EmailBoxesPanel()),
+                );
               },
             ),
             ListTile(
@@ -67,7 +70,7 @@ class homePage extends StatelessWidget {
           // leading: IconButton(icon: Icon(Icons.menu), onPressed: (){
           //
           // }),
-          title: Text("Nazwa restauracji"),
+          title: Text("PayIT"),
           actions: <Widget>[
             IconButton(
                 icon: Icon(Icons.people),

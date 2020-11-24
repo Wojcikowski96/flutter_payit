@@ -1,47 +1,43 @@
-import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_payit/myToast.dart';
+import 'package:flutter_payit/homePage.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'registerPage.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 
 class LoginPage extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
 }
-class User{
- String login, password;
- List<String>  emails = new List();
- User();
 
- User.construct(String login, String password){
-   this.login = login;
-   this.password = password;
- }
+class User {
+  String login, password;
+  List<String> emails = new List();
+  User();
 
- static fromJson(json) {
-   User u = new User();
-   print(json);
-   u.login = json['login'];
-   u.password = json['password'];
-   return u;
- }
+  User.construct(String login, String password) {
+    this.login = login;
+    this.password = password;
+  }
 
+  static fromJson(json) {
+    User u = new User();
+    print(json);
+    u.login = json['login'];
+    u.password = json['password'];
+    return u;
+  }
 }
 
 class _LoginPageState extends State<LoginPage> {
-
-  bool _isLoading = true;
-
-
   final DBRef = FirebaseDatabase.instance.reference();
 
   final TextEditingController loginController = new TextEditingController();
   final TextEditingController passwordController = new TextEditingController();
 
-
+  final storage = FlutterSecureStorage();
 
   @override
   Widget build(BuildContext context) {
@@ -53,11 +49,18 @@ class _LoginPageState extends State<LoginPage> {
                 width: width,
                 child: Column(children: <Widget>[
                   SizedBox(
-                    height: height * 0.08,
-
+                    height: 30,
                   ),
                   SizedBox(
-                    height: 10,
+                    width: width - 160,
+                    height: width - 160,
+                    child: Image.asset(
+                      "payitlogo.png",
+                      fit: BoxFit.fitHeight,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 20,
                   ),
                   Text(
                     "Zaloguj się:",
@@ -75,15 +78,19 @@ class _LoginPageState extends State<LoginPage> {
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: Colors.grey)),
-                  SizedBox(height: 25,),
+                  SizedBox(
+                    height: 25,
+                  ),
                   Container(
                       margin: EdgeInsets.only(right: 10, left: 10),
                       child: TextField(
                         controller: loginController,
                         decoration: InputDecoration(
-                            contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                            contentPadding:
+                                EdgeInsets.only(top: 20, bottom: 20),
                             prefixIcon: Padding(
-                              padding: const EdgeInsets.only(left: 20, right: 20),
+                              padding:
+                                  const EdgeInsets.only(left: 20, right: 20),
                               child: Icon(Icons.person_outline),
                             ),
                             filled: true,
@@ -91,30 +98,28 @@ class _LoginPageState extends State<LoginPage> {
                             hintText: "Login",
                             focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(30),
-                                borderSide: BorderSide(
-                                    color: Colors.grey,
-                                    width: 2
-                                )
-                            ),
+                                borderSide:
+                                    BorderSide(color: Colors.grey, width: 2)),
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(20),
                                 borderSide: BorderSide(
                                   width: 2,
                                   color: Colors.grey,
-                                )
-                            )
-                        ),
-                      )
+                                ))),
+                      )),
+                  SizedBox(
+                    height: 25,
                   ),
-                  SizedBox(height: 25,),
                   Container(
                       margin: EdgeInsets.only(right: 10, left: 10),
                       child: TextField(
                         controller: passwordController,
                         decoration: InputDecoration(
-                            contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                            contentPadding:
+                                EdgeInsets.only(top: 20, bottom: 20),
                             prefixIcon: Padding(
-                              padding: const EdgeInsets.only(left: 20, right: 20),
+                              padding:
+                                  const EdgeInsets.only(left: 20, right: 20),
                               child: Icon(Icons.accessibility_outlined),
                             ),
                             filled: true,
@@ -122,53 +127,31 @@ class _LoginPageState extends State<LoginPage> {
                             hintText: "Hasło",
                             focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(30),
-                                borderSide: BorderSide(
-                                    color: Colors.grey,
-                                    width: 2
-                                )
-                            ),
+                                borderSide:
+                                    BorderSide(color: Colors.grey, width: 2)),
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(20),
                                 borderSide: BorderSide(
                                   width: 2,
                                   color: Colors.grey,
-                                )
-                            )
-                        ),
-                      )
+                                ))),
+                      )),
+                  SizedBox(
+                    height: 25,
                   ),
-                  SizedBox(height: 25,),
                   SizedBox(
                     child: RaisedButton(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      //emailController.text == "" || passwordController.text == "" ? null :
+
                       onPressed: () {
 
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => ToastExample()),
-                        );
                         getDataFromTextFields();
-                        checkUsername(getDataFromTextFields()[0]);
-                        print(checkUsername(getDataFromTextFields()[0]));
+                        verifyUsername(getDataFromTextFields()[0],getDataFromTextFields()[1]);
 
-                         FutureBuilder<dynamic>(
-                             future: checkUsername(getDataFromTextFields()[0]),
-                                builder: (context, snapshot) {
-                               if (snapshot.hasData) {
-                                   print('wywolanie checkusername');
-                                 print(checkUsername(getDataFromTextFields()[0]));
-                                   } else {
-                                      return Text('Użytkownik nie istnieje');
-                                    }
-                               return Text("Await for data");
-                             }
-                            //
-                            //     },
-                            //   ),
-                         );},
+                      },
+
                       child: Text("Zaloguj"),
                       color: Colors.blue,
                       textColor: Colors.white,
@@ -178,20 +161,22 @@ class _LoginPageState extends State<LoginPage> {
                     width: 200,
                     height: 70,
                   ),
-                  SizedBox(height: 5,),
-                  Text("Nie masz u nas konta?",
+                  SizedBox(
+                    height: 5,
+                  ),
+                  Text(
+                    "Nie masz u nas konta?",
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
                       color: Colors.grey,
                     ),
-
                   ),
                   RaisedButton(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    onPressed: (){
+                    onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => registerPage()),
@@ -202,80 +187,108 @@ class _LoginPageState extends State<LoginPage> {
                     textColor: Colors.white,
                     padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
                     splashColor: Colors.white,
-
                   ),
-
                 ]))));
   }
-  void attemptLogIn(){
-    List <String> dataFromFields = new List();
 
-    dataFromFields = getDataFromTextFields();
-/*
-    DBRef.once().then((DataSnapshot dataSnapshot){
-      print(dataSnapshot.getChildrenCount());
-    });
-
-    DBRef.child("the-bill-collector").child('User'+i).child(dataFromFields[0])
-        .once().then((DataSnapshot dataSnapshot){
-      print(dataSnapshot.value);
-    });
-*/
-  }
-
-  getDataFromTextFields(){
-
+  getDataFromTextFields() {
     List<String> fieldData = new List();
     String login = loginController.text;
     String password = passwordController.text;
     fieldData.add(login);
     fieldData.add(password);
 
-    print('dane z pól:');
-    print(login);
-    print(password);
-
     return fieldData;
   }
 
-   Future <int> checkUsername(String username) async{
-    List<String> usernames = new List();
-    final DBRef = FirebaseDatabase.instance.reference().child("Users");
-    var d = await DBRef.once().then((DataSnapshot snapshot){
-      Map<dynamic, dynamic> values = snapshot.value;
-      values.forEach((key,values) {
-        usernames.add(values["login"]);
-        print('lista użytkowników');
-        print(usernames);
-        for(var iterator in usernames){
-          if(iterator == username){
-            return 1;
-          }else{
-            return 0;
-          }
-        }
-      });
-
-
-    });
-    print('druk wewnątrz checkUSERnAME');
-    print(d.toString());
+  bool checkUsername(String username, List<String> usernames) {
+    bool userExists;
+    for (var u in usernames) {
+      if (u == username) {
+        userExists = true;
+        break;
+      } else {
+        userExists = false;
+      }
+    }
+    return userExists;
   }
 
-  checkPassword(String username){
-    //var userCount = await DBRef.child('Statistics').child('userCount').once();
+  bool checkPassword(String passwordInput, String password) {
+    bool passwordOK;
+
+      if (passwordInput == password) {
+        passwordOK = true;
+      } else {
+        passwordOK = false;
+      }
+
+    return passwordOK;
+  }
+
+
+  verifyUsername(String username, String password) {
+    List<String> usernames = new List();
+    final DBRef = FirebaseDatabase.instance.reference().child("Users");
+    DBRef.once().then((DataSnapshot snapshot) {
+      Map<dynamic, dynamic> values = snapshot.value;
+      values.forEach((key, values) {
+        usernames.add(values["login"]);
+      });
+      print('usernames');
+      print(usernames);
+      if (checkUsername(username,usernames)) {
+        verifyPassword(username,password);
+      } else {
+        Fluttertoast.showToast(
+            msg: 'Nieprawidłowy login lub hasło',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIos: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white
+        );
+      }
+    });
   }
 
   Future<int> getUsersNum() async {
-
     var userCount = await DBRef.child('Statistics').child('userCount').once();
 
-    if(userCount.value == null){
+    if (userCount.value == null) {
       return 0;
-    }else{
+    } else {
       print(userCount.value);
       return userCount.value;
     }
+  }
+
+  verifyPassword(String username, String password) {
+    String passwordForSpecifiedUser;
+    final DBRef = FirebaseDatabase.instance.reference().child("Users").child(username);
+    DBRef.once().then((DataSnapshot snapshot) {
+      passwordForSpecifiedUser = snapshot.value["password"];
+
+      if (checkPassword(password,passwordForSpecifiedUser)) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => homePage()),
+        );
+
+        storage.write(key: "username", value: username);
+        storage.write(key: "password", value: password);
+
+      } else {
+        Fluttertoast.showToast(
+            msg: 'Nieprawidłowy login lub hasło',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIos: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white
+        );
+      }
+    });
   }
 
 }

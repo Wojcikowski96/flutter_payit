@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget{
     return MaterialApp(
       title: 'Właściciel Punktu',
       theme: ThemeData(
-        primarySwatch: Colors.deepOrange,
+        primarySwatch: Colors.lightBlue,
       ),
       home: new Scaffold(body: new LoginPage()),
     );

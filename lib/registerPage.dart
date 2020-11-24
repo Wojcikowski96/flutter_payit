@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
+import 'loginScreen.dart';
 
 
 class registerPage extends StatelessWidget {
@@ -9,6 +12,7 @@ class registerPage extends StatelessWidget {
   final TextEditingController loginController = new TextEditingController();
   final TextEditingController password1Controller = new TextEditingController();
   final TextEditingController password2Controller = new TextEditingController();
+  final TextEditingController emailController = new TextEditingController();
   int i = 0;
   final DBRef = FirebaseDatabase.instance.reference();
 
@@ -28,9 +32,13 @@ class registerPage extends StatelessWidget {
                     height: height * 0.08,
 
                   ),
-                  Image.asset(
-                    "register.jpg",
-                    width: width * 0.5,
+                  SizedBox(
+                    width: width,
+                    height: width-330,
+                    child: Image.asset(
+                      "payitlogohorizontal.png",
+                      fit: BoxFit.fitHeight,
+                    ),
                   ),
                   SizedBox(
                     height: 10,
@@ -146,6 +154,37 @@ class registerPage extends StatelessWidget {
                         ),
                       )
                   ),
+                  SizedBox(height: 25,),
+                  Container(
+                      margin: EdgeInsets.only(right: 10, left: 10),
+                      child: TextField(
+                        controller: emailController,
+                        decoration: InputDecoration(
+                            contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.only(left: 20, right: 20),
+                              child: Icon(Icons.person_outline),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey.withOpacity(0.7),
+                            hintText: "Podaj swój pierwszy adres e-mail",
+                            focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(30),
+                                borderSide: BorderSide(
+                                    color: Colors.blueAccent,
+                                    width: 2
+                                )
+                            ),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(
+                                  width: 2,
+                                  color: Colors.blueAccent,
+                                )
+                            )
+                        ),
+                      )
+                  ),
 
                   SizedBox(height: 25,),
                   SizedBox(
@@ -155,16 +194,7 @@ class registerPage extends StatelessWidget {
                       ),
 
                       onPressed: (){
-                        if(password1Controller.text == password2Controller.text){
-                          //i = getUsersNum();
-                          print('Gówno z bazy danych');
-                          print(i);
-                          i=i+1;
-                          writeData(i);
-
-                        }else{
-                          print('hasła niezgodne');
-                        }
+                        register(context);
                       },
                       child: Text("Zarejestruj"),
                       color: Colors.blueAccent,
@@ -204,11 +234,24 @@ class registerPage extends StatelessWidget {
   void writeData(int num){
     String login = loginController.text;
     String password = password1Controller.text;
+    String email = emailController.text;
 
-    DBRef.child('Users').child('User'+num.toString()).set({
+    DBRef.child('Users').child(login).set({
       'id':'ID'+num.toString(),
       'login': login,
       'password': password,
+      'myEmails' :null,
+      'invoiceEmails' :null,
+    });
+
+    DBRef.child('Users').child(login).child('myEmails').set({
+      'email1': email,
+      'myEmailCount':1,
+    });
+
+    DBRef.child('Users').child(login).child('invoiceEmails').set({
+      'email1': 'null',
+      'invoiceEmailCount':0,
     });
 
     DBRef.child('Statistics').set({
@@ -223,8 +266,40 @@ Future<int> getUsersNum() async {
     if(userCount.value == null){
       return 0;
     }else{
-      print(userCount.value);
       return userCount.value;
+    }
+  }
+
+  void register(BuildContext context) async {
+    if((password1Controller.text == password2Controller.text) && emailController.text.contains('@')){
+      i = await getUsersNum();
+      Fluttertoast.showToast(
+          msg: 'Zarejestrowano użytkownika',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIos: 1,
+          backgroundColor: Colors.green,
+          textColor: Colors.white
+      );
+      print('Gówno z bazy danych');
+      print(i);
+      i=i+1;
+      writeData(i);
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => LoginPage()),
+      );
+
+    }else{
+      Fluttertoast.showToast(
+          msg: 'Nieprawidłowy format e-mail lub niezgodne hasła',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIos: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white
+      );
     }
   }
 }
