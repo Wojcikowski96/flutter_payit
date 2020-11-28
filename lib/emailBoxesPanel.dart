@@ -10,9 +10,11 @@ class EmailBoxesPanel extends StatefulWidget {
 }
 
 class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
+  final TextEditingController emailController = new TextEditingController();
   var storage = FlutterSecureStorage();
   String username = "JohnDoe", password = "qwerty";
   List<Container> emailPanels = new List();
+  final DBRef = FirebaseDatabase.instance.reference();
 
   @override
   void initState() {
@@ -20,15 +22,18 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     Future.delayed(Duration.zero, () async {
       String tempUsername = (await storage.read(key: "username")).toString();
       String tempPassword = (await storage.read(key: "password")).toString();
-      List<Container> tempEmailPanels=await getLoggedUserData();
 
       setState(() {
         username = tempUsername;
+      });
+
+      List<Container> tempEmailPanels = await getLoggedUserData();
+
+      setState(() {
         password = tempPassword;
         emailPanels = tempEmailPanels;
       });
     });
-
   }
 
   @override
@@ -36,49 +41,33 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
-        body: Column(children: [
-      Expanded(
-        child: Padding(
-          padding: const EdgeInsets.all(15.0),
-          child: ListView(
-            children:
-                List.generate(emailPanels.length, (index) => emailPanels[index]),
+      body: Column(children: [
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: ListView(
+              children: List.generate(
+                  emailPanels.length, (index) => emailPanels[index]),
+            ),
           ),
         ),
-      ),
-      FlatButton(
-        color: Colors.grey.withOpacity(0.7),
-        splashColor: Colors.blue,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18.0),
-            side: BorderSide(color: Colors.black)),
+      ]),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.blue,
+        child: Icon(Icons.add),
         onPressed: () {
-          getLoggedUserData();
+          displayDialog(context, "Dodaj swój e-mail");
         },
-        focusColor: Colors.grey,
-        child: Column(
-          children: <Widget>[
-            Icon(
-              Icons.add,
-              color: Colors.white,
-            ),
-            Text(
-              "Dodaj swój e-mail",
-              style: TextStyle(fontSize: 20, color: Colors.white),
-            )
-          ],
-        ),
-      )
-    ]));
+      ),
+    );
   }
 
   Container emailPanel(String email) {
     return new Container(
       height: 80,
-
       decoration: BoxDecoration(
-          color: Colors.blue,
-          borderRadius: BorderRadius.all(Radius.circular(20)),
+        color: Colors.blue,
+        borderRadius: BorderRadius.all(Radius.circular(20)),
       ),
       child: Center(
         child: Text(
@@ -93,25 +82,82 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     List<String> myEmails = new List();
     List<Container> emailPanels = new List();
 
-    final dbSnapshot = await FirebaseDatabase.instance
-        .reference()
-        .child("Users")
-        .child(username)
-        .child("myEmails").once();
+    final dbSnapshot =
+        await DBRef.child("Users").child(username).child("myEmails").once();
+
     int i = 0;
 
-      Map<dynamic, dynamic> values = dbSnapshot.value;
-      values.forEach((key, values) {
-        i++;
-        if (key.toString() == "email" + i.toString())
-          myEmails.add(values.toString());
-      });
+    Map<dynamic, dynamic> values = dbSnapshot.value;
 
-      for (var email in myEmails) {
-        emailPanels.add(emailPanel(email));
-      }
+    values.forEach((key, values) {
+      i++;
+      if (key.toString() == "email" + i.toString())
+        myEmails.add(values.toString());
+    });
 
-return emailPanels;
+    for (var email in myEmails) {
+      emailPanels.add(emailPanel(email));
+    }
 
+    return emailPanels;
   }
+
+  updateUserEmails(String email) {
+
+    DBRef.child('Users').child(username).child('myEmails').update({
+      'email'+(emailPanels.length+1).toString(): email,
+    });
+
+    List<Container> tempEmailPanels = emailPanels;
+    tempEmailPanels.add(emailPanel(email));
+
+    setState(() {
+      emailPanels = tempEmailPanels;
+    });
+  }
+
+  void displayDialog(BuildContext context, String title) =>
+      showDialog(
+        context: context,
+        builder: (context) =>
+            AlertDialog(
+                title: Text(title),
+                content: Container(
+
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: emailController,
+                          decoration: InputDecoration(
+                              contentPadding:
+                              EdgeInsets.only(top: 20, bottom: 20),
+                              prefixIcon: Padding(
+                                padding:
+                                const EdgeInsets.only(left: 20, right: 20),
+                                child: Icon(Icons.person_outline),
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey.withOpacity(0.7),
+                              hintText: "Login",
+                              focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                  borderSide:
+                                  BorderSide(color: Colors.grey, width: 2)),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  borderSide: BorderSide(
+                                    width: 2,
+                                    color: Colors.grey,
+                                  ))),
+                        ),
+                        RaisedButton(
+                          child: Text('Dodaj'),
+                            onPressed: (){
+                              updateUserEmails(emailController.text);
+                        })
+                      ],
+                    ),
+                )
+            ),
+      );
 }
