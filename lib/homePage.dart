@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_payit/registerPage.dart';
+import 'package:flutter_payit/trustedList.dart';
 import 'package:flutter_payit/urgentPay.dart';
 
 import 'emailBoxesPanel.dart';
@@ -45,6 +46,17 @@ class homePage extends StatelessWidget {
                 );
               },
             ),
+
+            ListTile(
+              title: Text('Edytuj zaufaną listę nadawców faktur'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => TrustedListPanel()),
+                );
+              },
+            ),
+
             ListTile(
               title: Text('Ustawienia'),
               onTap: () {

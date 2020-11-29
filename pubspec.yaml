@@ -50,6 +50,8 @@ flutter:
   assets:
     - payitlogo.png
     - payitlogohorizontal.png
+    - mailboxes.png
+    - invoices.png
 
 
   # To add assets to your application, add an assets section, like this:

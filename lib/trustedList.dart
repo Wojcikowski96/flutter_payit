@@ -5,12 +5,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-class EmailBoxesPanel extends StatefulWidget {
+class TrustedListPanel extends StatefulWidget {
   @override
-  _EmailBoxesPanelState createState() => _EmailBoxesPanelState();
+  _TrustedListPanelState createState() => _TrustedListPanelState();
 }
 
-class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
+class _TrustedListPanelState extends State<TrustedListPanel> {
   final TextEditingController emailController = new TextEditingController();
   var storage = FlutterSecureStorage();
   String username = "JohnDoe", password = "qwerty";
@@ -47,10 +47,11 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
       body: Column(children: [
-        SizedBox(height: 40,),
+        SizedBox(height: 20,),
+
         Container(
           child:Image.asset(
-            "mailboxes.png",
+            "invoices.png",
             height: 150,
             width: 150,
 
@@ -120,7 +121,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     List<Padding> emailPanels = new List();
 
     final dbSnapshot =
-        await DBRef.child("Users").child(username).child("myEmails").once();
+    await DBRef.child("Users").child(username).child("invoicesEmails").once();
 
     Map<dynamic, dynamic> values = dbSnapshot.value;
 
@@ -149,7 +150,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     List<String> tempEmailKeys = emailKeys;
     List<String> tempUserEmails = userEmails;
 
-    DBRef.child('Users').child(username).child('myEmails').update({
+    DBRef.child('Users').child(username).child('invoicesEmails').update({
       emailKey: email,
     });
 
@@ -168,7 +169,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
   removeUserEmail(String emailKey, String email) {
     DBRef.child('Users')
         .child(username)
-        .child('myEmails')
+        .child('invoicesEmails')
         .child(emailKey)
         .remove();
 
@@ -186,8 +187,8 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
 
   bool checkIfEmailsTheSame(String thisMail){
 
-  bool emailAlreadyExists=false;
-  print(userEmails);
+    bool emailAlreadyExists=false;
+    print(userEmails);
     for(String otherEmail in userEmails){
       if(otherEmail == thisMail){
         emailAlreadyExists= true;
@@ -198,52 +199,52 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
   }
 
   void displayDialog(BuildContext context, String title) => showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-            title: Text(title),
-            content: Container(
-              child: Column(
-                children: [
-                  TextField(
-                    controller: emailController,
-                    decoration: InputDecoration(
-                        contentPadding: EdgeInsets.only(top: 20, bottom: 20),
-                        prefixIcon: Padding(
-                          padding: const EdgeInsets.only(left: 20, right: 20),
-                          child: Icon(Icons.person_outline),
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey.withOpacity(0.7),
-                        hintText: "Login",
-                        focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                            borderSide:
-                                BorderSide(color: Colors.grey, width: 2)),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            borderSide: BorderSide(
-                              width: 2,
-                              color: Colors.grey,
-                            ))),
-                  ),
-                  RaisedButton(
-                      child: Text('Dodaj'),
-                      onPressed: () {
-                        if(!checkIfEmailsTheSame(emailController.text))
-                        addUserEmail(emailController.text);
-                        else{
-                          Fluttertoast.showToast(
-                              msg: 'Taki mail jest już zdefiniowany',
-                              toastLength: Toast.LENGTH_SHORT,
-                              gravity: ToastGravity.CENTER,
-                              timeInSecForIos: 1,
-                              backgroundColor: Colors.red,
-                              textColor: Colors.white
-                          );
-                        }
-                      })
-                ],
+    context: context,
+    builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Container(
+          child: Column(
+            children: [
+              TextField(
+                controller: emailController,
+                decoration: InputDecoration(
+                    contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.only(left: 20, right: 20),
+                      child: Icon(Icons.person_outline),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey.withOpacity(0.7),
+                    hintText: "Login",
+                    focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide:
+                        BorderSide(color: Colors.grey, width: 2)),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide(
+                          width: 2,
+                          color: Colors.grey,
+                        ))),
               ),
-            )),
-      );
+              RaisedButton(
+                  child: Text('Dodaj'),
+                  onPressed: () {
+                    if(!checkIfEmailsTheSame(emailController.text))
+                      addUserEmail(emailController.text);
+                    else{
+                      Fluttertoast.showToast(
+                          msg: 'Taki mail jest już zdefiniowany',
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.CENTER,
+                          timeInSecForIos: 1,
+                          backgroundColor: Colors.red,
+                          textColor: Colors.white
+                      );
+                    }
+                  })
+            ],
+          ),
+        )),
+  );
 }
