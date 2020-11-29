@@ -243,15 +243,12 @@ class registerPage extends StatelessWidget {
       'myEmails' :null,
       'invoiceEmails' :null,
     });
-
+    String emailKey = email.replaceAll(new RegExp(r'\.'),'');
     DBRef.child('Users').child(login).child('myEmails').set({
-      'email1': email,
-      'myEmailCount':1,
+      emailKey: email,
     });
 
     DBRef.child('Users').child(login).child('invoiceEmails').set({
-      'email1': 'null',
-      'invoiceEmailCount':0,
     });
 
     DBRef.child('Statistics').set({

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class EmailBoxesPanel extends StatefulWidget {
   @override
@@ -13,7 +14,9 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
   final TextEditingController emailController = new TextEditingController();
   var storage = FlutterSecureStorage();
   String username = "JohnDoe", password = "qwerty";
-  List<Container> emailPanels = new List();
+  List<Padding> emailPanels = new List();
+  List<String> userEmails = new List();
+  List<String> emailKeys = new List();
   final DBRef = FirebaseDatabase.instance.reference();
 
   @override
@@ -27,7 +30,9 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
         username = tempUsername;
       });
 
-      List<Container> tempEmailPanels = await getLoggedUserData();
+      print("Username " + username);
+
+      List<Padding> tempEmailPanels = await getLoggedUserData();
 
       setState(() {
         password = tempPassword;
@@ -62,102 +67,174 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     );
   }
 
-  Container emailPanel(String email) {
-    return new Container(
-      height: 80,
-      decoration: BoxDecoration(
-        color: Colors.blue,
-        borderRadius: BorderRadius.all(Radius.circular(20)),
-      ),
-      child: Center(
-        child: Text(
-          email,
-          style: TextStyle(fontSize: 40, color: Colors.white),
+  Padding emailPanel(String email, String emailKey) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: new Container(
+        decoration: BoxDecoration(
+            border: Border.all(
+              color: Colors.blue,
+            ),
+            color: Colors.blueAccent,
+            borderRadius: BorderRadius.all(Radius.circular(20))),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 9,
+                child: Text(
+                  email,
+                  style: TextStyle(fontSize: 25, color: Colors.white),
+                ),
+              ),
+              Expanded(
+                flex: 2,
+                child: IconButton(
+                  color: Colors.white,
+                  icon: Center(child: Icon(Icons.delete, size: 30.0)),
+                  onPressed: () {
+                    removeUserEmail(emailKey,email);
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Future<List<Container>> getLoggedUserData() async {
-    List<String> myEmails = new List();
-    List<Container> emailPanels = new List();
+  Future<List<Padding>> getLoggedUserData() async {
+    List<String> tempUserEmails = new List();
+    List<String> tempEmailKeys = new List();
+    List<Padding> emailPanels = new List();
 
     final dbSnapshot =
         await DBRef.child("Users").child(username).child("myEmails").once();
 
-    int i = 0;
-
     Map<dynamic, dynamic> values = dbSnapshot.value;
 
-    values.forEach((key, values) {
-      i++;
-      if (key.toString() == "email" + i.toString())
-        myEmails.add(values.toString());
-    });
-
-    for (var email in myEmails) {
-      emailPanels.add(emailPanel(email));
+    if (values!=null) {
+      values.forEach((key, values) {
+        tempUserEmails.add(values.toString());
+        tempEmailKeys.add(key.toString());
+      });
     }
+
+    for (int i = 0; i < tempUserEmails.length; i++) {
+      emailPanels.add(emailPanel(tempUserEmails[i], tempEmailKeys[i]));
+    }
+
+    setState(() {
+      userEmails = tempUserEmails;
+      emailKeys = tempEmailKeys;
+    });
 
     return emailPanels;
   }
 
-  updateUserEmails(String email) {
+  addUserEmail(String email) {
+
+    String emailKey = email.replaceAll(new RegExp(r'\.'),'');
+    List<String> tempEmailKeys = emailKeys;
+    List<String> tempUserEmails = userEmails;
 
     DBRef.child('Users').child(username).child('myEmails').update({
-      'email'+(emailPanels.length+1).toString(): email,
+      emailKey: email,
     });
 
-    List<Container> tempEmailPanels = emailPanels;
-    tempEmailPanels.add(emailPanel(email));
+    List<Padding> tempEmailPanels = emailPanels;
+    tempEmailPanels.add(emailPanel(email, emailKey));
+    tempEmailKeys.add(emailKey);
+    tempUserEmails.add(email);
+
+    setState(() {
+      emailPanels = tempEmailPanels;
+      emailKeys = tempEmailKeys;
+      userEmails = tempUserEmails;
+    });
+  }
+
+  removeUserEmail(String emailKey, String email) {
+    DBRef.child('Users')
+        .child(username)
+        .child('myEmails')
+        .child(emailKey)
+        .remove();
+
+    List<Padding> tempEmailPanels = emailPanels;
+
+    tempEmailPanels.removeAt(emailKeys.indexOf(emailKey));
+
+    emailKeys.remove(emailKey);
+    userEmails.remove(email);
 
     setState(() {
       emailPanels = tempEmailPanels;
     });
   }
 
-  void displayDialog(BuildContext context, String title) =>
-      showDialog(
-        context: context,
-        builder: (context) =>
-            AlertDialog(
-                title: Text(title),
-                content: Container(
+  bool checkIfEmailsTheSame(String thisMail){
 
-                    child: Column(
-                      children: [
-                        TextField(
-                          controller: emailController,
-                          decoration: InputDecoration(
-                              contentPadding:
-                              EdgeInsets.only(top: 20, bottom: 20),
-                              prefixIcon: Padding(
-                                padding:
-                                const EdgeInsets.only(left: 20, right: 20),
-                                child: Icon(Icons.person_outline),
-                              ),
-                              filled: true,
-                              fillColor: Colors.grey.withOpacity(0.7),
-                              hintText: "Login",
-                              focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                  borderSide:
-                                  BorderSide(color: Colors.grey, width: 2)),
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                  borderSide: BorderSide(
-                                    width: 2,
-                                    color: Colors.grey,
-                                  ))),
+  bool emailAlreadyExists=false;
+  print(userEmails);
+    for(String otherEmail in userEmails){
+      if(otherEmail == thisMail){
+        emailAlreadyExists= true;
+        break;
+      }
+    }
+    return emailAlreadyExists;
+  }
+
+  void displayDialog(BuildContext context, String title) => showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+            title: Text(title),
+            content: Container(
+              child: Column(
+                children: [
+                  TextField(
+                    controller: emailController,
+                    decoration: InputDecoration(
+                        contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.only(left: 20, right: 20),
+                          child: Icon(Icons.person_outline),
                         ),
-                        RaisedButton(
-                          child: Text('Dodaj'),
-                            onPressed: (){
-                              updateUserEmails(emailController.text);
-                        })
-                      ],
-                    ),
-                )
-            ),
+                        filled: true,
+                        fillColor: Colors.grey.withOpacity(0.7),
+                        hintText: "Login",
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide:
+                                BorderSide(color: Colors.grey, width: 2)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: Colors.grey,
+                            ))),
+                  ),
+                  RaisedButton(
+                      child: Text('Dodaj'),
+                      onPressed: () {
+                        if(!checkIfEmailsTheSame(emailController.text))
+                        addUserEmail(emailController.text);
+                        else{
+                          Fluttertoast.showToast(
+                              msg: 'Taki mail jest już zdefiniowany',
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.CENTER,
+                              timeInSecForIos: 1,
+                              backgroundColor: Colors.red,
+                              textColor: Colors.white
+                          );
+                        }
+                      })
+                ],
+              ),
+            )),
       );
 }
