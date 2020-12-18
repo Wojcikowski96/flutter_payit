@@ -48,6 +48,11 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     return Scaffold(
       body: Column(children: [
         SizedBox(height: 40,),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Center(child: Text("Twoje adresy mailowe", style: TextStyle(fontSize: 35, color: Colors.blue),)),
+        ),
+
         Container(
           child:Image.asset(
             "mailboxes.png",
@@ -83,8 +88,9 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
         decoration: BoxDecoration(
             border: Border.all(
               color: Colors.blue,
+              width: 4,
             ),
-            color: Colors.blueAccent,
+            color: Colors.white,
             borderRadius: BorderRadius.all(Radius.circular(20))),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -94,13 +100,13 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
                 flex: 9,
                 child: Text(
                   email,
-                  style: TextStyle(fontSize: 25, color: Colors.white),
+                  style: TextStyle(fontSize: 25, color: Colors.blue),
                 ),
               ),
               Expanded(
                 flex: 2,
                 child: IconButton(
-                  color: Colors.white,
+                  color: Colors.blue,
                   icon: Center(child: Icon(Icons.delete, size: 30.0)),
                   onPressed: () {
                     removeUserEmail(emailKey,email);

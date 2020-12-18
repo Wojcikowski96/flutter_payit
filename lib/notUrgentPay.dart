@@ -20,10 +20,10 @@ class notUrgentPay extends StatelessWidget{
         .size
         .height;
     invoices.add(PaymentWidget.paymentCard(
-        'Warunek', '75 PLN', '02-02.2021'));
+        'Warunek', '75 PLN', '02-02.2021', Colors.green));
 
     return Scaffold(
-      backgroundColor: Colors.green,
+
       appBar: AppBar(
           backgroundColor: Colors.greenAccent,
           // leading: IconButton(icon: Icon(Icons.menu), onPressed: (){
@@ -37,7 +37,7 @@ class notUrgentPay extends StatelessWidget{
         padding: const EdgeInsets.all(15.0),
         child: GridView.count(
           crossAxisCount: 1,
-          childAspectRatio: (height) / (width + 23),
+          childAspectRatio: (height) / (width + 35),
           children: List.generate(invoices.length,
                   (index2) => invoices[index2]),
         ),

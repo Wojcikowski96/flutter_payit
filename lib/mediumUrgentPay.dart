@@ -20,14 +20,14 @@ class mediumUrgentPay extends StatelessWidget{
         .size
         .height;
     invoices.add(PaymentWidget.paymentCard(
-        'Retsat S.A', '75 PLN', '02-02.2021'));
+        'Retsat S.A', '75 PLN', '02-02.2021', Colors.amber));
     invoices.add(PaymentWidget.paymentCard(
-        'Kominiarz', '80 PLN', '12-12.2021'));
+        'Kominiarz', '80 PLN', '12-12.2021', Colors.amber));
     invoices.add(PaymentWidget.paymentCard(
-        'Leopold', '15 PLN', '07-07.2021'));
+        'Leopold', '15 PLN', '07-07.2021', Colors.amber));
 
     return Scaffold(
-      backgroundColor: Colors.amber,
+
       appBar: AppBar(
           backgroundColor: Colors.amberAccent,
           // leading: IconButton(icon: Icon(Icons.menu), onPressed: (){
@@ -41,7 +41,7 @@ class mediumUrgentPay extends StatelessWidget{
         padding: const EdgeInsets.all(15.0),
         child: GridView.count(
           crossAxisCount: 1,
-          childAspectRatio: (height) / (width + 23),
+          childAspectRatio: (height) / (width + 35),
           children: List.generate(invoices.length,
                   (index2) => invoices[index2]),
         ),

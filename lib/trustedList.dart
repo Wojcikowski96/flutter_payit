@@ -47,7 +47,11 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
       body: Column(children: [
-        SizedBox(height: 20,),
+        SizedBox(height: 40,),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text("Zaufana lista", style: TextStyle(fontSize: 35, color: Colors.blue),),
+        ),
 
         Container(
           child:Image.asset(
@@ -84,8 +88,9 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
         decoration: BoxDecoration(
             border: Border.all(
               color: Colors.blue,
+              width: 4,
             ),
-            color: Colors.blueAccent,
+            color: Colors.white,
             borderRadius: BorderRadius.all(Radius.circular(20))),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -95,13 +100,13 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
                 flex: 9,
                 child: Text(
                   email,
-                  style: TextStyle(fontSize: 25, color: Colors.white),
+                  style: TextStyle(fontSize: 25, color: Colors.blue),
                 ),
               ),
               Expanded(
                 flex: 2,
                 child: IconButton(
-                  color: Colors.white,
+                  color: Colors.blue,
                   icon: Center(child: Icon(Icons.delete, size: 30.0)),
                   onPressed: () {
                     removeUserEmail(emailKey,email);

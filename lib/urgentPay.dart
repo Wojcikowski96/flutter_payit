@@ -14,14 +14,14 @@ class urgentPay extends StatelessWidget {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     invoices.add(PaymentWidget.paymentCard(
-        'Orange S.A', '50 PLN', '01-01.2021'));
+        'Orange S.A', '50 PLN', '01-01.2021', Colors.red));
     invoices.add(PaymentWidget.paymentCard(
-        'Netia S.A', '80 PLN', '11-11.2021'));
+        'Netia S.A', '80 PLN', '11-11.2021', Colors.red));
     invoices.add(PaymentWidget.paymentCard(
-        'T-Mobile S.A', '15 PLN', '06-06.2021'));
+        'T-Mobile S.A', '15 PLN', '06-06.2021', Colors.red));
 
     return Scaffold(
-      backgroundColor: Colors.red,
+      backgroundColor: Colors.white,
       appBar: AppBar(
           backgroundColor: Color.fromRGBO(255, 150, 150, 1),
           // leading: IconButton(icon: Icon(Icons.menu), onPressed: (){
@@ -35,7 +35,7 @@ class urgentPay extends StatelessWidget {
         padding: const EdgeInsets.all(15.0),
         child: GridView.count(
           crossAxisCount: 1,
-          childAspectRatio: (height)/(width + 23),
+          childAspectRatio: (height)/(width + 35),
     children: List.generate(invoices.length,
     (index2) => invoices[index2]),
     ),
