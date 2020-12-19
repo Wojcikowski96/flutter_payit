@@ -24,7 +24,6 @@ import javax.mail.internet.MimeBodyPart;
 
 public class MainActivity extends FlutterActivity {
     private static final String CHANNEL = "name";
-    private String saveDirectory;
     private String username, password, host, port;
 
     @Override
@@ -37,46 +36,39 @@ public class MainActivity extends FlutterActivity {
                 password = methodCall.argument("password");
                 host = methodCall.argument("host");
                 port = methodCall.argument("port");
-                downloadEmailAttachments(host, port, username, password);
-                System.out.println("Host w javie: " + host);
+
+                Thread thread = new Thread(() -> {
+                    try  {
+                        downloadEmailAttachments(host, port, username, password);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+                thread.start();
             }
         });
 
     }
-    /**
-     * Sets the directory where attached files will be stored.
-     * @param dir absolute path of the directory
-     */
-    public void setSaveDirectory(String dir) {
-        this.saveDirectory = dir;
-    }
 
-    /**
-     * Downloads new messages and saves attachments to disk if any.
-     * @param host
-     * @param port
-     * @param userName
-     * @param password
-     */
     public void downloadEmailAttachments(String host, String port, String userName, String password) {
         Properties properties = new Properties();
 
         // server setting
-        properties.put("mail.pop3.host", host);
-        properties.put("mail.pop3.port", port);
+        properties.put("mail.imaps.host", host);
+        properties.put("mail.imaps.port", port);
 
         // SSL setting
-        properties.setProperty("mail.pop3.socketFactory.class",
+        properties.setProperty("mail.imaps.socketFactory.class",
                 "javax.net.ssl.SSLSocketFactory");
-        properties.setProperty("mail.pop3.socketFactory.fallback", "false");
-        properties.setProperty("mail.pop3.socketFactory.port",
+        properties.setProperty("mail.imaps.socketFactory.fallback", "false");
+        properties.setProperty("mail.imaps.socketFactory.port",
                 String.valueOf(port));
 
         Session session = Session.getDefaultInstance(properties);
 
         try {
             // connects to the message store
-            Store store = session.getStore("pop3");
+            Store store = session.getStore("imaps");
             store.connect(userName, password);
 
             // opens the inbox folder
@@ -140,7 +132,7 @@ public class MainActivity extends FlutterActivity {
             folderInbox.close(false);
             store.close();
         } catch (NoSuchProviderException ex) {
-            System.out.println("No provider for pop3.");
+            System.out.println("No provider for imaps.");
             ex.printStackTrace();
         } catch (MessagingException ex) {
             System.out.println("Could not connect to the message store");

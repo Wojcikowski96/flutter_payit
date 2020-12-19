@@ -55,11 +55,11 @@ class registerPage extends StatelessWidget {
                   SizedBox(
                     height: 5,
                   ),
-                  Text("Wpisz swoje dane:",
+                  Text("Dane do rejestracji:",
                       style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 20,
                           fontWeight: FontWeight.w500,
-                          color: Colors.grey)),
+                          color: Colors.black)),
 
                   SizedBox(height: 25,),
                   Container(
@@ -155,6 +155,12 @@ class registerPage extends StatelessWidget {
                       )
                   ),
                   SizedBox(height: 25,),
+                  Text("Dane do konta mailowego:",
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black)),
+                  SizedBox(height: 10,),
                   Container(
                       margin: EdgeInsets.only(right: 10, left: 10),
                       child: TextField(
@@ -186,6 +192,37 @@ class registerPage extends StatelessWidget {
                       )
                   ),
 
+                  SizedBox(height: 25,),
+                  Container(
+                      margin: EdgeInsets.only(right: 10, left: 10),
+                      child: TextField(
+                        controller: emailController,
+                        decoration: InputDecoration(
+                            contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.only(left: 20, right: 20),
+                              child: Icon(Icons.person_outline),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey.withOpacity(0.7),
+                            hintText: "Podaj hasło do poczty",
+                            focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(30),
+                                borderSide: BorderSide(
+                                    color: Colors.blueAccent,
+                                    width: 2
+                                )
+                            ),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(
+                                  width: 2,
+                                  color: Colors.blueAccent,
+                                )
+                            )
+                        ),
+                      )
+                  ),
                   SizedBox(height: 25,),
                   SizedBox(
                     child: RaisedButton(
