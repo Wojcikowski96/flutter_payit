@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_payit/userOperationsOnEmails.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -12,6 +13,7 @@ class EmailBoxesPanel extends StatefulWidget {
 
 class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
   final TextEditingController emailController = new TextEditingController();
+  final TextEditingController emailPasswordController = new TextEditingController();
   var storage = FlutterSecureStorage();
   String username = "JohnDoe", password = "qwerty";
   List<Padding> emailPanels = new List();
@@ -126,13 +128,14 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     List<Padding> emailPanels = new List();
 
     final dbSnapshot =
-        await DBRef.child("Users").child(username).child("myEmails").once();
+
+    await DBRef.child("Users").child(username).child("myEmails").once();
 
     Map<dynamic, dynamic> values = dbSnapshot.value;
 
     if (values!=null) {
       values.forEach((key, values) {
-        tempUserEmails.add(values.toString());
+        tempUserEmails.add(values['username'].toString());
         tempEmailKeys.add(key.toString());
       });
     }
@@ -144,19 +147,24 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     setState(() {
       userEmails = tempUserEmails;
       emailKeys = tempEmailKeys;
+      print(emailKeys);
     });
 
     return emailPanels;
   }
 
-  addUserEmail(String email) {
-
+  addUserEmail() async {
+    String email = emailController.text;
+    String emailPassword = emailPasswordController.text;
+    List <String> tempEmailKeys = emailKeys;
+    List <String> tempUserEmails = userEmails;
     String emailKey = email.replaceAll(new RegExp(r'\.'),'');
-    List<String> tempEmailKeys = emailKeys;
-    List<String> tempUserEmails = userEmails;
-
-    DBRef.child('Users').child(username).child('myEmails').update({
-      emailKey: email,
+    List <String> emailConfig = await UserOperationsOnEmails().discoverSettings(email, emailPassword);
+    DBRef.child('Users').child(username).child('myEmails').child(emailKey).set({
+      "username": email,
+      "password": emailPassword,
+      "hostname": emailConfig[2],
+      "port": emailConfig[3]
     });
 
     List<Padding> tempEmailPanels = emailPanels;
@@ -168,6 +176,11 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
       emailPanels = tempEmailPanels;
       emailKeys = tempEmailKeys;
       userEmails = tempUserEmails;
+      print("EmailKeys:");
+      print(emailKeys);
+      print("userEmails:");
+      print(userEmails);
+
     });
   }
 
@@ -220,7 +233,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
                         ),
                         filled: true,
                         fillColor: Colors.grey.withOpacity(0.7),
-                        hintText: "Login",
+                        hintText: "Email",
                         focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30),
                             borderSide:
@@ -232,11 +245,34 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
                               color: Colors.grey,
                             ))),
                   ),
+                  SizedBox(height: 25),
+                  TextField(
+                    controller: emailPasswordController,
+                    decoration: InputDecoration(
+                        contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.only(left: 20, right: 20),
+                          child: Icon(Icons.person_outline),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.withOpacity(0.7),
+                        hintText: "Hasło do maila",
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide:
+                            BorderSide(color: Colors.grey, width: 2)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: Colors.grey,
+                            ))),
+                  ),
                   RaisedButton(
                       child: Text('Dodaj'),
                       onPressed: () {
                         if(!checkIfEmailsTheSame(emailController.text))
-                        addUserEmail(emailController.text);
+                        addUserEmail();
                         else{
                           Fluttertoast.showToast(
                               msg: 'Taki mail jest już zdefiniowany',

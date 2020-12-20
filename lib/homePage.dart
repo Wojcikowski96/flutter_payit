@@ -138,29 +138,11 @@ class _homePageState extends State<homePage> {
     print("Lista maili w homeScreen "+userEmails.toString());
 
     //await imap();
-    downloadAttachment(await discoverSettings('kamil.wojcikowski@wp.pl'));
+    //downloadAttachment(await UserOperationsOnEmails().discoverSettings('kamil.wojcikowski@wp.pl'));
 
   }
 
-  Future <List<String>> discoverSettings(String email) async {
-    var config = await Discover.discover(email, isLogEnabled: true);
-    List<String> data = new List();
-    data.add(email);
-    data.add('P0cztanawp');
-    if (config == null) {
-      print('Unable to discover settings for $email');
-    } else {
-      print('Settings for $email:');
-      for (var provider in config.emailProviders) {
-        print('provider: ${provider.displayName}');
-        data.add((provider.preferredIncomingServer.hostname).toString());
-        data.add((provider.preferredIncomingServer.port).toString());
-      }
-      print("Data for downloader:");
-      print(data);
-      return data;
-    }
-  }
+
 
   void downloadAttachment(List<String> emailSettings) async {
     String sth;

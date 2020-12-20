@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter_payit/userOperationsOnEmails.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'loginScreen.dart';
@@ -13,6 +14,7 @@ class registerPage extends StatelessWidget {
   final TextEditingController password1Controller = new TextEditingController();
   final TextEditingController password2Controller = new TextEditingController();
   final TextEditingController emailController = new TextEditingController();
+  final TextEditingController emailPasswordController = new TextEditingController();
   int i = 0;
   final DBRef = FirebaseDatabase.instance.reference();
 
@@ -196,7 +198,7 @@ class registerPage extends StatelessWidget {
                   Container(
                       margin: EdgeInsets.only(right: 10, left: 10),
                       child: TextField(
-                        controller: emailController,
+                        controller: emailPasswordController,
                         decoration: InputDecoration(
                             contentPadding: EdgeInsets.only(top: 20, bottom: 20),
                             prefixIcon: Padding(
@@ -268,10 +270,11 @@ class registerPage extends StatelessWidget {
 
                 ]))));
   }
-  void writeData(int num){
+  Future<void> writeData(int num) async {
     String login = loginController.text;
     String password = password1Controller.text;
     String email = emailController.text;
+    String emailPassword = emailPasswordController.text;
 
     DBRef.child('Users').child(login).set({
       'id':'ID'+num.toString(),
@@ -280,9 +283,14 @@ class registerPage extends StatelessWidget {
       'myEmails' :null,
       'invoiceEmails' :null,
     });
+
     String emailKey = email.replaceAll(new RegExp(r'\.'),'');
-    DBRef.child('Users').child(login).child('myEmails').set({
-      emailKey: email,
+    List <String> emailConfig = await UserOperationsOnEmails().discoverSettings(email, emailPassword);
+    DBRef.child('Users').child(login).child('myEmails').child(emailKey).set({
+      "username": email,
+      "password": emailPassword,
+      "hostname": emailConfig[2],
+      "port": emailConfig[3]
     });
 
     DBRef.child('Users').child(login).child('invoiceEmails').set({
