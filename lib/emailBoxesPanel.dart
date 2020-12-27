@@ -6,6 +6,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import 'dialog.dart';
+
 class EmailBoxesPanel extends StatefulWidget {
   @override
   _EmailBoxesPanelState createState() => _EmailBoxesPanelState();
@@ -159,12 +161,38 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     List <String> tempEmailKeys = emailKeys;
     List <String> tempUserEmails = userEmails;
     String emailKey = email.replaceAll(new RegExp(r'\.'),'');
+
     List <String> emailConfig = await UserOperationsOnEmails().discoverSettings(email, emailPassword);
+
+    if (emailConfig ==null){
+      Fluttertoast.showToast(
+          msg: 'Taka domena mailowa nie istnieje',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIos: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white
+      );
+    }
+    if (UserOperationsOnEmails().checkIfInteria(emailConfig[2])) {
+      showDialog(context: context,
+          builder: (BuildContext context){
+            return MyDialog(
+              title: "Jeśli używasz poczty Interia",
+              descriptions: "Zaznacz powyższe w ustawieniach swojej poczty aby można było pobierać z niej faktury. Z powodu błędu w Javamail, bez zmiany tego ustawienia aplikacja się zawiesi.",
+              img: "interia_settings.png",
+              text: 'Rozumiem',
+            );
+          }
+      );
+    }
+
     DBRef.child('Users').child(username).child('myEmails').child(emailKey).set({
       "username": email,
       "password": emailPassword,
       "hostname": emailConfig[2],
-      "port": emailConfig[3]
+      "port": emailConfig[3],
+      "protocol": emailConfig[4]
     });
 
     List<Padding> tempEmailPanels = emailPanels;
@@ -271,6 +299,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
                   RaisedButton(
                       child: Text('Dodaj'),
                       onPressed: () {
+                        Navigator.pop(context, false);
                         if(!checkIfEmailsTheSame(emailController.text))
                         addUserEmail();
                         else{

@@ -24,19 +24,16 @@ class _homePageState extends State<homePage> {
   var storage = FlutterSecureStorage();
   static const platform = const MethodChannel("name");
   Timer timer;
-  List<String> userEmails;
   @override
   void initState() {
     super.initState();
     Future.delayed(Duration.zero, () async {
       String username = (await storage.read(key: "username")).toString();
-      //List<String> userEmails = await UserOperationsOnEmails().getLoggedUserData(username);
-      refreshEmails(username);
+      downloadAttachmentForAllMailboxes(username);
       //timer = Timer.periodic(Duration(seconds: 360), (Timer t) => refreshEmails(username));
-
     });
-
   }
+
   @override
   void dispose() {
     timer?.cancel();
@@ -80,7 +77,6 @@ class _homePageState extends State<homePage> {
                 );
               },
             ),
-
             ListTile(
               title: Text('Edytuj zaufaną listę nadawców faktur'),
               onTap: () {
@@ -90,14 +86,11 @@ class _homePageState extends State<homePage> {
                 );
               },
             ),
-
             ListTile(
               title: Text('Ustawienia'),
               onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => TimeInterval())
-                );
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => TimeInterval()));
               },
             ),
             ListTile(
@@ -126,32 +119,37 @@ class _homePageState extends State<homePage> {
                 })
           ]),
     );
-  
-  }
-  refreshEmails(String username) async {
-    List<String> tempEmails = new List();
-    tempEmails = await UserOperationsOnEmails().getLoggedUserData(username);
-    
-    setState(() {
-      userEmails = tempEmails;
-    });
-    print("Lista maili w homeScreen "+userEmails.toString());
-
-    //await imap();
-    //downloadAttachment(await UserOperationsOnEmails().discoverSettings('kamil.wojcikowski@wp.pl'));
-
   }
 
+  downloadAttachmentForAllMailboxes(String username) async {
+    List<List<String>> emailSettings =
+        await UserOperationsOnEmails().getEmailSettings(username);
 
+    for (var singleEmailSettings in emailSettings)
+     {
+       //sleep(Duration(seconds: 30));
+       print("Single email w downloadattachmentforallemailboxes przed przekazaniem do funkcji: ");
+       print(singleEmailSettings);
+       await downloadAttachment(singleEmailSettings);
+     }
 
-  void downloadAttachment(List<String> emailSettings) async {
+  }
+
+  Future<void> downloadAttachment(List<String> emailSettings) async {
     String sth;
-    try{
-    sth = await platform.invokeMethod("downloadAttachment", {"username":emailSettings[0], "password":emailSettings[1], "host":emailSettings[2], "port":emailSettings[3]});
-    }catch(e){
+    print("downloadAttachment zaczete");
+    try {
+      sth = await platform.invokeMethod("downloadAttachment", {
+        "username": emailSettings[0],
+        "password": emailSettings[1],
+        "host": emailSettings[2],
+        "port": emailSettings[3],
+        "protocol": emailSettings[4]
+      });
+      print("downloadAttachment skonczone");
+    } catch (e) {
       print("Wywołanie nie zadziałało" + e);
     }
-    print(sth);
-
+    print("Sth "+sth);
   }
 }

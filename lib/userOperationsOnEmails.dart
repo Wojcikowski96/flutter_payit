@@ -1,29 +1,33 @@
 import 'package:enough_mail/discover/discover.dart';
 import 'package:firebase_database/firebase_database.dart';
 
- class UserOperationsOnEmails {
-
-  Future<List<String>> getLoggedUserData(String username) async {
-
-    List<String> userEmails = new List();
-
+class UserOperationsOnEmails {
+  Future<List<List<String>>> getEmailSettings(String username) async {
     final DBRef = FirebaseDatabase.instance.reference();
 
     final dbSnapshot =
-    await DBRef.child("Users").child(username).child("myEmails").once();
+        await DBRef.child("Users").child(username).child("myEmails").once();
 
-    Map<dynamic, dynamic> values = dbSnapshot.value;
+    Map<dynamic, dynamic> emailSettingsMap = dbSnapshot.value;
 
-    if (values!=null) {
-      values.forEach((key, values) {
-        userEmails.add(values.toString());
+    List<List<String>> emailSettings = new List();
+
+    if (emailSettingsMap != null) {
+      emailSettingsMap.values.forEach((values) {
+        List<String> singleEmailSettings = [
+          values['username'].toString(),
+          values['password'].toString(),
+          values['hostname'].toString(),
+          values['port'].toString(),
+          values['protocol'].toString()
+        ];
+        emailSettings.add(singleEmailSettings);
       });
     }
-
-    return userEmails;
+    return emailSettings;
   }
 
-  Future <List<String>> discoverSettings(String email, String password) async {
+  Future<List<String>> discoverSettings(String email, String password) async {
     var config = await Discover.discover(email, isLogEnabled: true);
     List<String> data = new List();
     data.add(email);
@@ -35,8 +39,14 @@ import 'package:firebase_database/firebase_database.dart';
       print('Settings for $email:');
       for (var provider in config.emailProviders) {
         print('provider: ${provider.displayName}');
-        data.add((provider.preferredIncomingServer.hostname).toString());
+        String hostName =
+            (provider.preferredIncomingServer.hostname).toString();
+        if (hostName == "null")
+          data.add(getHostName(email));
+        else
+          data.add(hostName);
         data.add((provider.preferredIncomingServer.port).toString());
+        data.add(provider.preferredIncomingServer.type.toString());
       }
       print("Data for downloader:");
       print(data);
@@ -44,4 +54,50 @@ import 'package:firebase_database/firebase_database.dart';
     }
   }
 
+  bool ifEmailIsOnet(String email) {
+    List<String> onetDomains = [
+      'onet.pl',
+      'op.pl',
+      'poczta.onet.pl',
+      'onet.eu',
+      'onet.com.pl',
+      'vp.pl',
+      'spoko.pl',
+      'vip.onet.pl',
+      'autograf.pl',
+      'opoczta.pl',
+      'amorki.pl',
+      'autograf.pl',
+      'buziaczek.pl',
+      'adres.pl',
+      'cyberia.pl',
+      'pseudonim.pl'
+    ];
+    bool isEmail = false;
+    for (var domain in onetDomains) {
+      if (email.contains(domain)) {
+        isEmail = true;
+        break;
+      }
+    }
+    return isEmail;
+  }
+
+  bool checkIfInteria(String host){
+    bool isInteria = false;
+    if(host.contains("interia")){
+      isInteria = true;
+    }
+    return isInteria;
+  }
+
+  String getHostName(String email) {
+    if (ifEmailIsOnet(email)) {
+      print("Adres onet");
+      return "imap.poczta.onet.pl";
+    } else {
+      print("Adres nie onet");
+      return null;
+    }
+  }
 }

@@ -1,10 +1,12 @@
 import 'dart:async';
 
+
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_payit/userOperationsOnEmails.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import 'dialog.dart';
 import 'loginScreen.dart';
 
 
@@ -270,7 +272,7 @@ class registerPage extends StatelessWidget {
 
                 ]))));
   }
-  Future<void> writeData(int num) async {
+  Future<void> writeData(int num, BuildContext context) async {
     String login = loginController.text;
     String password = password1Controller.text;
     String email = emailController.text;
@@ -285,12 +287,28 @@ class registerPage extends StatelessWidget {
     });
 
     String emailKey = email.replaceAll(new RegExp(r'\.'),'');
+    //Todo przeniesc moze wyzej
     List <String> emailConfig = await UserOperationsOnEmails().discoverSettings(email, emailPassword);
+
+    if (UserOperationsOnEmails().checkIfInteria(emailConfig[2])) {
+      showDialog(context: context,
+          builder: (BuildContext context){
+            return MyDialog(
+              title: "Jeśli używasz poczty Interia",
+              descriptions: "Zaznacz powyższe w ustawieniach swojej poczty aby można było pobierać z niej faktury. Z powodu błędu w Javamail, bez zmiany tego ustawienia aplikacja się zawiesi.",
+              img: "interia_settings.png",
+              text: 'Rozumiem',
+            );
+          }
+      );
+    }
+
     DBRef.child('Users').child(login).child('myEmails').child(emailKey).set({
       "username": email,
       "password": emailPassword,
       "hostname": emailConfig[2],
-      "port": emailConfig[3]
+      "port": emailConfig[3],
+      "protocol": emailConfig[4]
     });
 
     DBRef.child('Users').child(login).child('invoiceEmails').set({
@@ -300,6 +318,8 @@ class registerPage extends StatelessWidget {
       'userCount':num,
     });
   }
+
+
 
 Future<int> getUsersNum() async {
 
@@ -313,20 +333,15 @@ Future<int> getUsersNum() async {
   }
 
   void register(BuildContext context) async {
+    String email = emailController.text;
+    String emailPassword = emailPasswordController.text;
+
     if((password1Controller.text == password2Controller.text) && emailController.text.contains('@')){
       i = await getUsersNum();
-      Fluttertoast.showToast(
-          msg: 'Zarejestrowano użytkownika',
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIos: 1,
-          backgroundColor: Colors.green,
-          textColor: Colors.white
-      );
       print('Gówno z bazy danych');
       print(i);
       i=i+1;
-      writeData(i);
+      writeData(i,context);
 
       Navigator.push(
         context,
