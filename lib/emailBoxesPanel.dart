@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import 'constrants.dart';
 import 'dialog.dart';
 
 class EmailBoxesPanel extends StatefulWidget {
@@ -247,8 +248,12 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
   void displayDialog(BuildContext context, String title) => showDialog(
         context: context,
         builder: (context) => AlertDialog(
-            title: Text(title),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(Constants.padding),
+            ),
+            title: Center(child: Text(title, style: TextStyle(color: Colors.blue),)),
             content: Container(
+              height: 200,
               child: Column(
                 children: [
                   TextField(
@@ -297,7 +302,11 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
                             ))),
                   ),
                   RaisedButton(
-                      child: Text('Dodaj'),
+                      child: Text('Dodaj',style: TextStyle(color: Colors.white),),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      color: Colors.blue,
                       onPressed: () {
                         Navigator.pop(context, false);
                         if(!checkIfEmailsTheSame(emailController.text))

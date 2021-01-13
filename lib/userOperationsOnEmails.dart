@@ -27,6 +27,31 @@ class UserOperationsOnEmails {
     return emailSettings;
   }
 
+  Future<List<List<String>>> getInvoiceSenders(String username) async {
+    final DBRef = FirebaseDatabase.instance.reference();
+
+    final dbSnapshot =
+    await DBRef.child("Users").child(username).child("invoicesEmails").once();
+
+    Map<dynamic, dynamic> emailSettingsMap = dbSnapshot.value;
+    List <List<String>> trustedEmailsProps = new List();
+
+    if (emailSettingsMap != null) {
+      emailSettingsMap.values.forEach((values) {
+        List<String> trustedEmailsSingle = new List();
+        String trustedEmailName = values['username'].toString();
+        String customName = values['customname'];
+        trustedEmailsSingle.add(trustedEmailName);
+        trustedEmailsSingle.add(customName);
+        trustedEmailsProps.add(trustedEmailsSingle);
+      });
+
+    }
+    print("Nowa lista trusted: ");
+    print(trustedEmailsProps);
+    return trustedEmailsProps;
+  }
+
   Future<List<String>> discoverSettings(String email, String password) async {
     var config = await Discover.discover(email, isLogEnabled: true);
     List<String> data = new List();

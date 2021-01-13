@@ -27,6 +27,10 @@ dependencies:
   firebase_database: ^4.3.0
   flutter_secure_storage: ^3.3.1+1
   enough_mail: ^0.0.34
+  syncfusion_flutter_pdf: ^18.3.53-beta
+  syncfusion_flutter_pdfviewer: ^18.4.33-beta
+  path_provider_ex: ^1.0.1
+  table_calendar: ^2.3.3
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -35,6 +39,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

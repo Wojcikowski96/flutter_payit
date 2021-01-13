@@ -5,6 +5,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import 'constrants.dart';
+
 class TrustedListPanel extends StatefulWidget {
   @override
   _TrustedListPanelState createState() => _TrustedListPanelState();
@@ -12,10 +14,11 @@ class TrustedListPanel extends StatefulWidget {
 
 class _TrustedListPanelState extends State<TrustedListPanel> {
   final TextEditingController emailController = new TextEditingController();
+  final TextEditingController nameController = new TextEditingController();
   var storage = FlutterSecureStorage();
   String username = "JohnDoe", password = "qwerty";
   List<Padding> emailPanels = new List();
-  List<String> userEmails = new List();
+  List<String> trustedEmails = new List();
   List<String> emailKeys = new List();
   final DBRef = FirebaseDatabase.instance.reference();
 
@@ -75,7 +78,7 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
         backgroundColor: Colors.blue,
         child: Icon(Icons.add),
         onPressed: () {
-          displayDialog(context, "Dodaj swój e-mail");
+          displayDialog(context, "Dodaj nadawcę faktur:");
         },
       ),
     );
@@ -132,7 +135,7 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
 
     if (values!=null) {
       values.forEach((key, values) {
-        tempUserEmails.add(values.toString());
+        tempUserEmails.add(values["username"].toString());
         tempEmailKeys.add(key.toString());
       });
     }
@@ -142,21 +145,27 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
     }
 
     setState(() {
-      userEmails = tempUserEmails;
+      trustedEmails = tempUserEmails;
+      print("User emails w trusted:");
+      print(trustedEmails);
       emailKeys = tempEmailKeys;
     });
 
     return emailPanels;
   }
 
-  addUserEmail(String email) {
+  addUserEmail(String email, String customName) {
 
     String emailKey = email.replaceAll(new RegExp(r'\.'),'');
     List<String> tempEmailKeys = emailKeys;
-    List<String> tempUserEmails = userEmails;
+    List<String> tempUserEmails = trustedEmails;
 
-    DBRef.child('Users').child(username).child('invoicesEmails').update({
-      emailKey: email,
+//    DBRef.child('Users').child(username).child('invoicesEmails').update({
+//      emailKey: email,
+//    });
+    DBRef.child('Users').child(username).child('invoicesEmails').child(emailKey).set({
+      "username": email,
+      "customname":customName
     });
 
     List<Padding> tempEmailPanels = emailPanels;
@@ -167,7 +176,7 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
     setState(() {
       emailPanels = tempEmailPanels;
       emailKeys = tempEmailKeys;
-      userEmails = tempUserEmails;
+      trustedEmails = tempUserEmails;
     });
   }
 
@@ -183,7 +192,7 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
     tempEmailPanels.removeAt(emailKeys.indexOf(emailKey));
 
     emailKeys.remove(emailKey);
-    userEmails.remove(email);
+    trustedEmails.remove(email);
 
     setState(() {
       emailPanels = tempEmailPanels;
@@ -193,8 +202,8 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
   bool checkIfEmailsTheSame(String thisMail){
 
     bool emailAlreadyExists=false;
-    print(userEmails);
-    for(String otherEmail in userEmails){
+    print(trustedEmails);
+    for(String otherEmail in trustedEmails){
       if(otherEmail == thisMail){
         emailAlreadyExists= true;
         break;
@@ -206,8 +215,12 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
   void displayDialog(BuildContext context, String title) => showDialog(
     context: context,
     builder: (context) => AlertDialog(
-        title: Text(title),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Constants.padding),
+        ),
+        title: Center(child: Text(title, style: TextStyle(color: Colors.blue),)),
         content: Container(
+          height: 264,
           child: Column(
             children: [
               TextField(
@@ -220,7 +233,7 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
                     ),
                     filled: true,
                     fillColor: Colors.grey.withOpacity(0.7),
-                    hintText: "Login",
+                    hintText: "Email",
                     focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30),
                         borderSide:
@@ -232,11 +245,42 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
                           color: Colors.grey,
                         ))),
               ),
+              SizedBox(height: 25),
+              Center(child: Text("Nazwij nadawcę faktur:", style: TextStyle(color: Colors.blue, fontSize: 20, fontWeight: FontWeight.bold),)),
+              SizedBox(height: 25),
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(
+                    contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.only(left: 20, right: 20),
+                      child: Icon(Icons.person_outline),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey.withOpacity(0.7),
+                    hintText: "Nazwa",
+                    focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide:
+                        BorderSide(color: Colors.grey, width: 2)),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide(
+                          width: 2,
+                          color: Colors.grey,
+                        ))),
+              ),
+              SizedBox(height: 25),
               RaisedButton(
-                  child: Text('Dodaj'),
+                  child: Text('Dodaj',style: TextStyle(color: Colors.white),),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  color: Colors.blue,
                   onPressed: () {
+                    Navigator.pop(context, false);
                     if(!checkIfEmailsTheSame(emailController.text))
-                      addUserEmail(emailController.text);
+                      addUserEmail(emailController.text, nameController.text);
                     else{
                       Fluttertoast.showToast(
                           msg: 'Taki mail jest już zdefiniowany',
