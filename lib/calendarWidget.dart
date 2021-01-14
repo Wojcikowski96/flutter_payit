@@ -1,24 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-
+import 'homePage.dart';
 // Example holidays
 final Map<DateTime, List> _holidays = {
-  DateTime(2020, 1, 1): ['New Year\'s Day'],
-  DateTime(2020, 1, 6): ['Epiphany'],
-  DateTime(2020, 2, 14): ['Valentine\'s Day'],
-  DateTime(2020, 4, 21): ['Easter Sunday'],
-  DateTime(2020, 4, 22): ['Easter Monday'],
+  DateTime(2020, 1, 1): ['Nowy Rok'],
+  DateTime(2020, 1, 6): ['Trzech Króli'],
+  DateTime(2020, 4, 21): ['Wielkanoc'],
+  DateTime(2020, 4, 22): ['Poniedziałek wielkanocny'],
+  DateTime(2021, 1, 1): ['Nowy Rok'],
+  DateTime(2021, 1, 6): ['Trzech Króli'],
 };
 
 class CalendarWidget extends StatefulWidget {
+  Map<DateTime, List> events;
+  final Function(DateTime date, String event) notifyParent;
+
+  CalendarWidget({Key key, @required this.events, this.notifyParent}) : super(key: key);
+  
   @override
   _CalendarWidgetState createState() => _CalendarWidgetState();
 }
 
 class _CalendarWidgetState extends State<CalendarWidget>
     with TickerProviderStateMixin {
-  Map<DateTime, List> _events;
+
   List _selectedEvents;
+
   CalendarController _calendarController;
 
   @override
@@ -26,16 +33,13 @@ class _CalendarWidgetState extends State<CalendarWidget>
     super.initState();
     final _selectedDay = DateTime.now();
 
-    _events = {
-      DateTime(2021, 1, 22): ['Event A0', 'Event B0', 'Event C0'],
-    };
+//    events = {
+//      DateTime(2021, 1, 22): ['Event A0', 'Event B0', 'Event C0'],
+//    };
 
-    _selectedEvents = _events[_selectedDay] ?? [];
+    _selectedEvents = widget.events[_selectedDay] ?? [];
     _calendarController = CalendarController();
-//    _animationController = AnimationController(
-//      vsync: this,
-//      duration: const Duration(milliseconds: 400),
-//    );
+
   }
 
   @override
@@ -45,21 +49,21 @@ class _CalendarWidgetState extends State<CalendarWidget>
 
   void _onDaySelected(DateTime day, List events, List holidays) {
     print('CALLBACK: _onDaySelected');
+    print("Eventy "+events.toString());
+    widget.notifyParent(day,events[0]);
     setState(() {
       _selectedEvents = events;
-    });
+          });
   }
 
-  Widget _buildEventsMarker(DateTime date, List events, Color color) {
-    print("Date");
-    print(date);
-    print("Events");
-    print(events);
+  Widget _buildEventsMarker(DateTime date, List events) {
+
+    print(events.toString());
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       decoration: BoxDecoration(
           border: Border.all(
-            color: color,
+            color: ColorFromName(events[0].split("|")[4]),
             width: 4,
           ),
           shape: BoxShape.rectangle,
@@ -75,10 +79,10 @@ class _CalendarWidgetState extends State<CalendarWidget>
         children: [
           Positioned(
             bottom: 1,
-            right: 1,
+            right: 2,
             child: Text(
               '${events.length}',
-              style: TextStyle().copyWith(
+              style: TextStyle(fontWeight: FontWeight.bold).copyWith(
                 color: Colors.red,
                 fontSize: 16.0,
               ),
@@ -111,7 +115,7 @@ class _CalendarWidgetState extends State<CalendarWidget>
     return TableCalendar(
       locale: 'pl_PL',
       calendarController: _calendarController,
-      events: _events,
+      events: widget.events,
       holidays: _holidays,
       initialCalendarFormat: CalendarFormat.month,
       formatAnimation: FormatAnimation.slide,
@@ -136,11 +140,15 @@ class _CalendarWidgetState extends State<CalendarWidget>
       builders: CalendarBuilders(
         selectedDayBuilder: (context, date, _) {
           return Container(
+            decoration: BoxDecoration(
+                color: Colors.grey,
+              borderRadius: BorderRadius.all(Radius.circular(15))
+            ),
             margin: const EdgeInsets.all(4.0),
             padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-            color: Colors.deepOrange[300],
-            width: 80,
-            height: 80,
+
+            width: 82,
+            height: 82,
             child: Text(
               '${date.day}',
               style: TextStyle().copyWith(fontSize: 16.0),
@@ -149,9 +157,17 @@ class _CalendarWidgetState extends State<CalendarWidget>
         },
         todayDayBuilder: (context, date, _) {
           return Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.blue,
+                width: 4,
+              ),
+              color: Colors.blue,
+                borderRadius: BorderRadius.all(Radius.circular(15))
+
+            ),
             margin: const EdgeInsets.all(4.0),
             padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-            color: Colors.amber[400],
             width: 80,
             height: 80,
             child: Text(
@@ -166,7 +182,7 @@ class _CalendarWidgetState extends State<CalendarWidget>
           if (events.isNotEmpty) {
             children.add(
               Positioned(
-                child: _buildEventsMarker(date, events, Colors.red),
+                child: _buildEventsMarker(date, events),
               ),
             );
           }
@@ -189,4 +205,14 @@ class _CalendarWidgetState extends State<CalendarWidget>
       onCalendarCreated: _onCalendarCreated,
     );
   }
+
+Color ColorFromName(String name) {
+  if(name == "MaterialColor(primary value: Color(0xfff44336))") {
+    return Colors.red;
+  }else if(name == "MaterialColor(primary value: Color(0xffffc107))"){
+    return Colors.amber;
+  }else if(name == "MaterialColor(primary value: Color(0xff4caf50))"){
+    return Colors.green;
+  }
+}
 }

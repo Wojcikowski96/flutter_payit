@@ -30,14 +30,14 @@ class PaymentPage extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-          backgroundColor: color,
-          // leading: IconButton(icon: Icon(Icons.menu), onPressed: (){
-          //
-          // }),
-          title: Text(tittle),
-          actions: <Widget>[]),
+      backgroundColor: Colors.transparent,
+//      appBar: AppBar(
+//          backgroundColor: color,
+//          // leading: IconButton(icon: Icon(Icons.menu), onPressed: (){
+//          //
+//          // }),
+//          title: Text(tittle),
+//          actions: <Widget>[]),
       body: Padding(
         padding: const EdgeInsets.all(15.0),
         child: ListView(

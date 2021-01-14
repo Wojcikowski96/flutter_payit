@@ -5,6 +5,7 @@ import 'package:flutter_payit/pdfView.dart';
 class PaymentWidget {
   static Padding paymentCard(
       String name, String amount, String date, String path, Color color, BuildContext context) {
+
     return Padding(
         padding: const EdgeInsets.all(8.0),
         child: Container(
