@@ -7,6 +7,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'constrants.dart';
+import 'databaseOperations.dart';
 import 'dialog.dart';
 
 class EmailBoxesPanel extends StatefulWidget {
@@ -156,7 +157,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     return emailPanels;
   }
 
-  addUserEmail() async {
+  prepareListsForDrawing() async {
     String email = emailController.text;
     String emailPassword = emailPasswordController.text;
     List <String> tempEmailKeys = emailKeys;
@@ -188,13 +189,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
       );
     }
 
-    DBRef.child('Users').child(username).child('myEmails').child(emailKey).set({
-      "username": email,
-      "password": emailPassword,
-      "hostname": emailConfig[2],
-      "port": emailConfig[3],
-      "protocol": emailConfig[4]
-    });
+    DatabaseOperations().addUserEmailToDatabase(emailKey, email, emailPassword, emailConfig, username);
 
     List<Padding> tempEmailPanels = emailPanels;
     tempEmailPanels.add(emailPanel(email, emailKey));
@@ -212,6 +207,8 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
 
     });
   }
+
+
 
   removeUserEmail(String emailKey, String email) {
     DBRef.child('Users')
@@ -310,7 +307,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
                       onPressed: () {
                         Navigator.pop(context, false);
                         if(!checkIfEmailsTheSame(emailController.text))
-                        addUserEmail();
+                        prepareListsForDrawing();
                         else{
                           Fluttertoast.showToast(
                               msg: 'Taki mail jest już zdefiniowany',

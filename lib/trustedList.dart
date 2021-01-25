@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_payit/databaseOperations.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -154,19 +155,13 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
     return emailPanels;
   }
 
-  addUserEmail(String email, String customName) {
+  prepareListsForDrawing(String email, String customName) {
 
     String emailKey = email.replaceAll(new RegExp(r'\.'),'');
     List<String> tempEmailKeys = emailKeys;
     List<String> tempUserEmails = trustedEmails;
 
-//    DBRef.child('Users').child(username).child('invoicesEmails').update({
-//      emailKey: email,
-//    });
-    DBRef.child('Users').child(username).child('invoicesEmails').child(emailKey).set({
-      "username": email,
-      "customname":customName
-    });
+    DatabaseOperations().addTrustedEmailsToDatabase(emailKey, email, customName, username);
 
     List<Padding> tempEmailPanels = emailPanels;
     tempEmailPanels.add(emailPanel(email, emailKey));
@@ -179,6 +174,8 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
       trustedEmails = tempUserEmails;
     });
   }
+
+
 
   removeUserEmail(String emailKey, String email) {
     DBRef.child('Users')
@@ -219,80 +216,83 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
           borderRadius: BorderRadius.circular(Constants.padding),
         ),
         title: Center(child: Text(title, style: TextStyle(color: Colors.blue),)),
-        content: Container(
-          height: 264,
-          child: Column(
-            children: [
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                    contentPadding: EdgeInsets.only(top: 20, bottom: 20),
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.only(left: 20, right: 20),
-                      child: Icon(Icons.person_outline),
+        content: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Container(
+            height: 264,
+            child: Column(
+              children: [
+                TextField(
+                  controller: emailController,
+                  decoration: InputDecoration(
+                      contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only(left: 20, right: 20),
+                        child: Icon(Icons.person_outline),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.withOpacity(0.7),
+                      hintText: "Email",
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide:
+                          BorderSide(color: Colors.grey, width: 2)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: BorderSide(
+                            width: 2,
+                            color: Colors.grey,
+                          ))),
+                ),
+                SizedBox(height: 25),
+                Center(child: Text("Nazwij nadawcę faktur:", style: TextStyle(color: Colors.blue),)),
+                SizedBox(height: 20),
+                TextField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                      contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only(left: 20, right: 20),
+                        child: Icon(Icons.person_outline),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.withOpacity(0.7),
+                      hintText: "Nazwa",
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide:
+                          BorderSide(color: Colors.grey, width: 2)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: BorderSide(
+                            width: 2,
+                            color: Colors.grey,
+                          ))),
+                ),
+                SizedBox(height: 25),
+                RaisedButton(
+                    child: Text('Dodaj',style: TextStyle(color: Colors.white),),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    filled: true,
-                    fillColor: Colors.grey.withOpacity(0.7),
-                    hintText: "Email",
-                    focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide:
-                        BorderSide(color: Colors.grey, width: 2)),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(
-                          width: 2,
-                          color: Colors.grey,
-                        ))),
-              ),
-              SizedBox(height: 25),
-              Center(child: Text("Nazwij nadawcę faktur:", style: TextStyle(color: Colors.blue, fontSize: 20, fontWeight: FontWeight.bold),)),
-              SizedBox(height: 25),
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(
-                    contentPadding: EdgeInsets.only(top: 20, bottom: 20),
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.only(left: 20, right: 20),
-                      child: Icon(Icons.person_outline),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.withOpacity(0.7),
-                    hintText: "Nazwa",
-                    focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide:
-                        BorderSide(color: Colors.grey, width: 2)),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(
-                          width: 2,
-                          color: Colors.grey,
-                        ))),
-              ),
-              SizedBox(height: 25),
-              RaisedButton(
-                  child: Text('Dodaj',style: TextStyle(color: Colors.white),),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  color: Colors.blue,
-                  onPressed: () {
-                    Navigator.pop(context, false);
-                    if(!checkIfEmailsTheSame(emailController.text))
-                      addUserEmail(emailController.text, nameController.text);
-                    else{
-                      Fluttertoast.showToast(
-                          msg: 'Taki mail jest już zdefiniowany',
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.CENTER,
-                          timeInSecForIos: 1,
-                          backgroundColor: Colors.red,
-                          textColor: Colors.white
-                      );
-                    }
-                  })
-            ],
+                    color: Colors.blue,
+                    onPressed: () {
+                      Navigator.pop(context, false);
+                      if(!checkIfEmailsTheSame(emailController.text))
+                        prepareListsForDrawing(emailController.text, nameController.text);
+                      else{
+                        Fluttertoast.showToast(
+                            msg: 'Taki mail jest już zdefiniowany',
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.CENTER,
+                            timeInSecForIos: 1,
+                            backgroundColor: Colors.red,
+                            textColor: Colors.white
+                        );
+                      }
+                    })
+              ],
+            ),
           ),
         )),
   );

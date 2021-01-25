@@ -24,7 +24,7 @@ class PaymentWidget {
                   child: Text(
                     name,
                     style: TextStyle(
-                      fontSize: 45,
+                      fontSize: 35,
                       color: color,
                     ),
                     textAlign: TextAlign.center,
@@ -35,14 +35,14 @@ class PaymentWidget {
                 ),
                 Text(
                   amount + " PLN",
-                  style: TextStyle(fontSize: 35, color: color),
+                  style: TextStyle(fontSize: 25, color: color),
                 ),
                 SizedBox(
                   height: 5,
                 ),
                 Text(
                   'Termin zapłaty: ',
-                  style: TextStyle(fontSize: 25, color: color),
+                  style: TextStyle(fontSize: 15, color: color),
                 ),
                 Text(
                   date,
@@ -80,9 +80,12 @@ class PaymentWidget {
                         MaterialPageRoute(builder: (context) => PdfView(path)),
                       );
                     },
-                    child: Text(
-                      'Podgląd faktury',
-                      style: TextStyle(color: color),
+                    child: Center(
+                      child: Text(
+                        'Podgląd PDF',
+                        maxLines: 1,
+                        style: TextStyle(color: color,),
+                      ),
                     ),
                   ))
                 ])

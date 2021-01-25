@@ -12,8 +12,8 @@ final Map<DateTime, List> _holidays = {
 };
 
 class CalendarWidget extends StatefulWidget {
-  Map<DateTime, List> events;
-  final Function(DateTime date, String event) notifyParent;
+  final Map<DateTime, List> events;
+  final Function(DateTime date, List events) notifyParent;
 
   CalendarWidget({Key key, @required this.events, this.notifyParent}) : super(key: key);
   
@@ -25,17 +25,12 @@ class _CalendarWidgetState extends State<CalendarWidget>
     with TickerProviderStateMixin {
 
   List _selectedEvents;
-
+  DateTime _selectedDay = DateTime.now();
   CalendarController _calendarController;
 
   @override
   void initState() {
     super.initState();
-    final _selectedDay = DateTime.now();
-
-//    events = {
-//      DateTime(2021, 1, 22): ['Event A0', 'Event B0', 'Event C0'],
-//    };
 
     _selectedEvents = widget.events[_selectedDay] ?? [];
     _calendarController = CalendarController();
@@ -48,9 +43,8 @@ class _CalendarWidgetState extends State<CalendarWidget>
   }
 
   void _onDaySelected(DateTime day, List events, List holidays) {
-    print('CALLBACK: _onDaySelected');
-    print("Eventy "+events.toString());
-    widget.notifyParent(day,events[0]);
+    _selectedDay=day;
+    widget.notifyParent(day,events);
     setState(() {
       _selectedEvents = events;
           });
@@ -58,12 +52,11 @@ class _CalendarWidgetState extends State<CalendarWidget>
 
   Widget _buildEventsMarker(DateTime date, List events) {
 
-    print(events.toString());
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       decoration: BoxDecoration(
           border: Border.all(
-            color: ColorFromName(events[0].split("|")[4]),
+            color: colorFromName(events[0].split("|")[4]),
             width: 4,
           ),
           shape: BoxShape.rectangle,
@@ -103,12 +96,12 @@ class _CalendarWidgetState extends State<CalendarWidget>
 
   void _onVisibleDaysChanged(
       DateTime first, DateTime last, CalendarFormat format) {
-    print('CALLBACK: _onVisibleDaysChanged');
+    if(_selectedDay==null)
+    widget.notifyParent(first,[]);
   }
 
   void _onCalendarCreated(
       DateTime first, DateTime last, CalendarFormat format) {
-    print('CALLBACK: _onCalendarCreated');
   }
 
   Widget _buildTableCalendarWithBuilders() {
@@ -203,16 +196,20 @@ class _CalendarWidgetState extends State<CalendarWidget>
       },
       onVisibleDaysChanged: _onVisibleDaysChanged,
       onCalendarCreated: _onCalendarCreated,
+      onHeaderTapped: _onHeaderTapped,
     );
   }
 
-Color ColorFromName(String name) {
+Color colorFromName(String name) {
   if(name == "MaterialColor(primary value: Color(0xfff44336))") {
     return Colors.red;
   }else if(name == "MaterialColor(primary value: Color(0xffffc107))"){
     return Colors.amber;
-  }else if(name == "MaterialColor(primary value: Color(0xff4caf50))"){
+  }else{
     return Colors.green;
   }
 }
+
+  void _onHeaderTapped(DateTime focusedDay) {
+  }
 }

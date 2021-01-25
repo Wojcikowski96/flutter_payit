@@ -6,17 +6,6 @@ import 'package:syncfusion_flutter_pdf/pdf.dart';
 
 class PdfParser {
 
-  Future<String> pdfToString(String filename) async {
-
-    PdfDocument document = PdfDocument(inputBytes: await _readDocumentData(filename));
-    //Create a new instance of the PdfTextExtractor.
-    PdfTextExtractor extractor = PdfTextExtractor(document);
-    //Extract all the text from the document.
-    String text = extractor.extractText();
-
-    return text;
-  }
-
   Future<List<String>> allPdfToString(List <FileSystemEntity> fileSystemEntities) async{
     List<String> pdfContentsList=new List<String>();
     for(FileSystemEntity filename in fileSystemEntities){
@@ -25,7 +14,7 @@ class PdfParser {
   return pdfContentsList;
   }
 
-  Future<List<int>> _readDocumentData(String name) async {
+  static Future<List<int>> _readDocumentData(String name) async {
 
     Uint8List assetByteData = await File(name).readAsBytes();
 
@@ -33,8 +22,6 @@ class PdfParser {
   }
 
   Future<List<FileSystemEntity>> dirContents(String path) async {
-
-    print("Scieżka: "+path);
 
     Directory dir = new Directory(path);
     List contents = await dir.list().toList();
@@ -93,4 +80,15 @@ class PdfParser {
 
     return replaced;
   }
+}
+
+Future<String> pdfToString(String filename) async {
+
+  PdfDocument document = PdfDocument(inputBytes: await PdfParser._readDocumentData(filename));
+  //Create a new instance of the PdfTextExtractor.
+  PdfTextExtractor extractor = PdfTextExtractor(document);
+  //Extract all the text from the document.
+  String text = extractor.extractText();
+
+  return text;
 }

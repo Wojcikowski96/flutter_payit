@@ -2,27 +2,53 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import 'databaseOperations.dart';
+import 'homePage.dart';
 import 'loginScreen.dart';
 
 
-class TimeInterval extends StatelessWidget {
+class TimeInterval extends StatefulWidget {
 
-  final TextEditingController loginController = new TextEditingController();
-  final TextEditingController password1Controller = new TextEditingController();
-  final TextEditingController password2Controller = new TextEditingController();
-  final TextEditingController emailController = new TextEditingController();
+  @override
+  _TimeIntervalState createState() => _TimeIntervalState();
+}
+
+class _TimeIntervalState extends State <TimeInterval>{
+  String username;
+  var storage = FlutterSecureStorage();
+  List <int> preferences;
+  final TextEditingController urgentController = new TextEditingController();
+  final TextEditingController notUrgentController = new TextEditingController();
+  final TextEditingController monitorController = new TextEditingController();
+  final TextEditingController remaindsController = new TextEditingController();
   int i = 0;
   final DBRef = FirebaseDatabase.instance.reference();
 
+  @override
+void initState(){
+    super.initState();
+    Future.delayed(Duration.zero, () async {
+      username = (await storage.read(key: "username")).toString();
+      print(username);
+      List <int> tempPreferences = new List();
+      tempPreferences =  await DatabaseOperations().getUserPrefsFromDB(username);
+      setState(() {
+        preferences = tempPreferences;
+      });
+    });
+
+}
 
 
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
-
+    print("preferences w buildzie timeInterval");
+    print(preferences);
     return Scaffold(
         body: SingleChildScrollView(
             child: Container(
@@ -61,7 +87,7 @@ class TimeInterval extends StatelessWidget {
                       margin: EdgeInsets.only(right: 10, left: 10),
                       width: 250,
                       child: TextField(
-                        controller: loginController,
+                        controller: urgentController,
                         decoration: InputDecoration(
                             contentPadding: EdgeInsets.only(top: 20, bottom: 20),
                             prefixIcon: Padding(
@@ -70,7 +96,8 @@ class TimeInterval extends StatelessWidget {
                             ),
                             filled: true,
                             fillColor: Colors.grey.withOpacity(0.7),
-                            hintText: "liczba dni do zapłaty",
+
+                            hintText: "Mniej niż : " +  preferences[0].toString() + " dni",
                             focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(30),
                                 borderSide: BorderSide(
@@ -92,46 +119,7 @@ class TimeInterval extends StatelessWidget {
                     height: 10,
                   ),
 
-                  Text(
-                    "Dla średnio pilnych:",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 26,
-                      color: Color.fromRGBO(27, 27, 27, 1),
-                    ),
-                  ),
-                  SizedBox(height: 5,),
-                  Container(
-                      margin: EdgeInsets.only(right: 10, left: 10),
-                      width: 250,
-                      child: TextField(
-                        controller: loginController,
-                        decoration: InputDecoration(
-                            contentPadding: EdgeInsets.only(top: 20, bottom: 20),
-                            prefixIcon: Padding(
-                              padding: const EdgeInsets.only(left: 20, right: 20),
-                              child: Icon(Icons.timer),
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey.withOpacity(0.7),
-                            hintText: "liczba dni do zapłaty",
-                            focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                                borderSide: BorderSide(
-                                    color: Colors.blueAccent,
-                                    width: 2
-                                )
-                            ),
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                borderSide: BorderSide(
-                                  width: 2,
-                                  color: Colors.blueAccent,
-                                )
-                            )
-                        ),
-                      )
-                  ),
+
                   SizedBox(
                     height: 10,
                   ),
@@ -150,7 +138,7 @@ class TimeInterval extends StatelessWidget {
                       margin: EdgeInsets.only(right: 10, left: 10),
                       width: 250,
                       child: TextField(
-                        controller: loginController,
+                        controller: notUrgentController,
                         decoration: InputDecoration(
                             contentPadding: EdgeInsets.only(top: 20, bottom: 20),
                             prefixIcon: Padding(
@@ -159,7 +147,7 @@ class TimeInterval extends StatelessWidget {
                             ),
                             filled: true,
                             fillColor: Colors.grey.withOpacity(0.7),
-                            hintText: "liczba dni do zapłaty",
+                            hintText: "Więcej niż: " +  preferences[1].toString() + " dni",
                             focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(30),
                                 borderSide: BorderSide(
@@ -181,6 +169,48 @@ class TimeInterval extends StatelessWidget {
                     height: 10,
                   ),
                   Text(
+                    "Częstotliwość sprawdzania skrzynek:",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: Color.fromRGBO(27, 27, 27, 1),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 5,
+                  ),
+                  Container(
+                      margin: EdgeInsets.only(right: 10, left: 10),
+                      width: 250,
+                      child: TextField(
+                        controller: monitorController,
+                        decoration: InputDecoration(
+                            contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.only(left: 20, right: 20),
+                              child: Icon(Icons.timer),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey.withOpacity(0.7),
+                            hintText: "Co: " +  preferences[2].toString() + " sekund",
+                            focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(30),
+                                borderSide: BorderSide(
+                                    color: Colors.blueAccent,
+                                    width: 2
+                                )
+                            ),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(
+                                  width: 2,
+                                  color: Colors.blueAccent,
+                                )
+                            )
+                        ),
+                      )
+                  ),
+                  Text(
                     "Dzienna liczba przypomnień:",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -195,7 +225,7 @@ class TimeInterval extends StatelessWidget {
                       margin: EdgeInsets.only(right: 10, left: 10),
                       width: 250,
                       child: TextField(
-                        controller: loginController,
+                        controller: remaindsController,
                         decoration: InputDecoration(
                             contentPadding: EdgeInsets.only(top: 20, bottom: 20),
                             prefixIcon: Padding(
@@ -204,7 +234,7 @@ class TimeInterval extends StatelessWidget {
                             ),
                             filled: true,
                             fillColor: Colors.grey.withOpacity(0.7),
-                            hintText: "liczba",
+                            hintText: preferences[3].toString() + " razy na dobę",
                             focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(30),
                                 borderSide: BorderSide(
@@ -231,7 +261,11 @@ class TimeInterval extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       onPressed: (){
-                        writeData(3);
+                        writeData();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => homePage()),
+                        );
                       },
                       child: Text("Zapisz"),
                       color: Colors.blueAccent,
@@ -247,10 +281,23 @@ class TimeInterval extends StatelessWidget {
 
                 ]))));
   }
-  void writeData(int num){
+
+  Future<void> writeData() async {
+
+    DBRef.child('Users').child((await storage.read(key: "username")).toString()).child('userPrefs').set({
+      "dailyReminds": int.parse(remaindsController.text),
+      "monitorFreq": int.parse(monitorController.text),
+      "notUrgent": int.parse(notUrgentController.text),
+      "urgent": int.parse(urgentController.text)
+    });
 
   }
 
-
-
 }
+
+
+
+
+
+
+

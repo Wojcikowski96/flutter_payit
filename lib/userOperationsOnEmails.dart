@@ -2,7 +2,7 @@ import 'package:enough_mail/discover/discover.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 class UserOperationsOnEmails {
-  Future<List<List<String>>> getEmailSettings(String username) async {
+  Future<List<List<dynamic>>> getEmailSettings(String username) async {
     final DBRef = FirebaseDatabase.instance.reference();
 
     final dbSnapshot =
@@ -10,22 +10,24 @@ class UserOperationsOnEmails {
 
     Map<dynamic, dynamic> emailSettingsMap = dbSnapshot.value;
 
-    List<List<String>> emailSettings = new List();
+    List<List<dynamic>> emailSettings = new List();
 
     if (emailSettingsMap != null) {
       emailSettingsMap.values.forEach((values) {
-        List<String> singleEmailSettings = [
+        List<dynamic> singleEmailSettings = [
           values['username'].toString(),
           values['password'].toString(),
           values['hostname'].toString(),
           values['port'].toString(),
-          values['protocol'].toString()
+          values['protocol'].toString(),
+          values['lastUID']
         ];
         emailSettings.add(singleEmailSettings);
       });
     }
     return emailSettings;
   }
+
 
   Future<List<List<String>>> getInvoiceSenders(String username) async {
     final DBRef = FirebaseDatabase.instance.reference();

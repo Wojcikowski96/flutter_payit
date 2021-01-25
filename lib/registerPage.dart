@@ -284,6 +284,12 @@ class registerPage extends StatelessWidget {
       'password': password,
       'myEmails' :null,
       'invoiceEmails' :null,
+      'userPrefs' : {
+        'urgent' : 300,
+        'notUrgent' : 3000,
+        'monitorFreq' : 30,
+        'dailyReminds' : 1
+      }
     });
 
     String emailKey = email.replaceAll(new RegExp(r'\.'),'');
@@ -308,7 +314,8 @@ class registerPage extends StatelessWidget {
       "password": emailPassword,
       "hostname": emailConfig[2],
       "port": emailConfig[3],
-      "protocol": emailConfig[4]
+      "protocol": emailConfig[4],
+      "lastUID" : 0
     });
 
     DBRef.child('Users').child(login).child('invoiceEmails').set({
