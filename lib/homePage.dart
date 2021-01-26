@@ -20,6 +20,8 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 import 'package:watcher/watcher.dart';
 
+Timer oldTimer;
+
 class homePage extends StatefulWidget {
   @override
   _homePageState createState() => _homePageState();
@@ -38,7 +40,7 @@ class _homePageState extends State<homePage> {
   List<String> matchedCustomNames = new List();
 
   static const platform = const MethodChannel("name");
-  Timer timer;
+
   int definedFlex = 4;
   int undefinedFlex = 1;
   int undefinedTextRotated = 1;
@@ -62,9 +64,9 @@ class _homePageState extends State<homePage> {
 
   List<List<String>> invoicesInfo = new List();
 
-
-
   String selectedEmailAddress;
+
+  Timer timer;
 
   @override
   void initState() {
@@ -72,6 +74,7 @@ class _homePageState extends State<homePage> {
     print("inituję");
     userEmailsNames.add("Wszystkie adresy");
     Future.delayed(Duration.zero, () async {
+
       username = (await storage.read(key: "username")).toString();
 
       path = (await PathProviderEx.getStorageInfo())[0].appFilesDir +
@@ -85,24 +88,26 @@ class _homePageState extends State<homePage> {
       invoicesDir.create(recursive: true);
 
       List<List<String>> trustedEmails =
-      await UserOperationsOnEmails().getInvoiceSenders(username);
+          await UserOperationsOnEmails().getInvoiceSenders(username);
 
       List<List<dynamic>> emailSettings =
-      await UserOperationsOnEmails().getEmailSettings(username);
+          await UserOperationsOnEmails().getEmailSettings(username);
 
       downloadAttachmentForAllMailboxes(emailSettings, trustedEmails);
 
+      oldTimer?.cancel();
       timer = Timer.periodic(
           Duration(seconds: preferences[2]),
-              (Timer t) async =>
-          {
-            emailSettings =
-            await UserOperationsOnEmails().getEmailSettings(username),
-            downloadAttachmentForAllMailboxes(emailSettings, trustedEmails)
-          });
+          (Timer t) async => {
+                print("Timer "+timer.hashCode.toString()),
+                emailSettings =
+                    await UserOperationsOnEmails().getEmailSettings(username),
+                downloadAttachmentForAllMailboxes(emailSettings, trustedEmails)
+              });
+      oldTimer=timer;
 
       List<FileSystemEntity> invoiceFileList =
-      await PdfParser().dirContents(path);
+          await PdfParser().dirContents(path);
 
       for (FileSystemEntity file in invoiceFileList)
         await setFileForDrawing(trustedEmails, file.path);
@@ -120,9 +125,8 @@ class _homePageState extends State<homePage> {
     });
   }
 
-
-  Future setFileForDrawing(List<List<String>> trustedEmails,
-      String path) async {
+  Future setFileForDrawing(
+      List<List<String>> trustedEmails, String path) async {
     String singlePdfContent = await compute(pdfToString, path);
 
     print(singlePdfContent);
@@ -149,32 +153,21 @@ class _homePageState extends State<homePage> {
   Color setUrgencyColor(List<List<String>> tempInvoicesInfo) {
     Color color = Colors.blue;
     for (List<String> singleInvoice in tempInvoicesInfo) {
-      if (-DateTime
-          .parse(singleInvoice[2])
-          .difference(DateTime.now())
-          .inDays <=
+      if (-DateTime.parse(singleInvoice[2]).difference(DateTime.now()).inDays <=
           preferences[0]) {
         color = Colors.red;
-      } else if (-DateTime
-          .parse(singleInvoice[2])
-          .difference(DateTime.now())
-          .inDays >
-          preferences[0] &&
-          -DateTime
-              .parse(singleInvoice[2])
-              .difference(DateTime.now())
-              .inDays <=
+      } else if (-DateTime.parse(singleInvoice[2])
+                  .difference(DateTime.now())
+                  .inDays >
+              preferences[0] &&
+          -DateTime.parse(singleInvoice[2]).difference(DateTime.now()).inDays <=
               preferences[1]) {
         color = Colors.amber;
-      } else if (-DateTime
-          .parse(singleInvoice[2])
-          .difference(DateTime.now())
-          .inDays >
-          preferences[1] &&
-          -DateTime
-              .parse(singleInvoice[2])
-              .difference(DateTime.now())
-              .inDays <=
+      } else if (-DateTime.parse(singleInvoice[2])
+                  .difference(DateTime.now())
+                  .inDays >
+              preferences[1] &&
+          -DateTime.parse(singleInvoice[2]).difference(DateTime.now()).inDays <=
               44000) {
         color = Colors.green;
       }
@@ -187,7 +180,7 @@ class _homePageState extends State<homePage> {
         r'(\d{4}(\/|-|\.)\d{1,2}(\/|-|\.)(0[1-9]|1[0-9]|2[0-9]|3[0-1]))|((0[1-9]|1[0-9]|2[0-9]|3[0-1])(\/|-|\.)\d{1,2}(\/|-|\.)\d{4})',
         multiLine: true);
     List<String> ListOfDates =
-    dateRegex.allMatches(singlePdfContent).map((m) => m.group(0)).toList();
+        dateRegex.allMatches(singlePdfContent).map((m) => m.group(0)).toList();
 
     List<DateTime> ListOfCorrectDates = new List<DateTime>();
 
@@ -195,23 +188,14 @@ class _homePageState extends State<homePage> {
       if (RegExp(r'(\/|-|\.)\d{4}').hasMatch(date)) {
         String dateWithDashes = date.replaceAll(new RegExp(r'\W+'), "-");
         String dateStandard =
-        PdfParser()
-            .addedZero(dateWithDashes.split("-"))
-            .reversed
-            .join("-");
-        if (DateTime
-            .parse(dateStandard)
-            .difference(DateTime.now())
-            .inDays <=
+            PdfParser().addedZero(dateWithDashes.split("-")).reversed.join("-");
+        if (DateTime.parse(dateStandard).difference(DateTime.now()).inDays <=
             365) {
           ListOfCorrectDates.add(DateTime.parse(dateStandard));
         }
       } else if ((RegExp(r'\d{4}(\/|-|\.)').hasMatch(date))) {
         String dateStandard = date.replaceAll(new RegExp(r'\W+'), '-');
-        if (DateTime
-            .parse(dateStandard)
-            .difference(DateTime.now())
-            .inDays <=
+        if (DateTime.parse(dateStandard).difference(DateTime.now()).inDays <=
             365) {
           ListOfCorrectDates.add(DateTime.parse(dateStandard));
         }
@@ -227,7 +211,7 @@ class _homePageState extends State<homePage> {
 
   String extractPayments(String singlePdfContent) {
     List<String> listOfCorrectDoubles =
-    PdfParser().extractPaymentAmounts(singlePdfContent);
+        PdfParser().extractPaymentAmounts(singlePdfContent);
 
     if (listOfCorrectDoubles.length == 0) {
       print("Twoja kwota do zapłaty to: 0");
@@ -242,6 +226,7 @@ class _homePageState extends State<homePage> {
   void dispose() {
     timer?.cancel();
     super.dispose();
+    print("robie Dispose");
   }
 
   @override
@@ -270,20 +255,19 @@ class _homePageState extends State<homePage> {
                   Expanded(
                       flex: definedFlex,
                       child: GestureDetector(
-                        onTap: () =>
-                            setState(() {
-                              definedFlex = 4;
-                              undefinedFlex = 1;
-                              undefinedTextRotated = 1;
-                              definedTextRotated = 0;
-                              isUndefinedVisible = false;
-                              definedInvoicesInfo.length == 0
-                                  ? isDefinedVisible = false
-                                  : isDefinedVisible = true;
-                              definedInvoicesInfo.length == 0
-                                  ? isPlaceholderTextVisible = true
-                                  : isPlaceholderTextVisible = false;
-                            }),
+                        onTap: () => setState(() {
+                          definedFlex = 4;
+                          undefinedFlex = 1;
+                          undefinedTextRotated = 1;
+                          definedTextRotated = 0;
+                          isUndefinedVisible = false;
+                          definedInvoicesInfo.length == 0
+                              ? isDefinedVisible = false
+                              : isDefinedVisible = true;
+                          definedInvoicesInfo.length == 0
+                              ? isPlaceholderTextVisible = true
+                              : isPlaceholderTextVisible = false;
+                        }),
                         child: Container(
                             color: definedColor,
                             child: Column(
@@ -299,13 +283,13 @@ class _homePageState extends State<homePage> {
                                           children: <TextSpan>[
                                             TextSpan(
                                                 text:
-                                                (definedInvoicesInfo.length)
-                                                    .toString(),
+                                                    (definedInvoicesInfo.length)
+                                                        .toString(),
                                                 style: TextStyle(
                                                     fontWeight: FontWeight.bold,
                                                     color: definedColor,
                                                     backgroundColor:
-                                                    Colors.white,
+                                                        Colors.white,
                                                     fontSize: 20)),
                                           ],
                                         ),
@@ -337,16 +321,15 @@ class _homePageState extends State<homePage> {
                   Expanded(
                       flex: undefinedFlex,
                       child: GestureDetector(
-                        onTap: () =>
-                            setState(() {
-                              definedFlex = 1;
-                              undefinedFlex = 4;
-                              undefinedTextRotated = 0;
-                              definedTextRotated = 1;
-                              isUndefinedVisible = true;
-                              isDefinedVisible = false;
-                              isPlaceholderTextVisible = false;
-                            }),
+                        onTap: () => setState(() {
+                          definedFlex = 1;
+                          undefinedFlex = 4;
+                          undefinedTextRotated = 0;
+                          definedTextRotated = 1;
+                          isUndefinedVisible = true;
+                          isDefinedVisible = false;
+                          isPlaceholderTextVisible = false;
+                        }),
                         child: Container(
                             color: Colors.black26,
                             child: Column(
@@ -363,14 +346,14 @@ class _homePageState extends State<homePage> {
                                             children: <TextSpan>[
                                               TextSpan(
                                                   text: (undefinedInvoicesInfo
-                                                      .length)
+                                                          .length)
                                                       .toString(),
                                                   style: TextStyle(
                                                       fontWeight:
-                                                      FontWeight.bold,
+                                                          FontWeight.bold,
                                                       color: Colors.white,
                                                       backgroundColor:
-                                                      Colors.red,
+                                                          Colors.red,
                                                       fontSize: 20)),
                                             ],
                                           ),
@@ -392,18 +375,14 @@ class _homePageState extends State<homePage> {
           )
         ]),
         appBar: AppBar(
-          // leading: IconButton(icon: Icon(Icons.menu), onPressed: (){
-          //
-          // }),
-            title: Text("PayIT"),
-            actions: <Widget>[
-              IconButton(
-                  icon: Icon(Icons.people),
-                  onPressed: () {
-                    Scaffold.of(context).showSnackBar(
-                        new SnackBar(content: Text('Yay! A SnackBar!')));
-                  })
-            ]),
+            // leading: IconButton(icon: Icon(Icons.menu), onPressed: (){
+            //
+            // })
+
+            title: Text("PayIT", style: TextStyle(fontSize: 25, color: Colors.white),),
+
+            iconTheme: IconThemeData(color: Colors.white), //add this line here
+        ),
         drawer: Drawer(
           // Add a ListView to the drawer. This ensures the user can scroll
           // through the options in the drawer if there isn't enough vertical
@@ -580,23 +559,13 @@ class _homePageState extends State<homePage> {
 
   Color setUrgencyColorBasedOnDate(DateTime date) {
     Color color = Colors.blue;
-    if (-date
-        .difference(DateTime.now())
-        .inDays <= preferences[0]) {
+    if (-date.difference(DateTime.now()).inDays <= preferences[0]) {
       color = Colors.red;
-    } else if (-date
-        .difference(DateTime.now())
-        .inDays > preferences[0] &&
-        -date
-            .difference(DateTime.now())
-            .inDays <= preferences[1]) {
+    } else if (-date.difference(DateTime.now()).inDays > preferences[0] &&
+        -date.difference(DateTime.now()).inDays <= preferences[1]) {
       color = Colors.amber;
-    } else if (-date
-        .difference(DateTime.now())
-        .inDays > preferences[1] &&
-        -date
-            .difference(DateTime.now())
-            .inDays <= 44000) {
+    } else if (-date.difference(DateTime.now()).inDays > preferences[1] &&
+        -date.difference(DateTime.now()).inDays <= 44000) {
       color = Colors.green;
     }
     return color;
@@ -606,11 +575,8 @@ class _homePageState extends State<homePage> {
       List<List<String>> tempInvoicesInfo) {
     List<List<String>> undefinedInvoices = new List();
     for (List<String> singleInvoice in tempInvoicesInfo) {
-      if (-DateTime
-          .parse(singleInvoice[2])
-          .difference(DateTime.now())
-          .inDays >
-          44000 ||
+      if (-DateTime.parse(singleInvoice[2]).difference(DateTime.now()).inDays >
+              44000 ||
           singleInvoice[1] == "0") {
         undefinedInvoices.add(singleInvoice);
       }
@@ -660,20 +626,19 @@ class _homePageState extends State<homePage> {
     }
     return nameWithFile;
   }
-
-
 }
-  downloadAttachment(List<dynamic> args) async {
-    //WidgetsFlutterBinding.ensureInitialized();
-    args[3].invokeMethod("downloadAttachment", {
-      "emailAddress": args[0][0],
-      "password": args[0][1],
-      "host": args[0][2],
-      "port": args[0][3],
-      "protocol": args[0][4],
-      "newUID": args[0][5],
-      "trustedEmails": args[1],
-      "path": args[2],
-      "username": args[4]
-    });
-  }
+
+downloadAttachment(List<dynamic> args) async {
+  //WidgetsFlutterBinding.ensureInitialized();
+  args[3].invokeMethod("downloadAttachment", {
+    "emailAddress": args[0][0],
+    "password": args[0][1],
+    "host": args[0][2],
+    "port": args[0][3],
+    "protocol": args[0][4],
+    "newUID": args[0][5],
+    "trustedEmails": args[1],
+    "path": args[2],
+    "username": args[4]
+  });
+}

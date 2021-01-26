@@ -19,7 +19,7 @@ class TimeInterval extends StatefulWidget {
 class _TimeIntervalState extends State <TimeInterval>{
   String username;
   var storage = FlutterSecureStorage();
-  List <int> preferences;
+  List <int> preferences = [0,0,0,0];
   final TextEditingController urgentController = new TextEditingController();
   final TextEditingController notUrgentController = new TextEditingController();
   final TextEditingController monitorController = new TextEditingController();
@@ -262,7 +262,7 @@ void initState(){
                       ),
                       onPressed: (){
                         writeData();
-                        Navigator.push(
+                        Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(builder: (context) => homePage()),
                         );
