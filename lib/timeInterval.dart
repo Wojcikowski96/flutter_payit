@@ -9,39 +9,37 @@ import 'databaseOperations.dart';
 import 'homePage.dart';
 import 'loginScreen.dart';
 
-
 class TimeInterval extends StatefulWidget {
-
   @override
   _TimeIntervalState createState() => _TimeIntervalState();
 }
 
-class _TimeIntervalState extends State <TimeInterval>{
+class _TimeIntervalState extends State<TimeInterval> {
   String username;
   var storage = FlutterSecureStorage();
-  List <int> preferences = [0,0,0,0];
+  List<int> preferences = [0, 0, 0, 0];
   final TextEditingController urgentController = new TextEditingController();
   final TextEditingController notUrgentController = new TextEditingController();
   final TextEditingController monitorController = new TextEditingController();
-  final TextEditingController remaindsController = new TextEditingController();
+  final TextEditingController remindsController = new TextEditingController();
+
   int i = 0;
   final DBRef = FirebaseDatabase.instance.reference();
 
   @override
-void initState(){
+  void initState() {
     super.initState();
     Future.delayed(Duration.zero, () async {
       username = (await storage.read(key: "username")).toString();
       print(username);
-      List <int> tempPreferences = new List();
-      tempPreferences =  await DatabaseOperations().getUserPrefsFromDB(username);
+      List<int> tempPreferences = new List();
+      tempPreferences = await DatabaseOperations().getUserPrefsFromDB(username);
       setState(() {
         preferences = tempPreferences;
       });
+      setTextsFromDb();
     });
-
-}
-
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,28 +54,31 @@ void initState(){
                 child: Column(children: <Widget>[
                   SizedBox(
                     height: height * 0.08,
-
                   ),
                   Container(
-                    child:Image.asset(
+                    child: Image.asset(
                       "time.png",
                       height: 150,
                       width: 150,
                       color: Colors.blue,
-
                     ),
                   ),
-                  Text("Zdefiniuj stopnie pilności:", style: TextStyle(fontSize: 30, color: Colors.blue),),
-                  SizedBox(
-                    height: 10,
+                  Text(
+                    "Zdefiniuj stopnie pilności:",
+                    style: TextStyle(
+                      fontSize: 30,
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-
+                  SizedBox(
+                    height: 30,
+                  ),
                   Text(
                     "Dla pilnych:",
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 26,
-                      color: Color.fromRGBO(27, 27, 27, 1),
+                      fontSize: 25,
+                      color: Colors.blue,
                     ),
                   ),
                   SizedBox(
@@ -86,49 +87,67 @@ void initState(){
                   Container(
                       margin: EdgeInsets.only(right: 10, left: 10),
                       width: 250,
-                      child: TextField(
-                        controller: urgentController,
-                        decoration: InputDecoration(
-                            contentPadding: EdgeInsets.only(top: 20, bottom: 20),
-                            prefixIcon: Padding(
-                              padding: const EdgeInsets.only(left: 20, right: 20),
-                              child: Icon(Icons.timer),
+                      child: Row(
+                        children: [
+                          Expanded(
+                              flex: 2,
+                              child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        "Mniej niż: ",
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          color: Colors.black54,
+                                        ),
+                                      )))),
+                          Expanded(
+                            flex: 2,
+                            child: TextField(
+                              controller: urgentController,
+                              decoration: InputDecoration(
+                                  contentPadding:
+                                      EdgeInsets.only(top: 20, bottom: 20),
+                                  prefixIcon: Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 20, right: 20),
+                                    child: Icon(Icons.timer),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.grey.withOpacity(0.7),
+                                  hintText: preferences[0].toString(),
+                                  focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                      borderSide: BorderSide(
+                                          color: Colors.blueAccent, width: 2)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                      borderSide: BorderSide(
+                                        width: 2,
+                                        color: Colors.blueAccent,
+                                      ))),
                             ),
-                            filled: true,
-                            fillColor: Colors.grey.withOpacity(0.7),
-
-                            hintText: "Mniej niż : " +  preferences[0].toString() + " dni",
-                            focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                                borderSide: BorderSide(
-                                    color: Colors.blueAccent,
-                                    width: 2
-                                )
-                            ),
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                borderSide: BorderSide(
-                                  width: 2,
-                                  color: Colors.blueAccent,
-                                )
-                            )
-                        ),
-                      )
-                  ),
+                          ),
+                          Expanded(
+                              flex: 1,
+                              child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(" dni",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        color: Colors.black54,
+                                      )))),
+                        ],
+                      )),
                   SizedBox(
-                    height: 10,
-                  ),
-
-
-                  SizedBox(
-                    height: 10,
+                    height: 20,
                   ),
                   Text(
                     "Dla mało pilnych:",
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 26,
-                      color: Color.fromRGBO(27, 27, 27, 1),
+                      fontSize: 25,
+                      color: Colors.blue,
                     ),
                   ),
                   SizedBox(
@@ -137,43 +156,68 @@ void initState(){
                   Container(
                       margin: EdgeInsets.only(right: 10, left: 10),
                       width: 250,
-                      child: TextField(
-                        controller: notUrgentController,
-                        decoration: InputDecoration(
-                            contentPadding: EdgeInsets.only(top: 20, bottom: 20),
-                            prefixIcon: Padding(
-                              padding: const EdgeInsets.only(left: 20, right: 20),
-                              child: Icon(Icons.timer),
+                      child: Row(
+                        children: [
+                          Expanded(
+                              flex: 2,
+                              child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        "Więcej niż: ",
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          color: Colors.black54,
+                                        ),
+                                      )))),
+                          Expanded(
+                            flex: 2,
+                            child: TextField(
+                              controller: notUrgentController,
+                              decoration: InputDecoration(
+                                  contentPadding:
+                                      EdgeInsets.only(top: 20, bottom: 20),
+                                  prefixIcon: Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 20, right: 20),
+                                    child: Icon(Icons.timer),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.grey.withOpacity(0.7),
+                                  hintText: preferences[1].toString(),
+                                  focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                      borderSide: BorderSide(
+                                          color: Colors.blueAccent, width: 2)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                      borderSide: BorderSide(
+                                        width: 2,
+                                        color: Colors.blueAccent,
+                                      ))),
                             ),
-                            filled: true,
-                            fillColor: Colors.grey.withOpacity(0.7),
-                            hintText: "Więcej niż: " +  preferences[1].toString() + " dni",
-                            focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                                borderSide: BorderSide(
-                                    color: Colors.blueAccent,
-                                    width: 2
-                                )
-                            ),
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                borderSide: BorderSide(
-                                  width: 2,
-                                  color: Colors.blueAccent,
-                                )
-                            )
-                        ),
-                      )
-                  ),
+                          ),
+                          Expanded(
+                              flex: 1,
+                              child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(" dni",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        color: Colors.black54,
+                                      )))),
+                        ],
+                      )),
                   SizedBox(
-                    height: 10,
+                    height: 20,
                   ),
                   Text(
-                    "Częstotliwość sprawdzania skrzynek:",
+                    "Sprawdzaj pocztę co:",
                     style: TextStyle(
+                      fontSize: 30,
                       fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: Color.fromRGBO(27, 27, 27, 1),
+                      color: Colors.blue,
                     ),
                   ),
                   SizedBox(
@@ -182,40 +226,71 @@ void initState(){
                   Container(
                       margin: EdgeInsets.only(right: 10, left: 10),
                       width: 250,
-                      child: TextField(
-                        controller: monitorController,
-                        decoration: InputDecoration(
-                            contentPadding: EdgeInsets.only(top: 20, bottom: 20),
-                            prefixIcon: Padding(
-                              padding: const EdgeInsets.only(left: 20, right: 20),
-                              child: Icon(Icons.timer),
+                      child: Row(
+                        children: [
+                          Expanded(
+                              flex: 2,
+                              child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: (Text(
+                                        "Co: ",
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          color: Colors.black54,
+                                        ),
+                                      ))))),
+                          Expanded(
+                            flex: 2,
+                            child: TextField(
+                              controller: monitorController,
+                              decoration: InputDecoration(
+                                  contentPadding:
+                                      EdgeInsets.only(top: 20, bottom: 20),
+                                  prefixIcon: Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 20, right: 20),
+                                    child: Icon(Icons.timer),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.grey.withOpacity(0.7),
+                                  hintText: preferences[2].toString(),
+                                  focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                      borderSide: BorderSide(
+                                          color: Colors.blueAccent, width: 2)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                      borderSide: BorderSide(
+                                        width: 2,
+                                        color: Colors.blueAccent,
+                                      ))),
                             ),
-                            filled: true,
-                            fillColor: Colors.grey.withOpacity(0.7),
-                            hintText: "Co: " +  preferences[2].toString() + " sekund",
-                            focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                                borderSide: BorderSide(
-                                    color: Colors.blueAccent,
-                                    width: 2
-                                )
-                            ),
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                borderSide: BorderSide(
-                                  width: 2,
-                                  color: Colors.blueAccent,
-                                )
-                            )
-                        ),
-                      )
+                          ),
+                          Expanded(
+                              flex: 1,
+                              child: Text(
+                                " s",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.black54,
+                                ),
+                              )),
+                        ],
+                      )),
+                  SizedBox(
+                    height: 20,
                   ),
-                  Text(
-                    "Dzienna liczba przypomnień:",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 26,
-                      color: Color.fromRGBO(27, 27, 27, 1),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      "Dzienna liczba przypomnień:",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 30,
+                        color: Colors.blue,
+                      ),
                     ),
                   ),
                   SizedBox(
@@ -224,80 +299,108 @@ void initState(){
                   Container(
                       margin: EdgeInsets.only(right: 10, left: 10),
                       width: 250,
-                      child: TextField(
-                        controller: remaindsController,
-                        decoration: InputDecoration(
-                            contentPadding: EdgeInsets.only(top: 20, bottom: 20),
-                            prefixIcon: Padding(
-                              padding: const EdgeInsets.only(left: 20, right: 20),
-                              child: Icon(Icons.timer),
+                      child: Row(
+                        children: [
+                          Expanded(
+                              flex: 2,
+                              child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    " Dziennie: ",
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      color: Colors.black54,
+                                    ),
+                                  ))),
+                          Expanded(
+                            flex: 2,
+                            child: TextField(
+                              controller: remindsController,
+                              decoration: InputDecoration(
+                                  contentPadding:
+                                      EdgeInsets.only(top: 20, bottom: 20),
+                                  prefixIcon: Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 20, right: 20),
+                                    child: Icon(Icons.timer),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.grey.withOpacity(0.7),
+                                  hintText: preferences[3].toString(),
+                                  focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                      borderSide: BorderSide(
+                                          color: Colors.blueAccent, width: 2)),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                      borderSide: BorderSide(
+                                        width: 2,
+                                        color: Colors.blueAccent,
+                                      ))),
                             ),
-                            filled: true,
-                            fillColor: Colors.grey.withOpacity(0.7),
-                            hintText: preferences[3].toString() + " razy na dobę",
-                            focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                                borderSide: BorderSide(
-                                    color: Colors.blueAccent,
-                                    width: 2
-                                )
-                            ),
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                borderSide: BorderSide(
-                                  width: 2,
-                                  color: Colors.blueAccent,
-                                )
-                            )
-                        ),
-                      )
-                  ),
+                          ),
+                          Expanded(
+                              flex: 1,
+                              child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    " raz/y",
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      color: Colors.black54,
+                                    ),
+                                  ))),
+                        ],
+                      )),
                   SizedBox(
                     height: 35,
                   ),
                   SizedBox(
+                    width: 200,
+                    height: 80,
                     child: RaisedButton(
+                      color: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      onPressed: (){
+                          borderRadius: BorderRadius.circular(18.0),
+                          side: BorderSide(color: Colors.blue, width: 5)),
+                      onPressed: () {
                         writeData();
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(builder: (context) => homePage()),
                         );
                       },
-                      child: Text("Zapisz"),
-                      color: Colors.blueAccent,
-                      textColor: Colors.white,
-                      padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
-                      splashColor: Colors.white,
+                      child: Center(
+                        child: Text(
+                          'Zatwierdź i wróć',
+                          maxLines: 2,
+                          style: TextStyle(color: Colors.blue, fontSize: 20),
+                        ),
+                      ),
                     ),
-                    width: 200,
-                    height: 70,
                   ),
-
-
-
+                  SizedBox(
+                    height: 10,
+                  ),
                 ]))));
   }
 
-  Future<void> writeData() async {
+  void setTextsFromDb() {
+    urgentController.text = preferences[0].toString();
+    notUrgentController.text = preferences[1].toString();
+    monitorController.text = preferences[2].toString();
+    remindsController.text = preferences[3].toString();
+  }
 
-    DBRef.child('Users').child((await storage.read(key: "username")).toString()).child('userPrefs').set({
-      "dailyReminds": int.parse(remaindsController.text),
+  Future<void> writeData() async {
+    DBRef.child('Users')
+        .child((await storage.read(key: "username")).toString())
+        .child('userPrefs')
+        .set({
+      "dailyReminds": int.parse(remindsController.text),
       "monitorFreq": int.parse(monitorController.text),
       "notUrgent": int.parse(notUrgentController.text),
       "urgent": int.parse(urgentController.text)
     });
-
   }
-
 }
-
-
-
-
-
-
-

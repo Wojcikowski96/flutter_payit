@@ -38,4 +38,23 @@ class DatabaseOperations{
     });
   }
 
+  Future<void> resetUID(String username) async {
+    List<String> emailKeys = new List();
+    final dbSnapshot =
+        await DBRef.child("Users").child(username).once();
+
+    Map<dynamic, dynamic> values = dbSnapshot.value;
+
+    if (values != null) {
+      values.forEach((key, values) {
+        emailKeys.add(key);
+      });
+    }
+    print("emailKeys "+emailKeys.toString());
+    for (String emailKey in emailKeys) {
+      DBRef.child('Users').child(username).child('myEmails').child(emailKey).set({
+        "lastUID": 0
+      });
+    }
+  }
 }

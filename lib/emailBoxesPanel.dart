@@ -9,6 +9,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'constrants.dart';
 import 'databaseOperations.dart';
 import 'dialog.dart';
+import 'homePage.dart';
 
 class EmailBoxesPanel extends StatefulWidget {
   @override
@@ -24,6 +25,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
   List<String> userEmails = new List();
   List<String> emailKeys = new List();
   final DBRef = FirebaseDatabase.instance.reference();
+  bool isSwitched = false;
 
   @override
   void initState() {
@@ -52,31 +54,67 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
-      body: Column(children: [
-        SizedBox(height: 40,),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Center(child: Text("Twoje adresy mailowe", style: TextStyle(fontSize: 35, color: Colors.blue),)),
-        ),
-
-        Container(
-          child:Image.asset(
-            "mailboxes.png",
-            height: 150,
-            width: 150,
-
+      body: Padding(
+        padding: const EdgeInsets.all(0.0),
+        child: Column(children: [
+          SizedBox(height: 40,),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Center(child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text("Twoje adresy mailowe", style: TextStyle(fontSize: 35, color: Colors.blue),))),
           ),
-        ),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(15.0),
-            child: ListView(
-              children: List.generate(
-                  emailPanels.length, (index) => emailPanels[index]),
+
+          Container(
+            child:Image.asset(
+              "mailboxes.png",
+              height: 150,
+              width: 150,
+
             ),
           ),
-        ),
-      ]),
+          Expanded(
+            flex: 15,
+            child: Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: ListView(
+                children: List.generate(
+                    emailPanels.length, (index) => emailPanels[index]),
+              ),
+            ),
+          ),
+
+          SizedBox(
+            height: 35,
+          ),
+          SizedBox(
+            width: 200,
+            height: 80,
+            child: RaisedButton(
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18.0),
+                  side: BorderSide(color: Colors.blue, width: 5)),
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => homePage()),
+                );
+              },
+              child: Center(
+                child: Text(
+                  'Zatwierdź i wróć',
+                  maxLines: 2,
+                  style: TextStyle(color: Colors.blue, fontSize: 20),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 10,
+          ),
+        ]),
+      ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blue,
         child: Icon(Icons.add),
@@ -104,9 +142,12 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
             children: [
               Expanded(
                 flex: 9,
-                child: Text(
-                  email,
-                  style: TextStyle(fontSize: 25, color: Colors.blue),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    email,
+                    style: TextStyle(fontSize: 25, color: Colors.blue),
+                  ),
                 ),
               ),
               Expanded(
@@ -250,7 +291,8 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
             ),
             title: Center(child: Text(title, style: TextStyle(color: Colors.blue),)),
             content: Container(
-              height: 200,
+              height: 500,
+              width: 200,
               child: Column(
                 children: [
                   TextField(
@@ -298,6 +340,77 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
                               color: Colors.grey,
                             ))),
                   ),
+                  SizedBox(height: 25),
+                  Center(child: Text("Parametry poczty:", style: TextStyle(color: Colors.blue, fontSize: 20, fontWeight: FontWeight.bold),)),
+                  SizedBox(height: 25),
+                  TextField(
+                    controller: emailPasswordController,
+                    decoration: InputDecoration(
+                        contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.only(left: 20, right: 20),
+                          child: Icon(Icons.person_outline),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.withOpacity(0.7),
+                        hintText: "Nazwa hosta:",
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide:
+                            BorderSide(color: Colors.grey, width: 2)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: Colors.grey,
+                            ))),
+                  ),
+                  SizedBox(height: 25),
+                  TextField(
+                    controller: emailPasswordController,
+                    decoration: InputDecoration(
+                        contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.only(left: 20, right: 20),
+                          child: Icon(Icons.person_outline),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.withOpacity(0.7),
+                        hintText: "Port poczty przychodzącej:",
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide:
+                            BorderSide(color: Colors.grey, width: 2)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: Colors.grey,
+                            ))),
+                  ),
+                  SizedBox(height: 25),
+                  TextField(
+                    controller: emailPasswordController,
+                    decoration: InputDecoration(
+                        contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.only(left: 20, right: 20),
+                          child: Icon(Icons.person_outline),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.withOpacity(0.7),
+                        hintText: "Protokół:",
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide:
+                            BorderSide(color: Colors.grey, width: 2)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: Colors.grey,
+                            ))),
+                  ),
                   RaisedButton(
                       child: Text('Dodaj',style: TextStyle(color: Colors.white),),
                       shape: RoundedRectangleBorder(
@@ -323,4 +436,42 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
               ),
             )),
       );
+
+  void displayUIDDialog(BuildContext context, String title) => showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Constants.padding),
+        ),
+        title: Center(child: Text(title, style: TextStyle(color: Colors.blue),)),
+        content: Container(
+          height: 200,
+          child: Column(
+            children: [
+
+              RaisedButton(
+                  child: Text('Dodaj',style: TextStyle(color: Colors.white),),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  color: Colors.blue,
+                  onPressed: () {
+                    Navigator.pop(context, false);
+                    if(!checkIfEmailsTheSame(emailController.text))
+                      prepareListsForDrawing();
+                    else{
+                      Fluttertoast.showToast(
+                          msg: 'Taki mail jest już zdefiniowany',
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.CENTER,
+                          timeInSecForIos: 1,
+                          backgroundColor: Colors.red,
+                          textColor: Colors.white
+                      );
+                    }
+                  })
+            ],
+          ),
+        )),
+  );
 }

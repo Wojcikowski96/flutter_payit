@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:core';
 import 'dart:io';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -71,10 +70,8 @@ class _homePageState extends State<homePage> {
   @override
   void initState() {
     super.initState();
-    print("inituję");
     userEmailsNames.add("Wszystkie adresy");
     Future.delayed(Duration.zero, () async {
-
       username = (await storage.read(key: "username")).toString();
 
       path = (await PathProviderEx.getStorageInfo())[0].appFilesDir +
@@ -93,18 +90,8 @@ class _homePageState extends State<homePage> {
       List<List<dynamic>> emailSettings =
           await UserOperationsOnEmails().getEmailSettings(username);
 
-      downloadAttachmentForAllMailboxes(emailSettings, trustedEmails);
-
-      oldTimer?.cancel();
-      timer = Timer.periodic(
-          Duration(seconds: preferences[2]),
-          (Timer t) async => {
-                print("Timer "+timer.hashCode.toString()),
-                emailSettings =
-                    await UserOperationsOnEmails().getEmailSettings(username),
-                downloadAttachmentForAllMailboxes(emailSettings, trustedEmails)
-              });
-      oldTimer=timer;
+      downloadAttachmentForAllMailboxes(emailSettings, trustedEmails, 0)
+          .then((value) => {startCheckingLatest(emailSettings, trustedEmails)});
 
       List<FileSystemEntity> invoiceFileList =
           await PdfParser().dirContents(path);
@@ -116,13 +103,29 @@ class _homePageState extends State<homePage> {
       watcher.events.listen((event) async {
         String eventString = event.toString().split(" ")[0];
         String eventPath = event.path;
-        print("Wydarzyło się gówno " + eventString);
 
         if (eventString == "add") {
           await setFileForDrawing(trustedEmails, eventPath);
         }
       });
     });
+  }
+
+  startCheckingLatest(
+      List<List> emailSettings, List<List<String>> trustedEmails) {
+    int counter=0;
+    oldTimer?.cancel();
+    timer = Timer.periodic(
+        Duration(seconds: preferences[2]),
+        (Timer t) async => {
+              print("Timer " + timer.hashCode.toString()),
+              counter=counter+1,
+              emailSettings =
+                  await UserOperationsOnEmails().getEmailSettings(username),
+              await downloadAttachmentForAllMailboxes(
+                  emailSettings, trustedEmails, counter)
+            });
+    oldTimer = timer;
   }
 
   Future setFileForDrawing(
@@ -194,7 +197,9 @@ class _homePageState extends State<homePage> {
           ListOfCorrectDates.add(DateTime.parse(dateStandard));
         }
       } else if ((RegExp(r'\d{4}(\/|-|\.)').hasMatch(date))) {
-        String dateStandard = date.replaceAll(new RegExp(r'\W+'), '-');
+        String dateStandard = PdfParser()
+            .addedZero(date.replaceAll(new RegExp(r'\W+'), '-').split("-"))
+            .join("-");
         if (DateTime.parse(dateStandard).difference(DateTime.now()).inDays <=
             365) {
           ListOfCorrectDates.add(DateTime.parse(dateStandard));
@@ -375,13 +380,16 @@ class _homePageState extends State<homePage> {
           )
         ]),
         appBar: AppBar(
-            // leading: IconButton(icon: Icon(Icons.menu), onPressed: (){
-            //
-            // })
+          // leading: IconButton(icon: Icon(Icons.menu), onPressed: (){
+          //
+          // })
 
-            title: Text("PayIT", style: TextStyle(fontSize: 25, color: Colors.white),),
+          title: Text(
+            "PayIT",
+            style: TextStyle(fontSize: 25, color: Colors.white),
+          ),
 
-            iconTheme: IconThemeData(color: Colors.white), //add this line here
+          iconTheme: IconThemeData(color: Colors.white), //add this line here
         ),
         drawer: Drawer(
           // Add a ListView to the drawer. This ensures the user can scroll
@@ -471,8 +479,9 @@ class _homePageState extends State<homePage> {
     );
   }
 
-  downloadAttachmentForAllMailboxes(List<List<dynamic>> emailSettings,
-      List<List<String>> trustedEmails) async {
+  Future<void> downloadAttachmentForAllMailboxes(
+      List<List<dynamic>> emailSettings,
+      List<List<String>> trustedEmails, int counter) async {
     print("Zaciągam maile");
 
     List<String> tempUserEmailsNames = new List();
@@ -484,7 +493,8 @@ class _homePageState extends State<homePage> {
         getMailSenderAddresses(trustedEmails),
         path,
         platform,
-        username
+        username,
+        counter
       ];
       downloadAttachment(downloadAttachmentArgs);
     }
@@ -639,6 +649,7 @@ downloadAttachment(List<dynamic> args) async {
     "newUID": args[0][5],
     "trustedEmails": args[1],
     "path": args[2],
-    "username": args[4]
+    "username": args[4],
+    "counter": args[5]
   });
 }

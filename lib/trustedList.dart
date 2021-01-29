@@ -7,6 +7,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'constrants.dart';
+import 'dialog.dart';
+import 'homePage.dart';
 
 class TrustedListPanel extends StatefulWidget {
   @override
@@ -16,10 +18,12 @@ class TrustedListPanel extends StatefulWidget {
 class _TrustedListPanelState extends State<TrustedListPanel> {
   final TextEditingController emailController = new TextEditingController();
   final TextEditingController nameController = new TextEditingController();
+  bool isSwitched = false;
   var storage = FlutterSecureStorage();
   String username = "JohnDoe", password = "qwerty";
   List<Padding> emailPanels = new List();
   List<String> trustedEmails = new List();
+  List<String> customNames = new List();
   List<String> emailKeys = new List();
   final DBRef = FirebaseDatabase.instance.reference();
 
@@ -51,18 +55,21 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
       body: Column(children: [
-        SizedBox(height: 40,),
+        SizedBox(
+          height: 40,
+        ),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Text("Zaufana lista", style: TextStyle(fontSize: 35, color: Colors.blue),),
+          child: Text(
+            "Zaufana lista",
+            style: TextStyle(fontSize: 35, color: Colors.blue),
+          ),
         ),
-
         Container(
-          child:Image.asset(
+          child: Image.asset(
             "invoices.png",
             height: 150,
             width: 150,
-
           ),
         ),
         Expanded(
@@ -73,6 +80,106 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
                   emailPanels.length, (index) => emailPanels[index]),
             ),
           ),
+        ),
+        SizedBox(
+          height: 20
+        ),
+        Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Expanded(
+                flex: 2,
+                child: Text(
+                  "Zresetuj UID:",
+                  style: TextStyle(
+                      fontSize: 24,
+                      color: Colors.blue
+                  ),
+                ),
+
+              ),
+              Expanded(
+                flex: 1,
+                child: SizedBox(
+                  width: 200,
+                  height: 50,
+                  child: Switch(
+
+                    value: isSwitched,
+                    onChanged: (value) {
+                      setState(() {
+                        if(isSwitched ==false){
+                          isSwitched = true;
+
+                        }else{
+                          isSwitched = false;
+                        }
+                      });
+                    },
+                    activeTrackColor: Colors.blue,
+                    activeColor: Colors.blue,
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: CircleAvatar(
+                  backgroundColor: Colors.transparent,
+                  child: IconButton(
+                    padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                    icon: Icon(Icons.info,size: 40,),
+                    color: Colors.blue,
+                    onPressed: () {
+                      showDialog(context: context,
+                          builder: (BuildContext context){
+                            return MyDialog(
+                              title: "O UID",
+                              descriptions: "Aktywowane ustawi wartość UID na 0, czyli aplikacja przejrzy wszystkie skrzynki pocztowe od nowa. Przydatne gdy dodasz nowy mail, a chcesz pobrać z niego starsze faktury. Będzie się to wiązać z wczytywaniem jak przy pierwszym uruchomieniu (kilka minut). Jeśli zależy Ci tylko na fakturach, które dopiero się pojawią, pozostaw wyłączone.",
+                              img: "warning.PNG",
+                              text: 'Rozumiem',
+                            );
+                          }
+                      );
+                    },
+                  ),
+
+                ),
+
+              )
+            ],
+          ),
+        ),
+        SizedBox(
+          width: 200,
+          height: 80,
+          child: RaisedButton(
+            color: Colors.white,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18.0),
+                side: BorderSide(color: Colors.blue, width: 5)),
+            onPressed: () {
+              if(isSwitched){
+                DatabaseOperations().resetUID(username);
+              }
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => homePage()),
+              );
+            },
+            child: Center(
+              child: Text(
+                'Zatwierdź i wróć',
+                maxLines: 2,
+                style: TextStyle(color: Colors.blue, fontSize: 20),
+              ),
+            ),
+
+          ),
+        ),
+        SizedBox(
+          height: 10,
         ),
       ]),
       floatingActionButton: FloatingActionButton(
@@ -85,7 +192,7 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
     );
   }
 
-  Padding emailPanel(String email, String emailKey) {
+  Padding emailPanel(String email, String emailKey, String customName) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: new Container(
@@ -97,26 +204,51 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
             color: Colors.white,
             borderRadius: BorderRadius.all(Radius.circular(20))),
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
+          padding: const EdgeInsets.all(0.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                flex: 9,
-                child: Text(
-                  email,
-                  style: TextStyle(fontSize: 25, color: Colors.blue),
+                Container(
+                  decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.blue,
+                        width: 4,
+                      ),
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.all(Radius.circular(10))),
+                  child: Text(
+                    customName,
+                    style: TextStyle(fontSize: 30, color: Colors.white),
+                  ),
                 ),
-              ),
-              Expanded(
-                flex: 2,
-                child: IconButton(
-                  color: Colors.blue,
-                  icon: Center(child: Icon(Icons.delete, size: 30.0)),
-                  onPressed: () {
-                    removeUserEmail(emailKey,email);
-                  },
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 9,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              email,
+                              style: TextStyle(fontSize: 20, color: Colors.blue),
+                            ),
+                          ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: IconButton(
+                          color: Colors.blue,
+                          icon: Center(child: Icon(Icons.delete, size: 30.0)),
+                          onPressed: () {
+                            removeUserEmail(emailKey, email);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+
             ],
           ),
         ),
@@ -127,22 +259,27 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
   Future<List<Padding>> getLoggedUserData() async {
     List<String> tempUserEmails = new List();
     List<String> tempEmailKeys = new List();
+    List<String> tempCustomNames = new List();
     List<Padding> emailPanels = new List();
 
-    final dbSnapshot =
-    await DBRef.child("Users").child(username).child("invoicesEmails").once();
+    final dbSnapshot = await DBRef.child("Users")
+        .child(username)
+        .child("invoicesEmails")
+        .once();
 
     Map<dynamic, dynamic> values = dbSnapshot.value;
 
-    if (values!=null) {
+    if (values != null) {
       values.forEach((key, values) {
         tempUserEmails.add(values["username"].toString());
+        tempCustomNames.add(values["customname"]);
         tempEmailKeys.add(key.toString());
       });
     }
 
     for (int i = 0; i < tempUserEmails.length; i++) {
-      emailPanels.add(emailPanel(tempUserEmails[i], tempEmailKeys[i]));
+      emailPanels.add(
+          emailPanel(tempUserEmails[i], tempEmailKeys[i], tempCustomNames[i]));
     }
 
     setState(() {
@@ -150,21 +287,22 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
       print("User emails w trusted:");
       print(trustedEmails);
       emailKeys = tempEmailKeys;
+      customNames = tempCustomNames;
     });
 
     return emailPanels;
   }
 
   prepareListsForDrawing(String email, String customName) {
-
-    String emailKey = email.replaceAll(new RegExp(r'\.'),'');
+    String emailKey = email.replaceAll(new RegExp(r'\.'), '');
     List<String> tempEmailKeys = emailKeys;
     List<String> tempUserEmails = trustedEmails;
 
-    DatabaseOperations().addTrustedEmailsToDatabase(emailKey, email, customName, username);
+    DatabaseOperations()
+        .addTrustedEmailsToDatabase(emailKey, email, customName, username);
 
     List<Padding> tempEmailPanels = emailPanels;
-    tempEmailPanels.add(emailPanel(email, emailKey));
+    tempEmailPanels.add(emailPanel(email, emailKey, customName));
     tempEmailKeys.add(emailKey);
     tempUserEmails.add(email);
 
@@ -174,8 +312,6 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
       trustedEmails = tempUserEmails;
     });
   }
-
-
 
   removeUserEmail(String emailKey, String email) {
     DBRef.child('Users')
@@ -196,13 +332,12 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
     });
   }
 
-  bool checkIfEmailsTheSame(String thisMail){
-
-    bool emailAlreadyExists=false;
+  bool checkIfEmailsTheSame(String thisMail) {
+    bool emailAlreadyExists = false;
     print(trustedEmails);
-    for(String otherEmail in trustedEmails){
-      if(otherEmail == thisMail){
-        emailAlreadyExists= true;
+    for (String otherEmail in trustedEmails) {
+      if (otherEmail == thisMail) {
+        emailAlreadyExists = true;
         break;
       }
     }
@@ -210,90 +345,101 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
   }
 
   void displayDialog(BuildContext context, String title) => showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(Constants.padding),
-        ),
-        title: Center(child: Text(title, style: TextStyle(color: Colors.blue),)),
-        content: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Container(
-            height: 264,
-            child: Column(
-              children: [
-                TextField(
-                  controller: emailController,
-                  decoration: InputDecoration(
-                      contentPadding: EdgeInsets.only(top: 20, bottom: 20),
-                      prefixIcon: Padding(
-                        padding: const EdgeInsets.only(left: 20, right: 20),
-                        child: Icon(Icons.person_outline),
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey.withOpacity(0.7),
-                      hintText: "Email",
-                      focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide:
-                          BorderSide(color: Colors.grey, width: 2)),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: Colors.grey,
-                          ))),
-                ),
-                SizedBox(height: 25),
-                Center(child: Text("Nazwij nadawcę faktur:", style: TextStyle(color: Colors.blue),)),
-                SizedBox(height: 20),
-                TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                      contentPadding: EdgeInsets.only(top: 20, bottom: 20),
-                      prefixIcon: Padding(
-                        padding: const EdgeInsets.only(left: 20, right: 20),
-                        child: Icon(Icons.person_outline),
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey.withOpacity(0.7),
-                      hintText: "Nazwa",
-                      focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide:
-                          BorderSide(color: Colors.grey, width: 2)),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: Colors.grey,
-                          ))),
-                ),
-                SizedBox(height: 25),
-                RaisedButton(
-                    child: Text('Dodaj',style: TextStyle(color: Colors.white),),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    color: Colors.blue,
-                    onPressed: () {
-                      Navigator.pop(context, false);
-                      if(!checkIfEmailsTheSame(emailController.text))
-                        prepareListsForDrawing(emailController.text, nameController.text);
-                      else{
-                        Fluttertoast.showToast(
-                            msg: 'Taki mail jest już zdefiniowany',
-                            toastLength: Toast.LENGTH_SHORT,
-                            gravity: ToastGravity.CENTER,
-                            timeInSecForIos: 1,
-                            backgroundColor: Colors.red,
-                            textColor: Colors.white
-                        );
-                      }
-                    })
-              ],
+        context: context,
+        builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(Constants.padding),
             ),
-          ),
-        )),
-  );
+            title: Center(
+                child: Text(
+              title,
+              style: TextStyle(color: Colors.blue),
+            )),
+            content: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                height: 264,
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: emailController,
+                      decoration: InputDecoration(
+                          contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.only(left: 20, right: 20),
+                            child: Icon(Icons.person_outline),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey.withOpacity(0.7),
+                          hintText: "Email",
+                          focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30),
+                              borderSide:
+                                  BorderSide(color: Colors.grey, width: 2)),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide(
+                                width: 2,
+                                color: Colors.grey,
+                              ))),
+                    ),
+                    SizedBox(height: 25),
+                    Center(
+                        child: Text(
+                      "Nazwij nadawcę faktur:",
+                      style: TextStyle(color: Colors.blue),
+                    )),
+                    SizedBox(height: 20),
+                    TextField(
+                      controller: nameController,
+                      decoration: InputDecoration(
+                          contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.only(left: 20, right: 20),
+                            child: Icon(Icons.person_outline),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey.withOpacity(0.7),
+                          hintText: "Nazwa",
+                          focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30),
+                              borderSide:
+                                  BorderSide(color: Colors.grey, width: 2)),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide(
+                                width: 2,
+                                color: Colors.grey,
+                              ))),
+                    ),
+                    SizedBox(height: 25),
+                    RaisedButton(
+                        child: Text(
+                          'Dodaj',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        color: Colors.blue,
+                        onPressed: () {
+                          Navigator.pop(context, false);
+                          if (!checkIfEmailsTheSame(emailController.text))
+                            prepareListsForDrawing(
+                                emailController.text, nameController.text);
+                          else {
+                            Fluttertoast.showToast(
+                                msg: 'Taki mail jest już zdefiniowany',
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                                timeInSecForIos: 1,
+                                backgroundColor: Colors.red,
+                                textColor: Colors.white);
+                          }
+                        })
+                  ],
+                ),
+              ),
+            )),
+      );
 }

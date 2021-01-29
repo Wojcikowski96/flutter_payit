@@ -1,5 +1,13 @@
 package com.example.flutter_payit;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -18,6 +26,7 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.mail.Address;
+import javax.mail.AuthenticationFailedException;
 import javax.mail.Authenticator;
 import javax.mail.Folder;
 import javax.mail.Message;
@@ -34,7 +43,7 @@ import javax.mail.internet.MimeBodyPart;
 public class MainActivity extends FlutterActivity {
     private static final String CHANNEL = "name";
 
-    //private boolean isThreadDone = false;
+    private boolean isThreadDone = false;
     String sender;
 
     @Override
@@ -42,10 +51,12 @@ public class MainActivity extends FlutterActivity {
 
         super.onCreate(savedInstanceState);
         GeneratedPluginRegistrant.registerWith(this);
+
         new MethodChannel(getFlutterView(), CHANNEL).setMethodCallHandler((methodCall, result) -> {
+
             if (methodCall.method.equals("downloadAttachment")) {
 
-                //isThreadDone = false;
+                isThreadDone = false;
 
                 String emailAddress = methodCall.argument("emailAddress");
                 String password = methodCall.argument("password");
@@ -56,21 +67,17 @@ public class MainActivity extends FlutterActivity {
                 List <String> trustedEmails = methodCall.argument("trustedEmails");
                 String path =  methodCall.argument("path");
                 String username = methodCall.argument("username");
-
-                Thread t = new Thread(new downloadThread(host, port, emailAddress, password, protocol, oldUID, trustedEmails, path, username));
+                int counter = methodCall.argument("counter");
+                Thread t = new Thread(new downloadThread(host, port, emailAddress, password, protocol, oldUID, trustedEmails, path, username, counter));
                 t.start();
 
-//                while (true) {
-//                    if (!t.isAlive()) {
-//                        result.success("Sukces dla " + emailAddress);
-//                        break;
-//                    }
-//                }
             }
         });
     }
 
-    public void downloadEmailAttachments(String host, String port, String emailAddress, String password, String protocol, Integer oldUID, List<String> trustedEmails, String path, String username) {
+    public void downloadEmailAttachments(String host, String port, String emailAddress, String password, String protocol, Integer oldUID, List<String> trustedEmails, String path, String username, int counter) {
+
+        String callbackMessage = "Zsynchronizowano pomyślnie! " + emailAddress;
 
         List<Integer> allUIDS = new ArrayList<>();
 
@@ -78,14 +85,14 @@ public class MainActivity extends FlutterActivity {
 
         DatabaseReference ref;
 
-        System.setProperty("mail.mime.decodeparameters",  "false");
+        System.setProperty("mail.mime.decodeparameters", "false");
 
-        String protocolPart="";
+        String protocolPart = "";
 
         if (protocol.equals("ServerType.pop"))
-            protocolPart="pop3s";
+            protocolPart = "pop3s";
         else if (protocol.equals("ServerType.imap"))
-            protocolPart="imaps";
+            protocolPart = "imaps";
 
         Properties properties = new Properties();
 
@@ -101,9 +108,9 @@ public class MainActivity extends FlutterActivity {
         properties.put(String.format("mail.ssl.%s.enable", protocolPart), "true");
         //properties.put("mail.debug", "true");
 
-        Session session = Session.getInstance(properties, new Authenticator(){
-            public PasswordAuthentication getPasswordAuthentication(){
-                return new PasswordAuthentication(emailAddress,password);
+        Session session = Session.getInstance(properties, new Authenticator() {
+            public PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(emailAddress, password);
             }
         });
 
@@ -120,9 +127,9 @@ public class MainActivity extends FlutterActivity {
 
             String[] spamFolderNames = {"Junk", "Spam", "JUNK", "SPAM"};
             for (String spamFolderName : spamFolderNames) {
-                for (Folder folder:store.getDefaultFolder().list()) {
-                    if(spamFolderName.equals(folder.getName())) {
-                        mySpamFolderName=spamFolderName;
+                for (Folder folder : store.getDefaultFolder().list()) {
+                    if (spamFolderName.equals(folder.getName())) {
+                        mySpamFolderName = spamFolderName;
                     }
                 }
             }
@@ -137,18 +144,18 @@ public class MainActivity extends FlutterActivity {
             //System.out.println("Username w Java "+username);
             //System.out.println("Emailkey "+emailAddress.replace(".",""));
 
-            ref = FirebaseDatabase.getInstance().getReference().child("Users").child(username).child("myEmails").child(emailAddress.replace(".","")).child("lastUID");
+            ref = FirebaseDatabase.getInstance().getReference().child("Users").child(username).child("myEmails").child(emailAddress.replace(".", "")).child("lastUID");
 
             //System.out.println("Last seen UID "+oldUID);
             // fetches new messages from server
-            Message[] arrayMessages = ((UIDFolder)folderInbox).getMessagesByUID(oldUID + 1, UIDFolder.MAXUID);
+            Message[] arrayMessages = ((UIDFolder) folderInbox).getMessagesByUID(oldUID + 1, UIDFolder.MAXUID);
             //Message[] arraySpamMessages = ((UIDFolder)folderSpam).getMessagesByUID(lastSeenSpam + 1, UIDFolder.MAXUID);
 
             //Message[] arrayMessages = JavaUtils.concatenate(arrayInboxMessages,arraySpamMessages);
 
             //System.out.println("Liczba maili dla skrzynki " + emailAddress+ " wynosi "+ arrayMessages.length + "MAXUID: " +UIDFolder.MAXUID);
 
-            for (int i = 0; i  < arrayMessages.length; i++) {
+            for (int i = 0; i < arrayMessages.length; i++) {
 
                 Message message = arrayMessages[i];
                 //System.out.println("Email numer" + i + " UID "+ (int) ((UIDFolder) folderInbox).getUID(message));
@@ -158,28 +165,21 @@ public class MainActivity extends FlutterActivity {
                 String from = fromAddress[0].toString();
                 Date messageDate = message.getSentDate();
 
-                //System.out.println("Wiadomość od "+from);
-                //System.out.println("Różnica czasu "+((System.currentTimeMillis())-messageDate.getTime())/(86400000));
+                int newUID = (int) ((UIDFolder) folderInbox).getUID(message);
+                allUIDS.add(newUID);
 
-                for(int t = 0; t < trustedEmails.size(); t++){
+                for (int t = 0; t < trustedEmails.size(); t++) {
                     //System.out.println("Różnica ile dni :");
                     //System.out.println(((System.currentTimeMillis())-messageDate.getTime())/(86400000));
-                    if (from.contains(trustedEmails.get(t)) && ((System.currentTimeMillis())-messageDate.getTime())/(86400000)<=30) {
+                    if (from.contains(trustedEmails.get(t)) && ((System.currentTimeMillis()) - messageDate.getTime()) / (86400000) <= 30) {
 
-                        int newUID= (int) ((UIDFolder) folderInbox).getUID(message);
-                        //System.out.println("New UID: " +newUID);
-                        //Zapisz ostatnie UID w bazie
-
-                        allUIDS.add(newUID);
-                        //ref.setValue(newUID);
-
-                        System.out.println("Znaleziono wiadomość od: "+trustedEmails.get(t));
+                        System.out.println("Znaleziono wiadomość od: " + trustedEmails.get(t));
                         String subject = message.getSubject();
                         String sentDate = message.getSentDate().toString();
 
-                        System.out.println("Wiadomość od: "+from);
-                        System.out.println("Wiadomość przyszła na adres: "+message.getRecipients(Message.RecipientType.TO) [0].toString());
-                        System.out.println("Data wysłania: "+sentDate);
+                        System.out.println("Wiadomość od: " + from);
+                        System.out.println("Wiadomość przyszła na adres: " + message.getRecipients(Message.RecipientType.TO)[0].toString());
+                        System.out.println("Data wysłania: " + sentDate);
 
                         String contentType = message.getContentType();
                         String messageContent = "";
@@ -195,12 +195,12 @@ public class MainActivity extends FlutterActivity {
                                 MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(partCount);
                                 if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
                                     // this part is attachment
-                                    String fileName = emailAddress+";"+trustedEmails.get(t)+";"+sentDate+".pdf";
+                                    String fileName = emailAddress + ";" + trustedEmails.get(t) + ";" + sentDate + ".pdf";
                                     attachFiles += fileName + ", ";
                                     //File directory = new File(getCacheDir().toString()+File.separator+"invoicesPDF");
                                     //directory.mkdirs();
                                     System.out.println("Path w Javie: " + path);
-                                    part.saveFile(path+ File.separator + fileName);
+                                    part.saveFile(path + File.separator + fileName);
                                 } else {
                                     // this part may be the message content
                                     messageContent = part.getContent().toString();
@@ -228,9 +228,9 @@ public class MainActivity extends FlutterActivity {
                         //message.setFlag(Flags.Flag.SEEN, true);
                     }
                 }
-                }
+            }
             Integer maxUID = findLatestUID(allUIDS);
-            System.out.println("UID dla: "+emailAddress + ": "+ maxUID);
+            System.out.println("UID dla: " + emailAddress + ": " + maxUID);
             ref.setValue(maxUID);
             // disconnect
             folderInbox.close(false);
@@ -239,14 +239,24 @@ public class MainActivity extends FlutterActivity {
         } catch (NoSuchProviderException ex) {
             System.out.println("No provider for imaps.");
             ex.printStackTrace();
+        } catch (AuthenticationFailedException ex) {
+            callbackMessage = "Nieudane połączenie ze skrzynką " + emailAddress + ", być może problem dotyczy poprawności danych logowania. Sprawdź czy podałeś poprawny login i hasło i dodaj tę skrzynkę ponownie.";
+            isThreadDone = true;
+            ex.printStackTrace();
         } catch (MessagingException ex) {
             System.out.println("Could not connect to the message store");
             ex.printStackTrace();
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-        System.out.println("Rozłączam się "+emailAddress);
-        //isThreadDone = true;
+        System.out.println("Rozłączam się " + emailAddress);
+        isThreadDone = true;
+
+        if (counter == 0) {
+            Activity thisActivity = this;
+            String finalCallbackMessage = callbackMessage;
+            thisActivity.runOnUiThread(() -> popupMessage(finalCallbackMessage, allUIDS.get(allUIDS.size()-1)));
+        }
     }
 
     private Integer findLatestUID(List<Integer> allUIDS) {
@@ -259,12 +269,32 @@ public class MainActivity extends FlutterActivity {
         return sortedList.get(sortedList.size() - 1);
     }
 
+    public void popupMessage(String finalCallbackMessage, int UID){
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setMessage(finalCallbackMessage);
+        if(UID !=0){
+            alertDialogBuilder.setTitle("Sukces!: ");
+        }else{
+            alertDialogBuilder.setTitle("Nieprawidłowy login lub hasło: ");
+        }
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialogBuilder.setNegativeButton("Rozumiem", new DialogInterface.OnClickListener(){
+
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                alertDialog.dismiss();
+            }
+        });
+        alertDialog.show();
+    }
+
     public class downloadThread implements Runnable {
 
         private String host, port, userName, password, protocol, path, username;
         private int newUID;
         private List<String> trustedEmails;
-        downloadThread(String host, String port, String userName, String password, String protocol, Integer newUID, List<String> trustedEmails, String path, String username) {
+        private int counter;
+        downloadThread(String host, String port, String userName, String password, String protocol, Integer newUID, List<String> trustedEmails, String path, String username, int counter) {
             this.host=host;
             this.port = port;
             this.userName=userName;
@@ -274,10 +304,11 @@ public class MainActivity extends FlutterActivity {
             this.trustedEmails=trustedEmails;
             this.path=path;
             this.username=username;
+            this.counter=counter;
         }
 
         public void run() {
-            downloadEmailAttachments(host, port, userName, password, protocol, newUID, trustedEmails,path, username);
+            downloadEmailAttachments(host, port, userName, password, protocol, newUID, trustedEmails,path, username, counter);
         }
 
     }

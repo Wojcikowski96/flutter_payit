@@ -112,7 +112,7 @@ class PaymentWidget {
                 child: Text(
                   name,
                   style: TextStyle(
-                    fontSize: 45,
+                    fontSize: 35,
                     color: color,
                   ),
                   textAlign: TextAlign.center,
@@ -124,7 +124,7 @@ class PaymentWidget {
               Text(
                 "Nie udało się pobrać prawidłowych danych z faktury",
                 style: TextStyle(
-                  fontSize: 35,
+                  fontSize: 20,
                   color: color,
                 ),
                 textAlign: TextAlign.center,

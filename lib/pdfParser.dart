@@ -77,7 +77,6 @@ class PdfParser {
         replaced.add(part);
       }
     }
-
     return replaced;
   }
 }
