@@ -1,4 +1,5 @@
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter_payit/userEmail.dart';
 
 class DatabaseOperations{
   final DBRef = FirebaseDatabase.instance.reference();
@@ -56,5 +57,24 @@ class DatabaseOperations{
         "lastUID": 0
       });
     }
+  }
+
+  Future<List<UserEmail>> getUserEmailsFromDb(String username) async {
+    List <UserEmail> allUserEmails = new List();
+
+    final dbSnapshot =
+
+    await DBRef.child("Users").child(username).child("myEmails").once();
+
+    Map<dynamic, dynamic> values = dbSnapshot.value;
+
+    if (values!=null) {
+      values.forEach((key, values) {
+        allUserEmails.add(UserEmail(values['username'], values['password'], values['hostname'], values['port'], values['protocol'], values['lastUID'], key));
+      });
+    }
+    print("allUserEmails");
+    print(allUserEmails);
+    return allUserEmails;
   }
 }

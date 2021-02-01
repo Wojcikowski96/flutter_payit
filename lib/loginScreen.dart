@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_payit/homePage.dart';
+import 'package:flutter_payit/uiElements.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'registerPage.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -149,6 +150,7 @@ class _LoginPageState extends State<LoginPage> {
 
                         getDataFromTextFields();
                         verifyUsername(getDataFromTextFields()[0],getDataFromTextFields()[1]);
+                        UiElements().showLoaderDialog(context, "Trwa logowanie, czekaj");
 
                       },
 

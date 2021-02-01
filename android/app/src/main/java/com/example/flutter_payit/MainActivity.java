@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.mail.Address;
 import javax.mail.AuthenticationFailedException;
@@ -40,11 +42,9 @@ import javax.mail.Store;
 import javax.mail.UIDFolder;
 import javax.mail.internet.MimeBodyPart;
 
+
 public class MainActivity extends FlutterActivity {
     private static final String CHANNEL = "name";
-
-    private boolean isThreadDone = false;
-    String sender;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,8 +56,6 @@ public class MainActivity extends FlutterActivity {
 
             if (methodCall.method.equals("downloadAttachment")) {
 
-                isThreadDone = false;
-
                 String emailAddress = methodCall.argument("emailAddress");
                 String password = methodCall.argument("password");
                 String host = methodCall.argument("host");
@@ -67,10 +65,13 @@ public class MainActivity extends FlutterActivity {
                 List <String> trustedEmails = methodCall.argument("trustedEmails");
                 String path =  methodCall.argument("path");
                 String username = methodCall.argument("username");
-                int counter = methodCall.argument("counter");
-                Thread t = new Thread(new downloadThread(host, port, emailAddress, password, protocol, oldUID, trustedEmails, path, username, counter));
-                t.start();
+                Integer counter = methodCall.argument("counter");
 
+                MainThreadResult m = new MainThreadResult(result);
+
+                downloadThread dt = new downloadThread(host, port, emailAddress, password, protocol, oldUID, trustedEmails, path, username, counter);
+                dt.addListener(runner -> m.success("Sukces dla "+emailAddress));
+                dt.start();
             }
         });
     }
@@ -241,7 +242,6 @@ public class MainActivity extends FlutterActivity {
             ex.printStackTrace();
         } catch (AuthenticationFailedException ex) {
             callbackMessage = "Nieudane połączenie ze skrzynką " + emailAddress + ", być może problem dotyczy poprawności danych logowania. Sprawdź czy podałeś poprawny login i hasło i dodaj tę skrzynkę ponownie.";
-            isThreadDone = true;
             ex.printStackTrace();
         } catch (MessagingException ex) {
             System.out.println("Could not connect to the message store");
@@ -250,7 +250,6 @@ public class MainActivity extends FlutterActivity {
             ex.printStackTrace();
         }
         System.out.println("Rozłączam się " + emailAddress);
-        isThreadDone = true;
 
         if (counter == 0) {
             Activity thisActivity = this;
@@ -288,7 +287,25 @@ public class MainActivity extends FlutterActivity {
         alertDialog.show();
     }
 
-    public class downloadThread implements Runnable {
+    public class downloadThread extends Thread {
+
+        private final java.util.List<TaskListener> listeners = Collections.synchronizedList( new ArrayList<TaskListener>() );
+
+        void addListener(TaskListener listener){
+            listeners.add(listener);
+        }
+
+        public void removeListener( TaskListener listener ){
+            listeners.remove(listener);
+        }
+
+        private void notifyListeners() {
+            synchronized ( listeners ){
+                for (TaskListener listener : listeners) {
+                    listener.threadComplete(this);
+                }
+            }
+        }
 
         private String host, port, userName, password, protocol, path, username;
         private int newUID;
@@ -309,7 +326,12 @@ public class MainActivity extends FlutterActivity {
 
         public void run() {
             downloadEmailAttachments(host, port, userName, password, protocol, newUID, trustedEmails,path, username, counter);
+            notifyListeners();
         }
-
     }
 }
+
+interface TaskListener {
+    void threadComplete(Runnable runner);
+}
+

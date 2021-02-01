@@ -4,7 +4,7 @@ import 'package:flutter_payit/pdfView.dart';
 
 class PaymentWidget {
   static Padding paymentCard(
-      String name, String amount, String date, String path, Color color, BuildContext context) {
+      String name, String invoiceSender, String amount, String date, String path, Color color, BuildContext context) {
 
     return Padding(
         padding: const EdgeInsets.all(8.0),
@@ -28,6 +28,20 @@ class PaymentWidget {
                       color: color,
                     ),
                     textAlign: TextAlign.center,
+                  ),
+                ),
+                SizedBox(
+                  height: 5,
+                ),
+                Text(
+                  "Od nadawcy:",
+                  style: TextStyle(fontSize: 25, color: color),
+                ),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    invoiceSender,
+                    style: TextStyle(fontSize: 20, color: color),
                   ),
                 ),
                 SizedBox(

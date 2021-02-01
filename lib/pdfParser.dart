@@ -36,24 +36,15 @@ class PdfParser {
     return contents;
   }
 
-  List<String> extractPaymentAmounts(String singlePdfContent) {
-    //Wyciągamy double z naszego sparsowanego pdf
-    final doubleRegex = RegExp(r'(\d+\,\d{2})+', multiLine: true);
+  List<String> extractAllDoublesFromPdf(String singlePdfContent) {
+
+    final doubleRegex = RegExp(r'\d+,\d{2}(?!(\-|\.))', multiLine: true);
     List<String> listOfDoubles = doubleRegex
         .allMatches(singlePdfContent)
         .map((m) => m.group(0))
         .toList();
-
-    //Usuwamy takie co na pewno nie są kwotami
-    /*
-    List<String> listOfCorrectDoubles=new List<String>();
-    for (String double in listOfDoubles) {
-      if(double.length-double.indexOf(",")-1!=2)
-        continue;
-      listOfCorrectDoubles.add(double);
-    }
-    */
-
+    print("Lista doubli: ");
+    print(listOfDoubles);
     return listOfDoubles;
   }
 

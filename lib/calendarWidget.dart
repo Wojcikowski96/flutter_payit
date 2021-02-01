@@ -76,7 +76,7 @@ class _CalendarWidgetState extends State<CalendarWidget>
             child: Text(
               '${events.length}',
               style: TextStyle(fontWeight: FontWeight.bold).copyWith(
-                color: Colors.red,
+                color: colorFromName(events[0].split("|")[4]),
                 fontSize: 16.0,
               ),
             ),

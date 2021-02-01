@@ -1,16 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_payit/invoice.dart';
 import 'package:flutter_payit/paymentDataWidget.dart';
 
 class PaymentPage extends StatelessWidget {
   final PageController pageController;
   final List<Widget> invoices = new List();
-  final List<List<String>> invoicesInfo;
+  final List<Invoice> invoicesInfo;
   final Color color;
-  final String tittle;
+  final String title;
 
   PaymentPage(this.pageController, this.invoicesInfo,
-      this.color, this.tittle);
+      this.color, this.title);
 
   @override
   Widget build(BuildContext context) {
@@ -18,17 +19,17 @@ class PaymentPage extends StatelessWidget {
     double height = MediaQuery.of(context).size.height;
 
     invoices.clear();
-    for (List<String> singleInvoice in invoicesInfo) {
+    for (Invoice singleInvoice in invoicesInfo) {
       if (color == Colors.black26) {
         print("Dodaję fakturę do niezdefiniowanych");
-        invoices.add(PaymentWidget.paymentCardWarning(singleInvoice[0], singleInvoice[3], color, context));
+        invoices.add(PaymentWidget.paymentCard(
+            singleInvoice.categoryName, singleInvoice.senderMail.toString(), singleInvoice.paymentAmount.toString(), singleInvoice.paymentDate.toString(), singleInvoice.downloadPath, color, context));
       } else {
         print("Dodaję fakturę do zdefiniowanych");
         invoices.add(PaymentWidget.paymentCard(
-            singleInvoice[0], singleInvoice[1], singleInvoice[2], singleInvoice[3], color, context));
+            singleInvoice.categoryName, singleInvoice.senderMail.toString(), singleInvoice.paymentAmount.toString(), singleInvoice.paymentDate.toString(), singleInvoice.downloadPath, color, context));
       }
     }
-
     return Scaffold(
       backgroundColor: Colors.transparent,
 //      appBar: AppBar(

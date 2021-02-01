@@ -25,6 +25,8 @@ class UserOperationsOnEmails {
         emailSettings.add(singleEmailSettings);
       });
     }
+    print("getEmailSettings:");
+    print(emailSettings);
     return emailSettings;
   }
 

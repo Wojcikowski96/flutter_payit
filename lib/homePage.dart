@@ -7,12 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_payit/timeInterval.dart';
 import 'package:flutter_payit/trustedList.dart';
 import 'package:flutter_payit/PaymentPage.dart';
+import 'package:flutter_payit/uiElements.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider_ex/path_provider_ex.dart';
 import 'calendarWidget.dart';
 import 'databaseOperations.dart';
 import 'emailBoxesPanel.dart';
+import 'invoice.dart';
 import 'userOperationsOnEmails.dart';
 import 'pdfParser.dart';
 import 'package:intl/intl.dart';
@@ -30,12 +32,12 @@ class _homePageState extends State<homePage> {
   var storage = FlutterSecureStorage();
   String path;
   String paymentDate;
-  String paymentAmount;
+  double paymentAmount;
   String invoiceSender;
 
   List<int> preferences;
-  List<List<String>> definedInvoicesInfo = new List();
-  List<List<String>> undefinedInvoicesInfo = new List();
+  List<Invoice> definedInvoicesInfo = new List();
+  List<Invoice> undefinedInvoicesInfo = new List();
   List<String> matchedCustomNames = new List();
 
   static const platform = const MethodChannel("name");
@@ -55,17 +57,25 @@ class _homePageState extends State<homePage> {
 
   bool isPlaceholderTextVisible = true;
 
+  bool isProgressBarVisible = false;
+
   Color definedColor = Colors.blue;
 
   static String username = "<Username>";
 
   List<String> userEmailsNames = new List();
 
-  List<List<String>> invoicesInfo = new List();
+  List<Invoice> invoicesInfo = new List();
 
   String selectedEmailAddress;
 
   Timer timer;
+
+  List<List<dynamic>> emailSettings = new List();
+
+  final SnackBar snackBarProgressIndicator =
+      UiElements().myShowSnackBar("Synchronizuję ...");
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -84,42 +94,58 @@ class _homePageState extends State<homePage> {
       Directory invoicesDir = new Directory(path);
       invoicesDir.create(recursive: true);
 
+      emailSettings = await UserOperationsOnEmails().getEmailSettings(username);
+
       List<List<String>> trustedEmails =
           await UserOperationsOnEmails().getInvoiceSenders(username);
 
-      List<List<dynamic>> emailSettings =
-          await UserOperationsOnEmails().getEmailSettings(username);
+      if (emailSettings.isNotEmpty) {
+        setState(() {
+          isProgressBarVisible = true;
+        });
 
-      downloadAttachmentForAllMailboxes(emailSettings, trustedEmails, 0)
-          .then((value) => {startCheckingLatest(emailSettings, trustedEmails)});
+        downloadAttachmentForAllMailboxes(emailSettings, trustedEmails, 0)
+            .then((value) => {
+                  setState(() {
+                    isProgressBarVisible = false;
+                  }),
+                  print('Czy progress widoczny'),
+                  print(isProgressBarVisible),
+                  startCheckingLatest(emailSettings, trustedEmails)
+                });
+
+        await watchForNewFiles(trustedEmails);
+      }
 
       List<FileSystemEntity> invoiceFileList =
           await PdfParser().dirContents(path);
 
       for (FileSystemEntity file in invoiceFileList)
         await setFileForDrawing(trustedEmails, file.path);
+    });
+  }
 
-      var watcher = DirectoryWatcher(path);
-      watcher.events.listen((event) async {
-        String eventString = event.toString().split(" ")[0];
-        String eventPath = event.path;
+  Future watchForNewFiles(List<List<String>> trustedEmails) async {
+    var watcher = DirectoryWatcher(path);
+    watcher.events.listen((event) async {
+      String eventString = event.toString().split(" ")[0];
+      String eventPath = event.path;
 
-        if (eventString == "add") {
-          await setFileForDrawing(trustedEmails, eventPath);
-        }
-      });
+      if (eventString == "add") {
+        await setFileForDrawing(trustedEmails, eventPath);
+      }
     });
   }
 
   startCheckingLatest(
       List<List> emailSettings, List<List<String>> trustedEmails) {
-    int counter=0;
+    int counter = 0;
     oldTimer?.cancel();
     timer = Timer.periodic(
         Duration(seconds: preferences[2]),
         (Timer t) async => {
               print("Timer " + timer.hashCode.toString()),
-              counter=counter+1,
+              counter = counter + 1,
               emailSettings =
                   await UserOperationsOnEmails().getEmailSettings(username),
               await downloadAttachmentForAllMailboxes(
@@ -133,16 +159,18 @@ class _homePageState extends State<homePage> {
     String singlePdfContent = await compute(pdfToString, path);
 
     print(singlePdfContent);
-    List<String> singleDetails = new List();
+
     paymentAmount = extractPayments(singlePdfContent);
     paymentDate = extractDateForParser(singlePdfContent);
     invoiceSender = getInvoiceSenderName(trustedEmails, path);
-    singleDetails.add(invoiceSender);
-    singleDetails.add(paymentAmount);
-    singleDetails.add(paymentDate);
-    singleDetails.add(path);
-    singleDetails.add(basename(path).split(";")[0]);
-    invoicesInfo.add(singleDetails);
+    String userMailName = basename(path).split(";")[0];
+    String senderMailName = basename(path).split(";")[1];
+    int account = extractAccount(singlePdfContent);
+
+    Invoice invoice = new Invoice(invoiceSender, userMailName, senderMailName,
+        paymentAmount, paymentDate, account, true, path, Colors.blue);
+
+    invoicesInfo.add(invoice);
 
     setState(() {
       paymentEvents = generatePaymentEvents(invoicesInfo);
@@ -153,24 +181,30 @@ class _homePageState extends State<homePage> {
     });
   }
 
-  Color setUrgencyColor(List<List<String>> tempInvoicesInfo) {
+  Color setUrgencyColor(List<Invoice> tempInvoicesInfo) {
     Color color = Colors.blue;
-    for (List<String> singleInvoice in tempInvoicesInfo) {
-      if (-DateTime.parse(singleInvoice[2]).difference(DateTime.now()).inDays <=
+    for (Invoice singleInvoice in tempInvoicesInfo) {
+      if ((DateTime.parse(singleInvoice.paymentDate)
+          .difference(DateTime.now())
+          .inDays).abs() <=
           preferences[0]) {
         color = Colors.red;
-      } else if (-DateTime.parse(singleInvoice[2])
-                  .difference(DateTime.now())
-                  .inDays >
+      } else if ((DateTime.parse(singleInvoice.paymentDate)
+          .difference(DateTime.now())
+          .inDays).abs() >
               preferences[0] &&
-          -DateTime.parse(singleInvoice[2]).difference(DateTime.now()).inDays <=
+          (DateTime.parse(singleInvoice.paymentDate)
+              .difference(DateTime.now())
+              .inDays).abs() <=
               preferences[1]) {
         color = Colors.amber;
-      } else if (-DateTime.parse(singleInvoice[2])
-                  .difference(DateTime.now())
-                  .inDays >
+      } else if ((DateTime.parse(singleInvoice.paymentDate)
+          .difference(DateTime.now())
+          .inDays).abs() >
               preferences[1] &&
-          -DateTime.parse(singleInvoice[2]).difference(DateTime.now()).inDays <=
+          (DateTime.parse(singleInvoice.paymentDate)
+              .difference(DateTime.now())
+              .inDays).abs() <=
               44000) {
         color = Colors.green;
       }
@@ -182,19 +216,19 @@ class _homePageState extends State<homePage> {
     final dateRegex = RegExp(
         r'(\d{4}(\/|-|\.)\d{1,2}(\/|-|\.)(0[1-9]|1[0-9]|2[0-9]|3[0-1]))|((0[1-9]|1[0-9]|2[0-9]|3[0-1])(\/|-|\.)\d{1,2}(\/|-|\.)\d{4})',
         multiLine: true);
-    List<String> ListOfDates =
+    List<String> listOfDates =
         dateRegex.allMatches(singlePdfContent).map((m) => m.group(0)).toList();
 
-    List<DateTime> ListOfCorrectDates = new List<DateTime>();
+    List<DateTime> listOfCorrectDates = new List<DateTime>();
 
-    for (String date in ListOfDates) {
+    for (String date in listOfDates) {
       if (RegExp(r'(\/|-|\.)\d{4}').hasMatch(date)) {
         String dateWithDashes = date.replaceAll(new RegExp(r'\W+'), "-");
         String dateStandard =
             PdfParser().addedZero(dateWithDashes.split("-")).reversed.join("-");
         if (DateTime.parse(dateStandard).difference(DateTime.now()).inDays <=
             365) {
-          ListOfCorrectDates.add(DateTime.parse(dateStandard));
+          listOfCorrectDates.add(DateTime.parse(dateStandard));
         }
       } else if ((RegExp(r'\d{4}(\/|-|\.)').hasMatch(date))) {
         String dateStandard = PdfParser()
@@ -202,28 +236,28 @@ class _homePageState extends State<homePage> {
             .join("-");
         if (DateTime.parse(dateStandard).difference(DateTime.now()).inDays <=
             365) {
-          ListOfCorrectDates.add(DateTime.parse(dateStandard));
+          listOfCorrectDates.add(DateTime.parse(dateStandard));
         }
       }
     }
     final DateFormat formatter = DateFormat('yyyy-MM-dd');
     final String formattedDate = formatter.format(DateTime.parse(
-        (PdfParser().findLatestDate(ListOfCorrectDates)).toString()));
+        (PdfParser().findLatestDate(listOfCorrectDates)).toString()));
 
     print("Data zapłaty faktury to " + formattedDate);
     return formattedDate;
   }
 
-  String extractPayments(String singlePdfContent) {
+  double extractPayments(String singlePdfContent) {
     List<String> listOfCorrectDoubles =
-        PdfParser().extractPaymentAmounts(singlePdfContent);
+        PdfParser().extractAllDoublesFromPdf(singlePdfContent);
 
     if (listOfCorrectDoubles.length == 0) {
       print("Twoja kwota do zapłaty to: 0");
-      return "0";
+      return 0;
     } else {
       print("Twoja kwota do zapłaty to: " + listOfCorrectDoubles.last);
-      return listOfCorrectDoubles.last;
+      return double.parse(listOfCorrectDoubles.last.replaceAll(",", "."));
     }
   }
 
@@ -237,219 +271,262 @@ class _homePageState extends State<homePage> {
   @override
   Widget build(BuildContext context) {
     PageController pageController = PageController(initialPage: 0);
-
-    return Scaffold(
-        body: Column(children: [
-          CalendarWidget(
-            events: paymentEvents,
-            notifyParent: generateDefinedPaymentInput,
+    if (emailSettings.isEmpty) {
+      return Scaffold(
+          body: Container(
+              child: Column(
+        children: [
+          SizedBox(
+            height: 50,
           ),
-          Expanded(
-            child: GestureDetector(
-              onPanUpdate: (details) {
-                setState(() {
-                  if (details.delta.dy > 0) {
-                    isCalendarVisible = true;
-                  } else if (details.delta.dy < 0) {
-                    isCalendarVisible = false;
-                  }
-                });
-              },
-              child: Row(
-                children: [
-                  Expanded(
-                      flex: definedFlex,
-                      child: GestureDetector(
-                        onTap: () => setState(() {
-                          definedFlex = 4;
-                          undefinedFlex = 1;
-                          undefinedTextRotated = 1;
-                          definedTextRotated = 0;
-                          isUndefinedVisible = false;
-                          definedInvoicesInfo.length == 0
-                              ? isDefinedVisible = false
-                              : isDefinedVisible = true;
-                          definedInvoicesInfo.length == 0
-                              ? isPlaceholderTextVisible = true
-                              : isPlaceholderTextVisible = false;
-                        }),
-                        child: Container(
-                            color: definedColor,
-                            child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  RotatedBox(
-                                      quarterTurns: definedTextRotated,
-                                      child: RichText(
-                                        text: TextSpan(
-                                          text: 'Zdefiniowane ',
-                                          style: TextStyle(fontSize: 16),
-                                          children: <TextSpan>[
-                                            TextSpan(
-                                                text:
-                                                    (definedInvoicesInfo.length)
-                                                        .toString(),
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: definedColor,
-                                                    backgroundColor:
-                                                        Colors.white,
-                                                    fontSize: 20)),
-                                          ],
-                                        ),
-                                      )),
-                                  Visibility(
-                                      visible: isDefinedVisible,
-                                      child: Expanded(
-                                        child: PaymentPage(
-                                            pageController,
-                                            definedInvoicesInfo,
-                                            definedColor,
-                                            "Pilne"),
-                                      )),
-                                  Visibility(
-                                      visible: isPlaceholderTextVisible,
-                                      child: Expanded(
-                                        child: Center(
-                                          child: Text(
-                                            "< Nic do pokazania >",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                        ),
-                                      )),
-                                ])),
-                      )),
-                  Expanded(
-                      flex: undefinedFlex,
-                      child: GestureDetector(
-                        onTap: () => setState(() {
-                          definedFlex = 1;
-                          undefinedFlex = 4;
-                          undefinedTextRotated = 0;
-                          definedTextRotated = 1;
-                          isUndefinedVisible = true;
-                          isDefinedVisible = false;
-                          isPlaceholderTextVisible = false;
-                        }),
-                        child: Container(
-                            color: Colors.black26,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Center(
-                                    child: RotatedBox(
-                                        quarterTurns: undefinedTextRotated,
+          SizedBox(height: 150, child: Image.asset("warning.PNG")),
+          SizedBox(
+            height: 25,
+          ),
+          Center(
+              child: Text(
+            "Nie masz zdefiniowanych żadnych własnych skrzynek e-mail!",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 45, color: Colors.blue),
+          )),
+          SizedBox(
+            height: 25,
+          ),
+          UiElements().drawButton(200, 80, "Przejdź do ustawień", context,
+              EmailBoxesPanel(), null, null),
+          SizedBox(
+            height: 10,
+          ),
+        ],
+      )));
+    } else {
+      return Scaffold(
+          key: scaffoldKey,
+          body: Column(children: [
+            CalendarWidget(
+              events: paymentEvents,
+              notifyParent: generateDefinedPaymentInput,
+            ),
+            Expanded(
+              child: GestureDetector(
+                onPanUpdate: (details) {
+                  setState(() {
+                    if (details.delta.dy > 0) {
+                      isCalendarVisible = true;
+                    } else if (details.delta.dy < 0) {
+                      isCalendarVisible = false;
+                    }
+                  });
+                },
+                child: Row(
+                  children: [
+                    Expanded(
+                        flex: definedFlex,
+                        child: GestureDetector(
+                          onTap: () => setState(() {
+                            definedFlex = 4;
+                            undefinedFlex = 1;
+                            undefinedTextRotated = 1;
+                            definedTextRotated = 0;
+                            isUndefinedVisible = false;
+                            definedInvoicesInfo.length == 0
+                                ? isDefinedVisible = false
+                                : isDefinedVisible = true;
+                            definedInvoicesInfo.length == 0
+                                ? isPlaceholderTextVisible = true
+                                : isPlaceholderTextVisible = false;
+                          }),
+                          child: Container(
+                              color: definedColor,
+                              child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    RotatedBox(
+                                        quarterTurns: definedTextRotated,
                                         child: RichText(
                                           text: TextSpan(
-                                            text: 'Niezdefiniowane ',
+                                            text: 'Zdefiniowane ',
                                             style: TextStyle(fontSize: 16),
                                             children: <TextSpan>[
                                               TextSpan(
-                                                  text: (undefinedInvoicesInfo
+                                                  text: (definedInvoicesInfo
                                                           .length)
                                                       .toString(),
                                                   style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
-                                                      color: Colors.white,
+                                                      color: definedColor,
                                                       backgroundColor:
-                                                          Colors.red,
+                                                          Colors.white,
                                                       fontSize: 20)),
                                             ],
                                           ),
-                                        ))),
-                                Visibility(
-                                    visible: isUndefinedVisible,
-                                    child: Expanded(
-                                        child: PaymentPage(
-                                            pageController,
-                                            undefinedInvoicesInfo,
-                                            Colors.black26,
-                                            "Pilne"))),
-                              ],
-                            )),
-                      ))
-                ],
-              ),
-            ),
-          )
-        ]),
-        appBar: AppBar(
-          // leading: IconButton(icon: Icon(Icons.menu), onPressed: (){
-          //
-          // })
-
-          title: Text(
-            "PayIT",
-            style: TextStyle(fontSize: 25, color: Colors.white),
-          ),
-
-          iconTheme: IconThemeData(color: Colors.white), //add this line here
-        ),
-        drawer: Drawer(
-          // Add a ListView to the drawer. This ensures the user can scroll
-          // through the options in the drawer if there isn't enough vertical
-          // space to fit everything.
-          child: ListView(
-            // Important: Remove any padding from the ListView.
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              DrawerHeader(
-                child: Column(
-                  children: [
-                    Text(
-                      username,
-                      style: TextStyle(fontSize: 50, color: Colors.white),
-                    ),
-                    Container(child: buildDropdownButton(), width: 300)
+                                        )),
+                                    Visibility(
+                                        visible: isDefinedVisible,
+                                        child: Expanded(
+                                          child: PaymentPage(
+                                              pageController,
+                                              definedInvoicesInfo,
+                                              definedColor,
+                                              "Pilne"),
+                                        )),
+                                    Visibility(
+                                        visible: isPlaceholderTextVisible,
+                                        child: Expanded(
+                                          child: Center(
+                                            child: Text(
+                                              "< Nic do pokazania >",
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ),
+                                        )),
+                                  ])),
+                        )),
+                    Expanded(
+                        flex: undefinedFlex,
+                        child: GestureDetector(
+                          onTap: () => setState(() {
+                            definedFlex = 1;
+                            undefinedFlex = 4;
+                            undefinedTextRotated = 0;
+                            definedTextRotated = 1;
+                            isUndefinedVisible = true;
+                            isDefinedVisible = false;
+                            isPlaceholderTextVisible = false;
+                          }),
+                          child: Container(
+                              color: Colors.black26,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Center(
+                                      child: RotatedBox(
+                                          quarterTurns: undefinedTextRotated,
+                                          child: RichText(
+                                            text: TextSpan(
+                                              text: 'Niezdefiniowane ',
+                                              style: TextStyle(fontSize: 16),
+                                              children: <TextSpan>[
+                                                TextSpan(
+                                                    text: (undefinedInvoicesInfo
+                                                            .length)
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.white,
+                                                        backgroundColor:
+                                                            Colors.red,
+                                                        fontSize: 20)),
+                                              ],
+                                            ),
+                                          ))),
+                                  Visibility(
+                                      visible: isUndefinedVisible,
+                                      child: Expanded(
+                                          child: PaymentPage(
+                                              pageController,
+                                              undefinedInvoicesInfo,
+                                              Colors.black26,
+                                              "Pilne"))),
+                                ],
+                              )),
+                        ))
                   ],
                 ),
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                ),
               ),
-              ListTile(
-                title: Text('Zarządzaj adresami e-mail'),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => EmailBoxesPanel()),
-                  );
-                },
+            ),
+            Visibility(
+              visible: isProgressBarVisible,
+              child: Row(
+                children: [
+                  Text("Synchronizuję ..."),
+                  CircularProgressIndicator(),
+                ],
               ),
-              ListTile(
-                title: Text('Edytuj zaufaną listę nadawców faktur'),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => TrustedListPanel()),
-                  );
-                },
-              ),
-              ListTile(
-                title: Text('Ustawienia'),
-                onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => TimeInterval()));
-                },
-              ),
-              ListTile(
-                title: Text('O aplikacji'),
-                onTap: () {
-                  // Update the state of the app
-                  // ...
-                  // Then close the drawer
-                  Navigator.pop(context);
-                },
-              ),
-            ],
+            )
+          ]),
+          appBar: AppBar(
+            // leading: IconButton(icon: Icon(Icons.menu), onPressed: (){
+            //
+            // })
+            title: Text(
+              "PayIT",
+              style: TextStyle(fontSize: 25, color: Colors.white),
+            ),
+
+            iconTheme: IconThemeData(color: Colors.white), //add this line here
           ),
-        ));
+          drawer: Drawer(
+            // Add a ListView to the drawer. This ensures the user can scroll
+            // through the options in the drawer if there isn't enough vertical
+            // space to fit everything.
+            child: ListView(
+              // Important: Remove any padding from the ListView.
+              padding: EdgeInsets.zero,
+              children: <Widget>[
+                DrawerHeader(
+                  child: Column(
+                    children: [
+                      Text(
+                        username,
+                        style: TextStyle(fontSize: 50, color: Colors.white),
+                      ),
+                      Container(child: buildDropdownButton(), width: 300)
+                    ],
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                  ),
+                ),
+                ListTile(
+                  title: Text('Zarządzaj adresami e-mail'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => EmailBoxesPanel()),
+                    );
+                  },
+                ),
+                ListTile(
+                  title: Text('Edytuj zaufaną listę nadawców faktur'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => TrustedListPanel()),
+                    );
+                  },
+                ),
+                ListTile(
+                  title: Text('Ustawienia'),
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => TimeInterval()));
+                  },
+                ),
+                ListTile(
+                  title: Text('O aplikacji'),
+                  onTap: () {
+                    // Update the state of the app
+                    // ...
+                    // Then close the drawer
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+          ));
+    }
   }
 
   DropdownButton<String> buildDropdownButton() {
@@ -481,7 +558,8 @@ class _homePageState extends State<homePage> {
 
   Future<void> downloadAttachmentForAllMailboxes(
       List<List<dynamic>> emailSettings,
-      List<List<String>> trustedEmails, int counter) async {
+      List<List<String>> trustedEmails,
+      int counter) async {
     print("Zaciągam maile");
 
     List<String> tempUserEmailsNames = new List();
@@ -496,7 +574,7 @@ class _homePageState extends State<homePage> {
         username,
         counter
       ];
-      downloadAttachment(downloadAttachmentArgs);
+      await downloadAttachment(downloadAttachmentArgs);
     }
     tempUserEmailsNames.add("Wszystkie adresy");
     setState(() {
@@ -513,20 +591,26 @@ class _homePageState extends State<homePage> {
     return senderAddresses;
   }
 
-  Map<DateTime, List> generatePaymentEvents(List<List<String>> invoicesInfo) {
+  Map<DateTime, List> generatePaymentEvents(List<Invoice> invoicesInfo) {
     Map<DateTime, List> paymentEvents = new Map();
 
-    for (List<String> singleInvoiceInfo in invoicesInfo) {
-      DateTime date = DateTime.parse(singleInvoiceInfo[2]);
+    for (Invoice singleInvoiceInfo in invoicesInfo) {
+      DateTime date = DateTime.parse(singleInvoiceInfo.paymentDate);
 
       String paymentEventValue = 'Opłata dla|' +
-          singleInvoiceInfo[0] +
+          singleInvoiceInfo.categoryName +
           "|" +
-          singleInvoiceInfo[1] +
+          singleInvoiceInfo.paymentAmount.toString() +
           "|" +
-          singleInvoiceInfo[3] +
+          singleInvoiceInfo.downloadPath +
           "|" +
-          setUrgencyColorBasedOnDate(date).toString();
+          setUrgencyColorBasedOnDate(date).toString() +
+          "|" +
+          singleInvoiceInfo.accountForTransfer.toString() +
+          "|" +
+          singleInvoiceInfo.userMail +
+          "|" +
+          singleInvoiceInfo.senderMail;
 
       if (paymentEvents.containsKey(date)) {
         paymentEvents[date].add(paymentEventValue);
@@ -539,16 +623,30 @@ class _homePageState extends State<homePage> {
   }
 
   void generateDefinedPaymentInput(DateTime date, List events) {
-    List<List<String>> tempDefinedInvoicesInfo = new List();
+    List<Invoice> tempDefinedInvoicesInfo = new List();
 
     for (String singleEventInfo in events) {
-      List<String> singleInvoiceInfo = new List();
+      String categoryName = singleEventInfo.split("|")[1];
+      String paymentAmount = singleEventInfo.split("|")[2];
+      String path = singleEventInfo.split("|")[3];
+      String paymentDate = DateFormat('yyyy-MM-dd').format(date).toString();
+      String color = singleEventInfo.split("|")[4];
+      String accountForTransfer = singleEventInfo.split("|")[5];
+      String userMail = singleEventInfo.split("|")[6];
+      String senderMail = singleEventInfo.split("|")[7];
 
-      singleInvoiceInfo.add(singleEventInfo.split("|")[1]);
-      singleInvoiceInfo.add(singleEventInfo.split("|")[2]);
-      singleInvoiceInfo.add(DateFormat('yyyy-MM-dd').format(date).toString());
-      singleInvoiceInfo.add(singleEventInfo.split("|")[3]);
-      tempDefinedInvoicesInfo.add(singleInvoiceInfo);
+      Invoice singleInvoiceInfoFromCalendar = new Invoice(
+          categoryName,
+          userMail,
+          senderMail,
+          double.parse(paymentAmount),
+          paymentDate,
+          int.parse(accountForTransfer),
+          true,
+          path,
+          colorFromName(color));
+
+      tempDefinedInvoicesInfo.add(singleInvoiceInfoFromCalendar);
     }
     if (events.isEmpty) {
       setState(() {
@@ -569,25 +667,26 @@ class _homePageState extends State<homePage> {
 
   Color setUrgencyColorBasedOnDate(DateTime date) {
     Color color = Colors.blue;
-    if (-date.difference(DateTime.now()).inDays <= preferences[0]) {
+    if ((date.difference(DateTime.now()).inDays).abs() <= preferences[0]) {
       color = Colors.red;
-    } else if (-date.difference(DateTime.now()).inDays > preferences[0] &&
-        -date.difference(DateTime.now()).inDays <= preferences[1]) {
+    } else if ((date.difference(DateTime.now()).inDays).abs() > preferences[0] &&
+        (date.difference(DateTime.now()).inDays).abs() <= preferences[1]) {
       color = Colors.amber;
-    } else if (-date.difference(DateTime.now()).inDays > preferences[1] &&
-        -date.difference(DateTime.now()).inDays <= 44000) {
+    } else if ((date.difference(DateTime.now()).inDays).abs() > preferences[1] &&
+        (date.difference(DateTime.now()).inDays).abs() <= 44000) {
       color = Colors.green;
     }
     return color;
   }
 
-  List<List<String>> generateUndefinedInvoicesList(
-      List<List<String>> tempInvoicesInfo) {
-    List<List<String>> undefinedInvoices = new List();
-    for (List<String> singleInvoice in tempInvoicesInfo) {
-      if (-DateTime.parse(singleInvoice[2]).difference(DateTime.now()).inDays >
+  List<Invoice> generateUndefinedInvoicesList(List<Invoice> tempInvoicesInfo) {
+    List<Invoice> undefinedInvoices = new List();
+    for (Invoice singleInvoice in tempInvoicesInfo) {
+      if (-DateTime.parse(singleInvoice.paymentDate)
+                  .difference(DateTime.now())
+                  .inDays >
               44000 ||
-          singleInvoice[1] == "0") {
+          singleInvoice.paymentAmount == 0) {
         undefinedInvoices.add(singleInvoice);
       }
     }
@@ -595,17 +694,14 @@ class _homePageState extends State<homePage> {
   }
 
   void filterByUserMailbox(String selectedEmailAddress) {
-    List<List<String>> tempInvoicesInfo = new List();
+    List<Invoice> tempInvoicesInfo = new List();
 
     tempInvoicesInfo.addAll(invoicesInfo);
-
-    print(
-        "Długość niezmienionej listy faktur " + invoicesInfo.length.toString());
 
     List<int> doUsuniecia = new List();
 
     for (int i = 0; i < tempInvoicesInfo.length; i++) {
-      if (tempInvoicesInfo[i][4] != selectedEmailAddress) {
+      if (tempInvoicesInfo[i].userMail != selectedEmailAddress) {
         doUsuniecia.add(i);
       }
     }
@@ -636,11 +732,25 @@ class _homePageState extends State<homePage> {
     }
     return nameWithFile;
   }
+
+  int extractAccount(String singlePdfContent) {
+    return 0;
+  }
+
+  Color colorFromName(String name) {
+    if (name == "MaterialColor(primary value: Color(0xfff44336))") {
+      return Colors.red;
+    } else if (name == "MaterialColor(primary value: Color(0xffffc107))") {
+      return Colors.amber;
+    } else {
+      return Colors.green;
+    }
+  }
 }
 
-downloadAttachment(List<dynamic> args) async {
+Future<void> downloadAttachment(List<dynamic> args) async {
   //WidgetsFlutterBinding.ensureInitialized();
-  args[3].invokeMethod("downloadAttachment", {
+  await args[3].invokeMethod("downloadAttachment", {
     "emailAddress": args[0][0],
     "password": args[0][1],
     "host": args[0][2],
