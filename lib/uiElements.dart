@@ -67,5 +67,33 @@ class UiElements {
       CircularProgressIndicator(),
     ]));
   }
+
+  TextField myCustomTextfield(TextEditingController controler, String hintText, Color fillColor, IconData icon){
+
+    return           TextField(
+    controller: controler,
+    decoration: InputDecoration(
+    contentPadding:
+    EdgeInsets.only(top: 20, bottom: 20),
+    prefixIcon: Padding(
+    padding:
+    const EdgeInsets.only(left: 20, right: 20),
+    child: Icon(icon),
+    ),
+    filled: true,
+    fillColor: fillColor,
+    hintText: hintText,
+    focusedBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(30),
+    borderSide:
+    BorderSide(color: Colors.grey, width: 2)),
+    border: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(20),
+    borderSide: BorderSide(
+    width: 2,
+    color: Colors.grey,
+    ))),
+    );
+  }
   //
 }
