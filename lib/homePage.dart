@@ -292,7 +292,7 @@ class _homePageState extends State<homePage> {
           SizedBox(
             height: 25,
           ),
-          UiElements().drawButton(200, 80, "Przejdź do ustawień", context,
+          UiElements().drawButton(200, 80, "Przejdź do ustawień", Colors.white, Colors.blue, Colors.blue, context,
               EmailBoxesPanel(), null, null),
           SizedBox(
             height: 10,

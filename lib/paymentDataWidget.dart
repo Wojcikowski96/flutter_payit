@@ -91,7 +91,7 @@ class PaymentWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => PdfView(path)),
+                        MaterialPageRoute(builder: (context) => PdfView(path, date, amount, "22 1234 5342 1290 1111")),
                       );
                     },
                     child: Center(
@@ -109,67 +109,6 @@ class PaymentWidget {
         ));
   }
 
-  static Padding paymentCardWarning(String name, String path, Color color, BuildContext context) {
-    return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Container(
-          decoration: BoxDecoration(
-              border: Border.all(
-                color: color,
-                width: 4,
-              ),
-              color: Colors.white,
-              borderRadius: BorderRadius.all(Radius.circular(20))),
-          child: Column(
-            children: [
-              Center(
-                child: Text(
-                  name,
-                  style: TextStyle(
-                    fontSize: 35,
-                    color: color,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              SizedBox(
-                height: 5,
-              ),
-              Text(
-                "Nie udało się pobrać prawidłowych danych z faktury",
-                style: TextStyle(
-                  fontSize: 20,
-                  color: color,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(
-                width: 10,
-              ),
-              RaisedButton(
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18.0),
-                    side: BorderSide(color: color)),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => PdfView(path)),
-                  );
-                },
-                child: Text(
-                  'Podgląd faktury',
-                  style: TextStyle(color: color),
-                ),
-              )
-            ],
-          ),
-        ));
-  }
-
-  static Widget invokePdfView(String path) {
-    return PdfView(path);
-  }
 }
 
 

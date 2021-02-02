@@ -104,7 +104,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
           SizedBox(
             height: 35,
           ),
-          UiElements().drawButton(200,80, "Zatwierdź i wróć", context, homePage(),null, null),
+          UiElements().drawButton(200,80, "Zatwierdź i wróć", Colors.white, Colors.blue, Colors.blue, context, homePage(),null, null),
           SizedBox(
             height: 10,
           ),
@@ -356,7 +356,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              UiElements().drawButton(210,40, "Odkryj ustawienia", context, null, [context],fillEmailParams),
+                              UiElements().drawButton(210,40, "Odkryj ustawienia", Colors.white, Colors.blue, Colors.blue, context, null, [context],fillEmailParams),
                               Expanded(
                                 flex: 1,
                                 child: CircleAvatar(

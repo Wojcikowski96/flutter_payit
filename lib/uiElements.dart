@@ -6,6 +6,9 @@ class UiElements {
       double width,
       double height,
       String text,
+      Color Fillcolor,
+      Color borderColor,
+      Color textColor,
       BuildContext context,
       Widget onPressedRoute,
       List<dynamic> args,
@@ -14,10 +17,10 @@ class UiElements {
       width: width,
       height: height,
       child: RaisedButton(
-        color: Colors.white,
+        color: Fillcolor,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18.0),
-            side: BorderSide(color: Colors.blue, width: 5)),
+            side: BorderSide(color: borderColor, width: 5)),
         onPressed: () {
           if (method != null) {
             method(args);
@@ -32,8 +35,8 @@ class UiElements {
         child: Center(
           child: Text(
             text,
-            maxLines: 1,
-            style: TextStyle(color: Colors.blue, fontSize: 20),
+            maxLines: 3,
+            style: TextStyle(color: textColor, fontSize: 20),
             textAlign: TextAlign.center,
           ),
         ),
@@ -68,31 +71,28 @@ class UiElements {
     ]));
   }
 
-  TextField myCustomTextfield(TextEditingController controler, String hintText, Color fillColor, IconData icon){
-
-    return           TextField(
-    controller: controler,
-    decoration: InputDecoration(
-    contentPadding:
-    EdgeInsets.only(top: 20, bottom: 20),
-    prefixIcon: Padding(
-    padding:
-    const EdgeInsets.only(left: 20, right: 20),
-    child: Icon(icon),
-    ),
-    filled: true,
-    fillColor: fillColor,
-    hintText: hintText,
-    focusedBorder: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(30),
-    borderSide:
-    BorderSide(color: Colors.grey, width: 2)),
-    border: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(20),
-    borderSide: BorderSide(
-    width: 2,
-    color: Colors.grey,
-    ))),
+  TextField myCustomTextfield(TextEditingController controler, String hintText,
+      Color fillColor, IconData icon) {
+    return TextField(
+      controller: controler,
+      decoration: InputDecoration(
+          contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+          prefixIcon: Padding(
+            padding: const EdgeInsets.only(left: 20, right: 20),
+            child: Icon(icon),
+          ),
+          filled: true,
+          fillColor: fillColor,
+          hintText: hintText,
+          focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide(color: Colors.grey, width: 2)),
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide(
+                width: 2,
+                color: Colors.grey,
+              ))),
     );
   }
   //
