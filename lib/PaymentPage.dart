@@ -22,12 +22,10 @@ class PaymentPage extends StatelessWidget {
     for (Invoice singleInvoice in invoicesInfo) {
       if (color == Colors.black26) {
         print("Dodaję fakturę do niezdefiniowanych");
-        invoices.add(PaymentWidget.paymentCard(
-            singleInvoice.categoryName, singleInvoice.senderMail.toString(), singleInvoice.paymentAmount.toString(), singleInvoice.paymentDate.toString(), singleInvoice.downloadPath, color, context));
+        invoices.add(PaymentWidget.paymentCard(singleInvoice, color, context));
       } else {
         print("Dodaję fakturę do zdefiniowanych");
-        invoices.add(PaymentWidget.paymentCard(
-            singleInvoice.categoryName, singleInvoice.senderMail.toString(), singleInvoice.paymentAmount.toString(), singleInvoice.paymentDate.toString(), singleInvoice.downloadPath, color, context));
+        invoices.add(PaymentWidget.paymentCard(singleInvoice, color, context));
       }
     }
     return Scaffold(

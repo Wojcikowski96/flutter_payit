@@ -367,7 +367,7 @@ class _TimeIntervalState extends State<TimeInterval> {
                         writeData();
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => homePage()),
+                          MaterialPageRoute(builder: (context) => homePage(DateTime.now())),
                         );
                       },
                       child: Center(

@@ -2,9 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_payit/pdfView.dart';
 
+import 'invoice.dart';
+
 class PaymentWidget {
-  static Padding paymentCard(
-      String name, String invoiceSender, String amount, String date, String path, Color color, BuildContext context) {
+  static Padding paymentCard(Invoice invoice, Color color, BuildContext context) {
 
     return Padding(
         padding: const EdgeInsets.all(8.0),
@@ -22,7 +23,7 @@ class PaymentWidget {
               children: [
                 Center(
                   child: Text(
-                    name,
+                    invoice.categoryName,
                     style: TextStyle(
                       fontSize: 35,
                       color: color,
@@ -40,7 +41,7 @@ class PaymentWidget {
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
-                    invoiceSender,
+                    invoice.senderMail,
                     style: TextStyle(fontSize: 20, color: color),
                   ),
                 ),
@@ -48,7 +49,7 @@ class PaymentWidget {
                   height: 5,
                 ),
                 Text(
-                  amount + " PLN",
+                  invoice.paymentAmount.toString() + " PLN",
                   style: TextStyle(fontSize: 25, color: color),
                 ),
                 SizedBox(
@@ -59,7 +60,7 @@ class PaymentWidget {
                   style: TextStyle(fontSize: 15, color: color),
                 ),
                 Text(
-                  date,
+                  invoice.paymentDate,
                   style: TextStyle(fontSize: 20, color: color),
                 ),
                 SizedBox(
@@ -91,14 +92,17 @@ class PaymentWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => PdfView(path, date, amount, "22 1234 5342 1290 1111")),
+                        MaterialPageRoute(builder: (context) => PdfView(invoice)),
                       );
                     },
                     child: Center(
-                      child: Text(
-                        'Podgląd PDF',
-                        maxLines: 1,
-                        style: TextStyle(color: color,),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Podgląd i edycja',
+                          maxLines: 1,
+                          style: TextStyle(color: color,),
+                        ),
                       ),
                     ),
                   ))

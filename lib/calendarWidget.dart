@@ -14,8 +14,9 @@ final Map<DateTime, List> _holidays = {
 class CalendarWidget extends StatefulWidget {
   final Map<DateTime, List> events;
   final Function(DateTime date, List events) notifyParent;
+  final DateTime selectedDay;
 
-  CalendarWidget({Key key, @required this.events, this.notifyParent}) : super(key: key);
+  CalendarWidget({Key key, @required this.events, this.notifyParent, this.selectedDay}) : super(key: key);
   
   @override
   _CalendarWidgetState createState() => _CalendarWidgetState();
@@ -25,16 +26,17 @@ class _CalendarWidgetState extends State<CalendarWidget>
     with TickerProviderStateMixin {
 
   List _selectedEvents;
-  DateTime _selectedDay = DateTime.now();
+  DateTime _selectedDay;
   CalendarController _calendarController;
 
   @override
   void initState() {
     super.initState();
-
+    _selectedDay = widget.selectedDay;
+    print("Selected day w init state");
+    print(_selectedDay);
     _selectedEvents = widget.events[_selectedDay] ?? [];
     _calendarController = CalendarController();
-
   }
 
   @override
@@ -197,6 +199,7 @@ class _CalendarWidgetState extends State<CalendarWidget>
       onVisibleDaysChanged: _onVisibleDaysChanged,
       onCalendarCreated: _onCalendarCreated,
       onHeaderTapped: _onHeaderTapped,
+      initialSelectedDay: _selectedDay,
     );
   }
 

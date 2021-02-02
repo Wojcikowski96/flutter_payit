@@ -274,7 +274,7 @@ class _LoginPageState extends State<LoginPage> {
       if (checkPassword(password,passwordForSpecifiedUser)) {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => homePage()),
+          MaterialPageRoute(builder: (context) => homePage(DateTime.now())),
         );
 
         storage.write(key: "username", value: username);

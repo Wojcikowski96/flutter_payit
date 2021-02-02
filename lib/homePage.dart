@@ -24,8 +24,11 @@ import 'package:watcher/watcher.dart';
 Timer oldTimer;
 
 class homePage extends StatefulWidget {
+  DateTime selectedDate;
   @override
   _homePageState createState() => _homePageState();
+  homePage(this.selectedDate);
+
 }
 
 class _homePageState extends State<homePage> {
@@ -33,7 +36,7 @@ class _homePageState extends State<homePage> {
   String path;
   String paymentDate;
   double paymentAmount;
-  String invoiceSender;
+  String categoryName;
 
   List<int> preferences;
   List<Invoice> definedInvoicesInfo = new List();
@@ -122,6 +125,22 @@ class _homePageState extends State<homePage> {
 
       for (FileSystemEntity file in invoiceFileList)
         await setFileForDrawing(trustedEmails, file.path);
+
+      await setModifiedInvoicesForDrawing();
+
+    });
+  }
+
+  Future setModifiedInvoicesForDrawing() async {
+
+    List<Invoice> modifiedInvoices = await DatabaseOperations().getModifiedInvoices(username);
+
+    for (Invoice invoice in modifiedInvoices)
+      invoicesInfo.add(invoice);
+
+    setState(() {
+      paymentEvents = generatePaymentEvents(invoicesInfo);
+      undefinedInvoicesInfo = generateUndefinedInvoicesList(invoicesInfo);
     });
   }
 
@@ -132,6 +151,7 @@ class _homePageState extends State<homePage> {
       String eventPath = event.path;
 
       if (eventString == "add") {
+        print("Robię add");
         await setFileForDrawing(trustedEmails, eventPath);
       }
     });
@@ -158,27 +178,31 @@ class _homePageState extends State<homePage> {
       List<List<String>> trustedEmails, String path) async {
     String singlePdfContent = await compute(pdfToString, path);
 
-    print(singlePdfContent);
+    if(!path.endsWith("M")) {
+      print(singlePdfContent);
 
-    paymentAmount = extractPayments(singlePdfContent);
-    paymentDate = extractDateForParser(singlePdfContent);
-    invoiceSender = getInvoiceSenderName(trustedEmails, path);
-    String userMailName = basename(path).split(";")[0];
-    String senderMailName = basename(path).split(";")[1];
-    int account = extractAccount(singlePdfContent);
+      paymentAmount = extractPayments(singlePdfContent);
+      paymentDate = extractDateForParser(singlePdfContent);
+      categoryName = getInvoiceSenderName(trustedEmails, path);
+      String userMailName = basename(path).split(";")[0];
+      String senderMailName = basename(path).split(";")[1];
+      int account = extractAccount(singlePdfContent);
 
-    Invoice invoice = new Invoice(invoiceSender, userMailName, senderMailName,
-        paymentAmount, paymentDate, account, true, path, Colors.blue);
+      //DatabaseOperations().addInvoiceToDatabase(paymentDate, paymentAmount.toString(), categoryName, userMailName, senderMailName, account.toString(), username, path);
 
-    invoicesInfo.add(invoice);
+      Invoice invoice = new Invoice(categoryName, userMailName, senderMailName,
+          paymentAmount, paymentDate, account, true, path, Colors.blue);
 
-    setState(() {
-      paymentEvents = generatePaymentEvents(invoicesInfo);
-    });
+      invoicesInfo.add(invoice);
 
-    setState(() {
-      undefinedInvoicesInfo = generateUndefinedInvoicesList(invoicesInfo);
-    });
+      setState(() {
+        paymentEvents = generatePaymentEvents(invoicesInfo);
+      });
+
+      setState(() {
+        undefinedInvoicesInfo = generateUndefinedInvoicesList(invoicesInfo);
+      });
+    }
   }
 
   Color setUrgencyColor(List<Invoice> tempInvoicesInfo) {
@@ -304,6 +328,7 @@ class _homePageState extends State<homePage> {
           key: scaffoldKey,
           body: Column(children: [
             CalendarWidget(
+              selectedDay: widget.selectedDate,
               events: paymentEvents,
               notifyParent: generateDefinedPaymentInput,
             ),
@@ -595,6 +620,8 @@ class _homePageState extends State<homePage> {
     Map<DateTime, List> paymentEvents = new Map();
 
     for (Invoice singleInvoiceInfo in invoicesInfo) {
+
+      print(singleInvoiceInfo.toString());
       DateTime date = DateTime.parse(singleInvoiceInfo.paymentDate);
 
       String paymentEventValue = 'Opłata dla|' +
@@ -602,7 +629,7 @@ class _homePageState extends State<homePage> {
           "|" +
           singleInvoiceInfo.paymentAmount.toString() +
           "|" +
-          singleInvoiceInfo.downloadPath +
+          singleInvoiceInfo.downloadPath.toString() +
           "|" +
           setUrgencyColorBasedOnDate(date).toString() +
           "|" +
@@ -618,6 +645,7 @@ class _homePageState extends State<homePage> {
         paymentEvents[date] = [paymentEventValue];
       }
     }
+
     print("Mapa " + paymentEvents.toString());
     return paymentEvents;
   }
