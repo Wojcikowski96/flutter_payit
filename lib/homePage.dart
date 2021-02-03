@@ -4,13 +4,16 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_payit/mainUI.dart';
 import 'package:flutter_payit/timeInterval.dart';
 import 'package:flutter_payit/trustedList.dart';
 import 'package:flutter_payit/PaymentPage.dart';
 import 'package:flutter_payit/uiElements.dart';
+import 'package:flutter_payit/utils.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider_ex/path_provider_ex.dart';
+import 'calendarUtils.dart';
 import 'calendarWidget.dart';
 import 'databaseOperations.dart';
 import 'emailBoxesPanel.dart';
@@ -139,7 +142,7 @@ class _homePageState extends State<homePage> {
       invoicesInfo.add(invoice);
 
     setState(() {
-      paymentEvents = generatePaymentEvents(invoicesInfo);
+      paymentEvents = CalendarUtils().generatePaymentEvents(invoicesInfo, preferences);
       undefinedInvoicesInfo = generateUndefinedInvoicesList(invoicesInfo);
     });
   }
@@ -182,8 +185,8 @@ class _homePageState extends State<homePage> {
       print("Single pdfContent w if M");
       print(singlePdfContent);
 
-      paymentAmount = extractPayments(singlePdfContent);
-      paymentDate = extractDateForParser(singlePdfContent);
+      paymentAmount = PdfParser().extractPayments(singlePdfContent);
+      paymentDate = PdfParser().extractDateForParser(singlePdfContent);
       categoryName = getInvoiceSenderName(trustedEmails, path);
       String userMailName = basename(path).split(";")[0];
       String senderMailName = basename(path).split(";")[1];
@@ -197,7 +200,7 @@ class _homePageState extends State<homePage> {
       invoicesInfo.add(invoice);
 
       setState(() {
-        paymentEvents = generatePaymentEvents(invoicesInfo);
+        paymentEvents = CalendarUtils().generatePaymentEvents(invoicesInfo, preferences);
       });
 
       setState(() {
@@ -237,54 +240,6 @@ class _homePageState extends State<homePage> {
     }
   }
 
-  String extractDateForParser(String singlePdfContent) {
-    final dateRegex = RegExp(
-        r'(\d{4}(\/|-|\.)\d{1,2}(\/|-|\.)(0[1-9]|1[0-9]|2[0-9]|3[0-1]))|((0[1-9]|1[0-9]|2[0-9]|3[0-1])(\/|-|\.)\d{1,2}(\/|-|\.)\d{4})',
-        multiLine: true);
-    List<String> listOfDates =
-        dateRegex.allMatches(singlePdfContent).map((m) => m.group(0)).toList();
-
-    List<DateTime> listOfCorrectDates = new List<DateTime>();
-
-    for (String date in listOfDates) {
-      if (RegExp(r'(\/|-|\.)\d{4}').hasMatch(date)) {
-        String dateWithDashes = date.replaceAll(new RegExp(r'\W+'), "-");
-        String dateStandard =
-            PdfParser().addedZero(dateWithDashes.split("-")).reversed.join("-");
-        if (DateTime.parse(dateStandard).difference(DateTime.now()).inDays <=
-            365) {
-          listOfCorrectDates.add(DateTime.parse(dateStandard));
-        }
-      } else if ((RegExp(r'\d{4}(\/|-|\.)').hasMatch(date))) {
-        String dateStandard = PdfParser()
-            .addedZero(date.replaceAll(new RegExp(r'\W+'), '-').split("-"))
-            .join("-");
-        if (DateTime.parse(dateStandard).difference(DateTime.now()).inDays <=
-            365) {
-          listOfCorrectDates.add(DateTime.parse(dateStandard));
-        }
-      }
-    }
-    final DateFormat formatter = DateFormat('yyyy-MM-dd');
-    final String formattedDate = formatter.format(DateTime.parse(
-        (PdfParser().findLatestDate(listOfCorrectDates)).toString()));
-
-    print("Data zapłaty faktury to " + formattedDate);
-    return formattedDate;
-  }
-
-  double extractPayments(String singlePdfContent) {
-    List<String> listOfCorrectDoubles =
-        PdfParser().extractAllDoublesFromPdf(singlePdfContent);
-
-    if (listOfCorrectDoubles.length == 0) {
-      print("Twoja kwota do zapłaty to: 0");
-      return 0;
-    } else {
-      print("Twoja kwota do zapłaty to: " + listOfCorrectDoubles.last);
-      return double.parse(listOfCorrectDoubles.last.replaceAll(",", "."));
-    }
-  }
 
   @override
   void dispose() {
@@ -297,33 +252,7 @@ class _homePageState extends State<homePage> {
   Widget build(BuildContext context) {
     PageController pageController = PageController(initialPage: 0);
     if (emailSettings.isEmpty) {
-      return Scaffold(
-          body: Container(
-              child: Column(
-        children: [
-          SizedBox(
-            height: 50,
-          ),
-          SizedBox(height: 150, child: Image.asset("warning.PNG")),
-          SizedBox(
-            height: 25,
-          ),
-          Center(
-              child: Text(
-            "Nie masz zdefiniowanych żadnych własnych skrzynek e-mail!",
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 45, color: Colors.blue),
-          )),
-          SizedBox(
-            height: 25,
-          ),
-          UiElements().drawButton(200, 80, "Przejdź do ustawień", Colors.white, Colors.blue, Colors.blue, context,
-              EmailBoxesPanel(), null, null),
-          SizedBox(
-            height: 10,
-          ),
-        ],
-      )));
+      return MainUI().warningHomePage(context);
     } else {
       return Scaffold(
           key: scaffoldKey,
@@ -555,6 +484,7 @@ class _homePageState extends State<homePage> {
     }
   }
 
+
   DropdownButton<String> buildDropdownButton() {
     return new DropdownButton<String>(
       isExpanded: true,
@@ -617,39 +547,7 @@ class _homePageState extends State<homePage> {
     return senderAddresses;
   }
 
-  Map<DateTime, List> generatePaymentEvents(List<Invoice> invoicesInfo) {
-    Map<DateTime, List> paymentEvents = new Map();
 
-    for (Invoice singleInvoiceInfo in invoicesInfo) {
-
-      print(singleInvoiceInfo.toString());
-      DateTime date = DateTime.parse(singleInvoiceInfo.paymentDate);
-
-      String paymentEventValue = 'Opłata dla|' +
-          singleInvoiceInfo.categoryName +
-          "|" +
-          singleInvoiceInfo.paymentAmount.toString() +
-          "|" +
-          singleInvoiceInfo.downloadPath.toString() +
-          "|" +
-          setUrgencyColorBasedOnDate(date).toString() +
-          "|" +
-          singleInvoiceInfo.accountForTransfer.toString() +
-          "|" +
-          singleInvoiceInfo.userMail +
-          "|" +
-          singleInvoiceInfo.senderMail;
-
-      if (paymentEvents.containsKey(date)) {
-        paymentEvents[date].add(paymentEventValue);
-      } else {
-        paymentEvents[date] = [paymentEventValue];
-      }
-    }
-
-    print("Mapa " + paymentEvents.toString());
-    return paymentEvents;
-  }
 
   void generateDefinedPaymentInput(DateTime date, List events) {
     List<Invoice> tempDefinedInvoicesInfo = new List();
@@ -673,7 +571,7 @@ class _homePageState extends State<homePage> {
           int.parse(accountForTransfer),
           true,
           path,
-          colorFromName(color));
+          Utils().colorFromName(color));
 
       tempDefinedInvoicesInfo.add(singleInvoiceInfoFromCalendar);
     }
@@ -694,19 +592,7 @@ class _homePageState extends State<homePage> {
     }
   }
 
-  Color setUrgencyColorBasedOnDate(DateTime date) {
-    Color color = Colors.blue;
-    if ((date.difference(DateTime.now()).inDays).abs() <= preferences[0]) {
-      color = Colors.red;
-    } else if ((date.difference(DateTime.now()).inDays).abs() > preferences[0] &&
-        (date.difference(DateTime.now()).inDays).abs() <= preferences[1]) {
-      color = Colors.amber;
-    } else if ((date.difference(DateTime.now()).inDays).abs() > preferences[1] &&
-        (date.difference(DateTime.now()).inDays).abs() <= 44000) {
-      color = Colors.green;
-    }
-    return color;
-  }
+
 
   List<Invoice> generateUndefinedInvoicesList(List<Invoice> tempInvoicesInfo) {
     List<Invoice> undefinedInvoices = new List();
@@ -748,7 +634,7 @@ class _homePageState extends State<homePage> {
     }
 
     setState(() {
-      paymentEvents = generatePaymentEvents(tempInvoicesInfo);
+      paymentEvents = CalendarUtils().generatePaymentEvents(tempInvoicesInfo, preferences);
     });
   }
 
@@ -766,15 +652,7 @@ class _homePageState extends State<homePage> {
     return 0;
   }
 
-  Color colorFromName(String name) {
-    if (name == "MaterialColor(primary value: Color(0xfff44336))") {
-      return Colors.red;
-    } else if (name == "MaterialColor(primary value: Color(0xffffc107))") {
-      return Colors.amber;
-    } else {
-      return Colors.green;
-    }
-  }
+
 }
 
 Future<void> downloadAttachment(List<dynamic> args) async {

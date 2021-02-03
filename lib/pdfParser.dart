@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:core';
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:path/path.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
+import 'package:intl/intl.dart';
+import 'package:path/path.dart';
+
 
 class PdfParser {
 
@@ -70,6 +73,57 @@ class PdfParser {
     }
     return replaced;
   }
+
+  String extractDateForParser(String singlePdfContent) {
+    final dateRegex = RegExp(
+        r'(\d{4}(\/|-|\.)\d{1,2}(\/|-|\.)(0[1-9]|1[0-9]|2[0-9]|3[0-1]))|((0[1-9]|1[0-9]|2[0-9]|3[0-1])(\/|-|\.)\d{1,2}(\/|-|\.)\d{4})',
+        multiLine: true);
+    List<String> listOfDates =
+    dateRegex.allMatches(singlePdfContent).map((m) => m.group(0)).toList();
+
+    List<DateTime> listOfCorrectDates = new List<DateTime>();
+
+    for (String date in listOfDates) {
+      if (RegExp(r'(\/|-|\.)\d{4}').hasMatch(date)) {
+        String dateWithDashes = date.replaceAll(new RegExp(r'\W+'), "-");
+        String dateStandard =
+        PdfParser().addedZero(dateWithDashes.split("-")).reversed.join("-");
+        if (DateTime.parse(dateStandard).difference(DateTime.now()).inDays <=
+            365) {
+          listOfCorrectDates.add(DateTime.parse(dateStandard));
+        }
+      } else if ((RegExp(r'\d{4}(\/|-|\.)').hasMatch(date))) {
+        String dateStandard = PdfParser()
+            .addedZero(date.replaceAll(new RegExp(r'\W+'), '-').split("-"))
+            .join("-");
+        if (DateTime.parse(dateStandard).difference(DateTime.now()).inDays <=
+            365) {
+          listOfCorrectDates.add(DateTime.parse(dateStandard));
+        }
+      }
+    }
+    final DateFormat formatter = DateFormat('yyyy-MM-dd');
+    final String formattedDate = formatter.format(DateTime.parse(
+        (PdfParser().findLatestDate(listOfCorrectDates)).toString()));
+
+    print("Data zapłaty faktury to " + formattedDate);
+    return formattedDate;
+  }
+
+
+  double extractPayments(String singlePdfContent) {
+    List<String> listOfCorrectDoubles =
+    PdfParser().extractAllDoublesFromPdf(singlePdfContent);
+
+    if (listOfCorrectDoubles.length == 0) {
+      print("Twoja kwota do zapłaty to: 0");
+      return 0;
+    } else {
+      print("Twoja kwota do zapłaty to: " + listOfCorrectDoubles.last);
+      return double.parse(listOfCorrectDoubles.last.replaceAll(",", "."));
+    }
+  }
+
 }
 
 Future<String> pdfToString(String filename) async {
