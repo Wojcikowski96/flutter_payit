@@ -179,6 +179,7 @@ class _homePageState extends State<homePage> {
     String singlePdfContent = await compute(pdfToString, path);
 
     if(!path.endsWith("M")) {
+      print("Single pdfContent w if M");
       print(singlePdfContent);
 
       paymentAmount = extractPayments(singlePdfContent);

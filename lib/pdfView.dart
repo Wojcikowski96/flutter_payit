@@ -47,7 +47,8 @@ class _PdfViewState extends State<PdfView> {
   @override
   Widget build(BuildContext context) {
     File file = new File(widget.invoice.downloadPath);
-
+print("path w ekranie z pdf");
+print(widget.invoice.downloadPath);
     return Scaffold(
         body: Column(children: [
       Expanded(

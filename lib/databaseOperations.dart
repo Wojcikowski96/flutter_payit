@@ -129,7 +129,7 @@ class DatabaseOperations {
     if (values != null) {
       values.forEach((key, values) {
         Invoice invoice = new Invoice(values["categoryName"], values["userMail"], values["senderMail"],
-            double.parse(values["paymentAmount"]), values["paymentDate"], int.parse(values["accountForTransfer"]), true, null, Colors.blue);
+            double.parse(values["paymentAmount"]), values["paymentDate"], int.parse(values["accountForTransfer"]), true, values["pathToAttachment"], Colors.blue);
         modifiedInvoices.add(invoice);
 
       });
