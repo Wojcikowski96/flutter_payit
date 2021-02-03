@@ -1,8 +1,7 @@
 
 import 'package:flutter/material.dart';
-import 'package:flutter_payit/pdfView.dart';
-
-import 'invoice.dart';
+import 'package:flutter_payit/UI/Screens/pdfView.dart';
+import 'package:flutter_payit/Objects/invoice.dart';
 
 class PaymentWidget {
   static Padding paymentCard(Invoice invoice, Color color, BuildContext context) {

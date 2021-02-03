@@ -1,8 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_payit/uiElements.dart';
-
-import 'emailBoxesPanel.dart';
+import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
+import 'file:///C:/Users/wojci/AndroidStudioProjects/flutter_payit/lib/UI/Screens/ConfigScreens/emailBoxesPanel.dart';
 
 class MainUI{
 

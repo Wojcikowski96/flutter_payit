@@ -4,22 +4,23 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_payit/mainUI.dart';
-import 'package:flutter_payit/timeInterval.dart';
-import 'package:flutter_payit/trustedList.dart';
-import 'package:flutter_payit/PaymentPage.dart';
-import 'package:flutter_payit/uiElements.dart';
-import 'package:flutter_payit/utils.dart';
+import 'package:flutter_payit/JavaDownloaderInvoke/downloader.dart';
+import 'package:flutter_payit/UI/HelperClasses/mainUI.dart';
+import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
+import 'file:///C:/Users/wojci/AndroidStudioProjects/flutter_payit/lib/UI/Screens/ConfigScreens/timeInterval.dart';
+import 'file:///C:/Users/wojci/AndroidStudioProjects/flutter_payit/lib/UI/Screens/ConfigScreens/trustedList.dart';
+import 'package:flutter_payit/Utils/utils.dart';
+import 'PaymentPage.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider_ex/path_provider_ex.dart';
-import 'calendarUtils.dart';
-import 'calendarWidget.dart';
-import 'databaseOperations.dart';
-import 'emailBoxesPanel.dart';
-import 'invoice.dart';
-import 'userOperationsOnEmails.dart';
-import 'pdfParser.dart';
+import 'package:flutter_payit/CalendarUtils/calendarUtils.dart';
+import 'package:flutter_payit/UI/HelperClasses/calendarWidget.dart';
+import 'package:flutter_payit/Database/databaseOperations.dart';
+import 'ConfigScreens/emailBoxesPanel.dart';
+import 'package:flutter_payit/Objects/invoice.dart';
+import 'package:flutter_payit/Utils/userOperationsOnEmails.dart';
+import 'package:flutter_payit/PdfParser/pdfParser.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 import 'package:watcher/watcher.dart';
@@ -530,7 +531,7 @@ class _homePageState extends State<homePage> {
         username,
         counter
       ];
-      await downloadAttachment(downloadAttachmentArgs);
+      await Downloader().downloadAttachment(downloadAttachmentArgs);
     }
     tempUserEmailsNames.add("Wszystkie adresy");
     setState(() {
@@ -655,18 +656,4 @@ class _homePageState extends State<homePage> {
 
 }
 
-Future<void> downloadAttachment(List<dynamic> args) async {
-  //WidgetsFlutterBinding.ensureInitialized();
-  await args[3].invokeMethod("downloadAttachment", {
-    "emailAddress": args[0][0],
-    "password": args[0][1],
-    "host": args[0][2],
-    "port": args[0][3],
-    "protocol": args[0][4],
-    "newUID": args[0][5],
-    "trustedEmails": args[1],
-    "path": args[2],
-    "username": args[4],
-    "counter": args[5]
-  });
-}
+

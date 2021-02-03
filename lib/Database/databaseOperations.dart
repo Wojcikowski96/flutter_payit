@@ -1,11 +1,10 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_payit/userEmail.dart';
+import 'package:flutter_payit/Objects/userEmail.dart';
 import 'dart:async';
 import 'dart:core';
 import 'package:path/path.dart';
-
-import 'invoice.dart';
+import 'package:flutter_payit/Objects/invoice.dart';
 
 class DatabaseOperations {
   final DBRef = FirebaseDatabase.instance.reference();

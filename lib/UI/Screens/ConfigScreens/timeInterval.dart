@@ -1,13 +1,10 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_payit/Database/databaseOperations.dart';
+import 'package:flutter_payit/UI/Screens/homePage.dart';
 
-import 'databaseOperations.dart';
-import 'homePage.dart';
-import 'loginScreen.dart';
 
 class TimeInterval extends StatefulWidget {
   @override

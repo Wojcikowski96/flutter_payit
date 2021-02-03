@@ -1,18 +1,15 @@
 import 'dart:core';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_payit/uiElements.dart';
-import 'package:flutter_payit/userEmail.dart';
-import 'package:flutter_payit/userOperationsOnEmails.dart';
+import 'package:flutter_payit/Objects/userEmail.dart';
+import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
+import 'package:flutter_payit/Utils/userOperationsOnEmails.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-
-import 'constrants.dart';
-import 'databaseOperations.dart';
-import 'dialog.dart';
-import 'homePage.dart';
+import 'package:flutter_payit/constrants.dart';
+import 'package:flutter_payit/Database/databaseOperations.dart';
+import 'package:flutter_payit/UI/HelperClasses/dialog.dart';
+import 'package:flutter_payit/UI/Screens/homePage.dart';
 
 class EmailBoxesPanel extends StatefulWidget {
   @override

@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 class Utils{
@@ -26,4 +25,6 @@ class Utils{
       return Colors.green;
     }
   }
+
+
 }

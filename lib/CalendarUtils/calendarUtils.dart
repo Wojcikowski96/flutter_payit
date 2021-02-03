@@ -1,6 +1,6 @@
-import 'package:flutter_payit/utils.dart';
 
-import 'invoice.dart';
+import 'package:flutter_payit/Objects/invoice.dart';
+import 'package:flutter_payit/Utils/utils.dart';
 
 class CalendarUtils{
   Map<DateTime, List> generatePaymentEvents(List<Invoice> invoicesInfo, List<int> preferences) {

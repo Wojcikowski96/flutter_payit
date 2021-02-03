@@ -1,8 +1,8 @@
 
 import 'package:flutter/material.dart';
-import 'package:flutter_payit/homePage.dart';
-import 'package:flutter_payit/uiElements.dart';
+import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'homePage.dart';
 import 'registerPage.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';

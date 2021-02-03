@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'homePage.dart';
-// Example holidays
+
 final Map<DateTime, List> _holidays = {
   DateTime(2020, 1, 1): ['Nowy Rok'],
   DateTime(2020, 1, 6): ['Trzech Króli'],
