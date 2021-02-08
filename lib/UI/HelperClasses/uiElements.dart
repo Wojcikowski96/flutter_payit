@@ -21,15 +21,17 @@ class UiElements {
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18.0),
             side: BorderSide(color: borderColor, width: 5)),
-        onPressed: () {
+        onPressed: () async {
           if (method != null) {
-            method(args);
-          }
-          if (onPressedRoute != null) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => onPressedRoute),
-            );
+            method(args).then((value) => {
+                  if (onPressedRoute != null)
+                    {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => onPressedRoute),
+                      )
+                    }
+                });
           }
         },
         child: Center(

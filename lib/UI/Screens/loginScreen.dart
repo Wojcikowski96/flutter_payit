@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_payit/IsUserLoggedChecker/MySharedPreferences.dart';
 import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'homePage.dart';
@@ -34,7 +35,7 @@ class User {
 
 class _LoginPageState extends State<LoginPage> {
   final DBRef = FirebaseDatabase.instance.reference();
-
+  final formKey = GlobalKey<FormState>();
   final TextEditingController loginController = new TextEditingController();
   final TextEditingController passwordController = new TextEditingController();
 
@@ -272,9 +273,14 @@ class _LoginPageState extends State<LoginPage> {
       passwordForSpecifiedUser = snapshot.value["password"];
 
       if (checkPassword(password,passwordForSpecifiedUser)) {
+        MySharedPreferences.instance
+            .setBooleanValue("isLoggedIn", true);
+
+        print("Zapisane w shared preferences w loginpage:");
+        print(MySharedPreferences.instance.getBooleanValue("isLoggedIn"));
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => homePage(DateTime.now())),
+          MaterialPageRoute(builder: (context) => homePage(DateTime.now(),new List())),
         );
 
         storage.write(key: "username", value: username);

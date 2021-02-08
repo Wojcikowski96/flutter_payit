@@ -26,5 +26,38 @@ class Utils{
     }
   }
 
+  bool checkIsAccountControlNumValid(String accountNumber){
+
+    accountNumber="PL"+accountNumber;
+
+    bool isNumberCorrect = false;
+    String first4;
+    String last22;
+
+    first4 = accountNumber.substring(0, 4);
+    print("Pierwsze 4");
+    print(first4);
+    last22 = accountNumber.substring(4, accountNumber.length );
+    print("Last 22: ");
+    print(last22);
+
+    String changedAccountNum = (last22 + first4).replaceAll("PL","2521");
+    print("Zmieniony numer konta: ");
+    print(changedAccountNum);
+
+    BigInt divR = BigInt.parse(changedAccountNum) % BigInt.from(97);
+    print("Reszta z dzielenia");
+    print(divR);
+    if(divR == BigInt.from(1)){
+      isNumberCorrect = true;
+      print("Prawidłowy numer konta");
+    }else{
+      print("Nieprawidłowy numer konta");
+    }
+
+    return isNumberCorrect;
+
+  }
+
 
 }

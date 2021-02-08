@@ -101,7 +101,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
           SizedBox(
             height: 35,
           ),
-          UiElements().drawButton(200,80, "Zatwierdź i wróć", Colors.white, Colors.blue, Colors.blue, context, homePage(DateTime.now()),null, null),
+          UiElements().drawButton(200,80, "Zatwierdź i wróć", Colors.white, Colors.blue, Colors.blue, context, homePage(DateTime.now(),new List()),null, null),
           SizedBox(
             height: 10,
           ),

@@ -1,10 +1,12 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_payit/UI/HelperClasses/dialog.dart';
 import 'package:flutter_payit/UI/Screens/pdfView.dart';
 import 'package:flutter_payit/Objects/invoice.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class PaymentWidget {
-  static Padding paymentCard(Invoice invoice, Color color, BuildContext context) {
+  static Padding paymentCard(List<Invoice> invoices, Invoice invoice, Color color, BuildContext context) {
 
     return Padding(
         padding: const EdgeInsets.all(8.0),
@@ -69,7 +71,25 @@ class PaymentWidget {
                   Expanded(
                     child: RaisedButton(
                       color: Colors.white,
-                      onPressed: () {},
+                      onPressed: () {
+                        if(invoice.accountForTransfer == "00000000000000000000000000"){
+                          Fluttertoast.showToast(msg: "Nie udało się pobrać numeru konta do przelewu, musisz zmienić je ręcznie w podglądzie ");
+                        }else{
+                          //showDialog(context: context,
+//                              builder: (BuildContext context){
+//                                return MyDialog(
+//                                  title: "Uwaga",
+//                                  descriptions: "Za chwilę zostaniesz przekierowany do formularza płatsości GooglePay, kontynuować?",
+//                                  img: "warning.PNG",
+//                                  text: 'Przejdź do płatności',
+//                                );
+//                              }
+
+                         // );
+                        Fluttertoast.showToast(msg: "Płatność będzie wkrótce dodana");
+
+                        }
+                      },
                       child: Text(
                         'Płacę',
                         style: TextStyle(color: color),
@@ -91,7 +111,7 @@ class PaymentWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => PdfView(invoice)),
+                        MaterialPageRoute(builder: (context) => PdfView(invoices, invoice)),
                       );
                     },
                     child: Center(

@@ -11,17 +11,19 @@ import 'homePage.dart';
 import 'package:flutter_payit/Objects/invoice.dart';
 
 class PdfView extends StatefulWidget {
-  final Invoice invoice;
-  String username;
+  Invoice invoice;
+  List<Invoice> invoices;
+  DateTime jumpToDate = DateTime.now();
   var storage = FlutterSecureStorage();
 
-  PdfView(this.invoice);
+  PdfView(this.invoices, this.invoice);
   @override
   _PdfViewState createState() => _PdfViewState();
 }
 
 class _PdfViewState extends State<PdfView> {
   int invoiceFieldsFlex = 1;
+  String username;
   TextEditingController invoicePaymentDateController =
       new TextEditingController();
   TextEditingController invoicePaymentAmountController =
@@ -32,23 +34,21 @@ class _PdfViewState extends State<PdfView> {
   @override
   void initState() {
     super.initState();
-    setState(() {
+    Future.delayed(Duration.zero, () async {
       invoicePaymentAmountController.text =
           widget.invoice.paymentAmount.toString();
       invoicePaymentDateController.text = widget.invoice.paymentDate;
       invoiceAccountNumController.text =
           widget.invoice.accountForTransfer.toString();
-    });
-    Future.delayed(Duration.zero, () async {
-      widget.username = (await widget.storage.read(key: "username")).toString();
+      username = (await widget.storage.read(key: "username")).toString();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     File file = new File(widget.invoice.downloadPath);
-print("path w ekranie z pdf");
-print(widget.invoice.downloadPath);
+    print("path w ekranie z pdf");
+    print(widget.invoice.downloadPath);
     return Scaffold(
         body: Column(children: [
       Expanded(
@@ -155,7 +155,7 @@ print(widget.invoice.downloadPath);
                             Colors.white,
                             Colors.white,
                             context,
-                            homePage(DateTime.parse(invoicePaymentDateController.text)),
+                            null,
                             [widget.invoice],
                             editInvoice)),
                     Expanded(flex: 1, child: SizedBox(width: 5)),
@@ -169,7 +169,7 @@ print(widget.invoice.downloadPath);
                             Colors.white,
                             Colors.white,
                             context,
-                            homePage(DateTime.now()),
+                            homePage(DateTime.now(),new List()),
                             null,
                             null)),
                   ],
@@ -184,9 +184,12 @@ print(widget.invoice.downloadPath);
 
   Future<void> editInvoice(List<dynamic> args) async {
     Invoice invoice = args[0];
+
     invoice.paymentAmount = double.parse(invoicePaymentAmountController.text);
     invoice.paymentDate = invoicePaymentDateController.text;
-    invoice.accountForTransfer = int.parse(invoiceAccountNumController.text);
+    invoice.accountForTransfer = invoiceAccountNumController.text;
+
+    await changeModifyStatus(invoice);
 
     DatabaseOperations().addInvoiceToDatabase(
         invoice.paymentDate,
@@ -195,14 +198,21 @@ print(widget.invoice.downloadPath);
         invoice.userMail,
         invoice.senderMail,
         invoice.accountForTransfer.toString(),
-        invoice.downloadPath+"M",
-        widget.username);
+        invoice.downloadPath,
+        username);
 
-    await changeModifyStatus(invoice.downloadPath);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => homePage(DateTime.parse(invoice.paymentDate),widget.invoices)),
+    );
+
   }
 
-  Future<void> changeModifyStatus(String downloadPath) async {
-    File file = new File(downloadPath);
-    await file.rename(downloadPath + "M");
+  Future<void> changeModifyStatus(Invoice invoice) async {
+    File file = new File(invoice.downloadPath);
+    if (!invoice.downloadPath.endsWith("M")) {
+      await file.rename(invoice.downloadPath + "M");
+      invoice.downloadPath = invoice.downloadPath + "M";
+    }
   }
 }

@@ -1,9 +1,8 @@
 import 'dart:ui';
 
 class Invoice {
-  String categoryName, userMail, senderMail, downloadPath, paymentDate;
+  String categoryName, userMail, senderMail, downloadPath, paymentDate, accountForTransfer;
   double paymentAmount;
-  int accountForTransfer;
   Color color;
 
   bool isTrusted;

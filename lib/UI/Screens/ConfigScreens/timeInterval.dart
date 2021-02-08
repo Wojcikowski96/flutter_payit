@@ -364,7 +364,7 @@ class _TimeIntervalState extends State<TimeInterval> {
                         writeData();
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => homePage(DateTime.now())),
+                          MaterialPageRoute(builder: (context) => homePage(DateTime.now(), new List())),
                         );
                       },
                       child: Center(
@@ -383,10 +383,10 @@ class _TimeIntervalState extends State<TimeInterval> {
   }
 
   void setTextsFromDb() {
-    urgentController.text = preferences[0].toString();
-    notUrgentController.text = preferences[1].toString();
-    monitorController.text = preferences[2].toString();
-    remindsController.text = preferences[3].toString();
+    urgentController.text = preferences[3].toString();
+    notUrgentController.text = preferences[2].toString();
+    monitorController.text = preferences[0].toString();
+    remindsController.text = preferences[1].toString();
   }
 
   Future<void> writeData() async {

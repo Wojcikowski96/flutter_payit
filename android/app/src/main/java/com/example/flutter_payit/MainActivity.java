@@ -3,6 +3,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -44,13 +47,16 @@ import javax.mail.internet.MimeBodyPart;
 
 
 public class MainActivity extends FlutterActivity {
-    private static final String CHANNEL = "name";
+    private static final String CHANNEL = "com.example.flutter_payit";
+
+    private Intent forService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         GeneratedPluginRegistrant.registerWith(this);
+        forService = new Intent(MainActivity.this,MyService.class);
 
         new MethodChannel(getFlutterView(), CHANNEL).setMethodCallHandler((methodCall, result) -> {
 
@@ -73,10 +79,18 @@ public class MainActivity extends FlutterActivity {
                 dt.addListener(runner -> m.success("Sukces dla "+emailAddress));
                 dt.start();
             }
+            else if(methodCall.method.equals("startService")){
+                startService();
+                moveTaskToBack(true);
+                result.success("Service Started");
+            }
         });
     }
 
     public void downloadEmailAttachments(String host, String port, String emailAddress, String password, String protocol, Integer oldUID, List<String> trustedEmails, String path, String username, int counter) {
+
+        File tempDir = new File(path.replaceAll("invoicesPDF","Temp"));
+        tempDir.mkdirs();
 
         String callbackMessage = "Zsynchronizowano pomyślnie! " + emailAddress;
 
@@ -198,10 +212,8 @@ public class MainActivity extends FlutterActivity {
                                     // this part is attachment
                                     String fileName = emailAddress + ";" + trustedEmails.get(t) + ";" + sentDate + ".pdf";
                                     attachFiles += fileName + ", ";
-                                    //File directory = new File(getCacheDir().toString()+File.separator+"invoicesPDF");
-                                    //directory.mkdirs();
                                     System.out.println("Path w Javie: " + path);
-                                    part.saveFile(path + File.separator + fileName);
+                                    part.saveFile(path.replaceAll("invoicesPDF","Temp") + File.separator+ fileName);
                                 } else {
                                     // this part may be the message content
                                     messageContent = part.getContent().toString();
@@ -231,11 +243,13 @@ public class MainActivity extends FlutterActivity {
                 }
             }
             Integer maxUID = findLatestUID(allUIDS);
-            System.out.println("UID dla: " + emailAddress + ": " + maxUID);
+            //System.out.println("UID dla: " + emailAddress + ": " + maxUID);
             ref.setValue(maxUID);
             // disconnect
             folderInbox.close(false);
             store.close();
+
+            moveFilesFromTemp(path);
 
         } catch (NoSuchProviderException ex) {
             System.out.println("No provider for imaps.");
@@ -249,13 +263,24 @@ public class MainActivity extends FlutterActivity {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-        System.out.println("Rozłączam się " + emailAddress);
+        //System.out.println("Rozłączam się " + emailAddress);
 
         if (counter == 0) {
             Activity thisActivity = this;
             String finalCallbackMessage = callbackMessage;
             thisActivity.runOnUiThread(() -> popupMessage(finalCallbackMessage, allUIDS.get(allUIDS.size()-1)));
         }
+    }
+
+    private void moveFilesFromTemp(String path) {
+        File tempDir = new File(path.replaceAll("invoicesPDF","Temp"));
+        List<File> tempFiles = listFilesForFolder(tempDir);
+
+        for(File myFile : tempFiles){
+            myFile.renameTo(new File(path+File.separator+myFile.getName()));
+        }
+
+        tempDir.delete();
     }
 
     private Integer findLatestUID(List<Integer> allUIDS) {
@@ -327,6 +352,31 @@ public class MainActivity extends FlutterActivity {
         public void run() {
             downloadEmailAttachments(host, port, userName, password, protocol, newUID, trustedEmails,path, username, counter);
             notifyListeners();
+        }
+    }
+
+     public List <File> listFilesForFolder(final File folder) {
+
+        List<File> files = new ArrayList<>();
+
+        if (folder.listFiles()!=null) {
+            for (final File fileEntry : Objects.requireNonNull(folder.listFiles())) {
+                if (fileEntry.isDirectory()) {
+                    listFilesForFolder(fileEntry);
+                } else {
+                    System.out.println(fileEntry.getName());
+                    files.add(fileEntry);
+                }
+            }
+        }
+        return files;
+    }
+
+    private void startService(){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            startForegroundService(forService);
+        } else {
+            startService(forService);
         }
     }
 }
