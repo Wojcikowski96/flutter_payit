@@ -48,7 +48,8 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
         username = tempUsername;
       });
 
-      print("Username " + username);
+
+
 
       List<Padding> tempEmailPanels = await getLoggedUserData(
           await DatabaseOperations().getUserEmailsFromDb(username));
@@ -152,16 +153,16 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
                   },
                 ),
               ),
-              Expanded(
-                flex: 2,
-                child: IconButton(
-                  color: Colors.blue,
-                  icon: Center(child: Icon(Icons.edit, size: 30.0)),
-                  onPressed: () {
-                    removeUserEmail(emailKey, email);
-                  },
-                ),
-              ),
+//              Expanded(
+//                flex: 2,
+//                child: IconButton(
+//                  color: Colors.blue,
+//                  icon: Center(child: Icon(Icons.edit, size: 30.0)),
+//                  onPressed: () {
+//                    displayDialog(context,"Edytuj adres email");
+//                  },
+//                ),
+//              ),
             ],
           ),
         ),
@@ -278,7 +279,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
   }
 
   void displayDialog(BuildContext context, String title) => showDialog(
-        context: context,
+    context: context,
         builder: (context) => AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(Constants.padding),
@@ -452,7 +453,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
                           ),
                           filled: true,
                           fillColor: Colors.grey.withOpacity(0.7),
-                          hintText: "Port poczty przychodzącej:",
+                          hintText: "Typ serwera:",
                           focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(30),
                               borderSide:
@@ -475,9 +476,8 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
                         ),
                         color: Colors.blue,
                         onPressed: () {
-                          Navigator.pop(context, false);
                           if (!checkIfEmailsTheSame(emailController.text))
-                            prepareListsForDrawing();
+                            addEmail(context);
                           else {
                             Fluttertoast.showToast(
                                 msg: 'Taki mail jest już zdefiniowany',
@@ -490,49 +490,6 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
                         })
                   ],
                 ),
-              ),
-            )),
-      );
-
-  void displayUIDDialog(BuildContext context, String title) => showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(Constants.padding),
-            ),
-            title: Center(
-                child: Text(
-              title,
-              style: TextStyle(color: Colors.blue),
-            )),
-            content: Container(
-              height: 200,
-              child: Column(
-                children: [
-                  RaisedButton(
-                      child: Text(
-                        'Dodaj',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      color: Colors.blue,
-                      onPressed: () {
-                        Navigator.pop(context, false);
-                        if (!checkIfEmailsTheSame(emailController.text))
-                          prepareListsForDrawing();
-                        else {
-                          Fluttertoast.showToast(
-                              msg: 'Taki mail jest już zdefiniowany',
-                              toastLength: Toast.LENGTH_SHORT,
-                              gravity: ToastGravity.CENTER,
-                              timeInSecForIos: 1,
-                              backgroundColor: Colors.red,
-                              textColor: Colors.white);
-                        }
-                      })
-                ],
               ),
             )),
       );
@@ -558,5 +515,27 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     emailTypeController.text = emailParams[4];
     });
 
+  }
+
+  void addEmail(BuildContext context)  {
+    print("Username " + username);
+    print(emailController.text);
+    print(emailPasswordController.text);
+
+    if(emailController.text=="" || emailPasswordController.text=="" || emailHostController.text=="" || emailPortController.text=="" || emailTypeController.text==""){
+
+      Fluttertoast.showToast(
+          msg: 'Nie wszystkie pola zostały wypełnione',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIos: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white
+      );
+
+    }else{
+      Navigator.pop(context, false);
+      prepareListsForDrawing();
+    }
   }
 }

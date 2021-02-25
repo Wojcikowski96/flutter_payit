@@ -23,15 +23,14 @@ class UiElements {
             side: BorderSide(color: borderColor, width: 5)),
         onPressed: () async {
           if (method != null) {
-            method(args).then((value) => {
-                  if (onPressedRoute != null)
-                    {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => onPressedRoute),
-                      )
-                    }
-                });
+            method(args);
+          }
+          if (onPressedRoute != null)
+          {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => onPressedRoute),
+            );
           }
         },
         child: Center(

@@ -7,13 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_payit/IsUserLoggedChecker/MySharedPreferences.dart';
 import 'package:flutter_payit/JavaDownloaderInvoke/downloader.dart';
+import 'package:flutter_payit/LifeCycleHandler/lifeCycle.dart';
 import 'package:flutter_payit/Main/main.dart';
-import 'package:flutter_payit/Notifications/notificationHelper.dart';
 import 'package:flutter_payit/UI/HelperClasses/mainUI.dart';
 import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
+import 'package:flutter_payit/UI/Screens/ConfigScreens/timeInterval.dart';
+import 'package:flutter_payit/UI/Screens/ConfigScreens/trustedList.dart';
 import 'package:flutter_payit/UI/Screens/loginScreen.dart';
-import 'file:///C:/Users/wojci/AndroidStudioProjects/flutter_payit/lib/UI/Screens/ConfigScreens/timeInterval.dart';
-import 'file:///C:/Users/wojci/AndroidStudioProjects/flutter_payit/lib/UI/Screens/ConfigScreens/trustedList.dart';
 import 'package:flutter_payit/Utils/utils.dart';
 import 'PaymentPage.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -83,6 +83,8 @@ class _homePageState extends State<homePage> {
 
   List<List<dynamic>> emailSettings = new List();
 
+  List<List<String>> trustedEmails = new List();
+
   Color definedColor = Colors.blue;
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -95,7 +97,8 @@ class _homePageState extends State<homePage> {
   @override
   void initState() {
     super.initState();
-    startServiceInPlatform();
+
+    //startServiceInPlatform();
 
     if (widget.definedInvoicesInfo.isNotEmpty) {
       definedColor = widget.definedInvoicesInfo.last.color;
@@ -119,7 +122,7 @@ class _homePageState extends State<homePage> {
 
       emailSettings = await UserOperationsOnEmails().getEmailSettings(username);
 
-      List<List<String>> trustedEmails =
+      trustedEmails =
           await UserOperationsOnEmails().getInvoiceSenders(username);
 
       if (emailSettings.isNotEmpty) {
@@ -127,17 +130,18 @@ class _homePageState extends State<homePage> {
           isProgressBarVisible = true;
         });
 
-        downloadAttachmentForAllMailboxes(emailSettings, trustedEmails, 0)
+        trustedEmails.isNotEmpty ? downloadAttachmentForAllMailboxes(emailSettings, trustedEmails)
             .then((value) => {
                   setState(() {
                     isProgressBarVisible = false;
                   }),
-                  showNotificationOnEndSync(flutterLocalNotificationsPlugin),
-                  startCheckingLatest(emailSettings, trustedEmails)
-                });
+                  //print('Czy progress widoczny'),
+                  // print(isProgressBarVisible),
+                  //showNotificationOnEndSync(flutterLocalNotificationsPlugin),
+                  //startCheckingLatest(emailSettings, trustedEmails)
+                }):print("Nothing to do");
 
-        await compute(watchForNewFiles,trustedEmails);
-
+        await watchForNewFiles(trustedEmails);
       }
 
       List<FileSystemEntity> invoiceFileList =
@@ -176,23 +180,23 @@ class _homePageState extends State<homePage> {
     });
   }
 
-  startCheckingLatest(
-      List<List> emailSettings, List<List<String>> trustedEmails) {
-    int counter = 0;
-    oldTimer?.cancel();
-    timer = Timer.periodic(
-        Duration(seconds: preferences[0]),
-        (Timer t) async => {
-              // print("Timer " + timer.hashCode.toString()),
-              counter = counter + 1,
-              emailSettings =
-                  await UserOperationsOnEmails().getEmailSettings(username),
-              await downloadAttachmentForAllMailboxes(
-                  emailSettings, trustedEmails, counter),
-              showNotificationOnEndSync(flutterLocalNotificationsPlugin)
-            });
-    oldTimer = timer;
-  }
+//  startCheckingLatest(
+//      List<List> emailSettings, List<List<String>> trustedEmails) {
+//    int counter = 0;
+//    oldTimer?.cancel();
+//    timer = Timer.periodic(
+//        Duration(seconds: preferences[0]),
+//        (Timer t) async => {
+//              // print("Timer " + timer.hashCode.toString()),
+//              counter = counter + 1,
+//              emailSettings =
+//                  await UserOperationsOnEmails().getEmailSettings(username),
+//              await downloadAttachmentForAllMailboxes(
+//                  emailSettings, trustedEmails, counter),
+//              showNotificationOnEndSync(flutterLocalNotificationsPlugin)
+//            });
+//    oldTimer = timer;
+//  }
 
   Future setFileForDrawing(
       List<List<String>> trustedEmails, String path) async {
@@ -222,6 +226,8 @@ class _homePageState extends State<homePage> {
           Utils().setUrgencyColorBasedOnDate(
               DateTime.parse(paymentDate), preferences));
 
+      startReminder(invoice);
+
       invoicesInfo.add(invoice);
 
       setState(() {
@@ -232,6 +238,16 @@ class _homePageState extends State<homePage> {
     }
   }
 
+  void startReminder(Invoice invoice) {
+    if (invoice.color == Colors.red)
+      methodChannel.invokeMethod("startMonitoringUrgentPayment", {
+        "paymentDate": invoice.paymentDate,
+        "categoryName": invoice.categoryName,
+        "senderMail": invoice.senderMail,
+        "remindFreq" : preferences[1]
+      });
+  }
+
   Color setUrgencyColor(List<Invoice> tempInvoicesInfo) {
     Color color = Colors.blue;
     for (Invoice singleInvoice in tempInvoicesInfo) {
@@ -239,24 +255,24 @@ class _homePageState extends State<homePage> {
                   .difference(DateTime.now())
                   .inDays)
               .abs() <=
-          preferences[0]) {
+          preferences[3]) {
         color = Colors.red;
       } else if ((DateTime.parse(singleInvoice.paymentDate)
                       .difference(DateTime.now())
                       .inDays)
                   .abs() >
-              preferences[0] &&
+              preferences[3] &&
           (DateTime.parse(singleInvoice.paymentDate)
                       .difference(DateTime.now())
                       .inDays)
                   .abs() <=
-              preferences[1]) {
+              preferences[2]) {
         color = Colors.amber;
       } else if ((DateTime.parse(singleInvoice.paymentDate)
                       .difference(DateTime.now())
                       .inDays)
                   .abs() >
-              preferences[1] &&
+              preferences[2] &&
           (DateTime.parse(singleInvoice.paymentDate)
                       .difference(DateTime.now())
                       .inDays)
@@ -280,6 +296,9 @@ class _homePageState extends State<homePage> {
     PageController pageController = PageController(initialPage: 0);
     if (emailSettings.isEmpty) {
       return MainUI().warningHomePage(context);
+    }
+    if (trustedEmails.isEmpty) {
+      return MainUI().warningHomePageForTrustedEmpty(context);
     } else {
       return WillPopScope(
         onWillPop: () {
@@ -297,6 +316,7 @@ class _homePageState extends State<homePage> {
         child: Scaffold(
             key: scaffoldKey,
             body: Column(children: [
+              LifecycleWatcher(),
               CalendarWidget(
                 selectedDay: widget.selectedDate,
                 events: paymentEvents,
@@ -514,12 +534,14 @@ class _homePageState extends State<homePage> {
                     },
                   ),
                   ListTile(
-                    title: Text('O aplikacji'),
+                    title: Text('Przełącz użytkownika'),
                     onTap: () {
-                      // Update the state of the app
-                      // ...
-                      // Then close the drawer
-                      Navigator.pop(context);
+                      MySharedPreferences.instance
+                          .setBooleanValue("isLoggedIn", false);
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => MyApp(DateTime.now())));
                     },
                   ),
 //                  ListTile(
@@ -568,8 +590,7 @@ class _homePageState extends State<homePage> {
 
   Future<void> downloadAttachmentForAllMailboxes(
       List<List<dynamic>> emailSettings,
-      List<List<String>> trustedEmails,
-      int counter) async {
+      List<List<String>> trustedEmails) async {
     print("Zaciągam maile");
 
     List<String> tempUserEmailsNames = new List();
@@ -582,9 +603,9 @@ class _homePageState extends State<homePage> {
         path,
         methodChannel,
         username,
-        counter
+        preferences[0]
       ];
-      await Downloader().downloadAttachment(downloadAttachmentArgs);
+      Downloader().downloadAttachment(downloadAttachmentArgs);
     }
     tempUserEmailsNames.add("Wszystkie adresy");
     setState(() {

@@ -272,14 +272,13 @@ class registerPage extends StatelessWidget {
 
                 ]))));
   }
-  Future<void> writeData(int num, BuildContext context) async {
+  Future<void> writeData(BuildContext context) async {
     String login = loginController.text;
     String password = password1Controller.text;
     String email = emailController.text;
     String emailPassword = emailPasswordController.text;
 
     DBRef.child('Users').child(login).set({
-      'id':'ID'+num.toString(),
       'login': login,
       'password': password,
       'myEmails' :null,
@@ -321,22 +320,6 @@ class registerPage extends StatelessWidget {
     DBRef.child('Users').child(login).child('invoiceEmails').set({
     });
 
-    DBRef.child('Statistics').set({
-      'userCount':num,
-    });
-  }
-
-
-
-Future<int> getUsersNum() async {
-
-    var userCount = await DBRef.child('Statistics').child('userCount').once();
-
-    if(userCount.value == null){
-      return 0;
-    }else{
-      return userCount.value;
-    }
   }
 
   void register(BuildContext context) async {
@@ -344,11 +327,7 @@ Future<int> getUsersNum() async {
     String emailPassword = emailPasswordController.text;
 
     if((password1Controller.text == password2Controller.text) && emailController.text.contains('@')){
-      i = await getUsersNum();
-      print('Gówno z bazy danych');
-      print(i);
-      i=i+1;
-      writeData(i,context);
+      writeData(context);
 
       Navigator.push(
         context,

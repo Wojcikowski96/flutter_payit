@@ -12,18 +12,18 @@ class Invoice {
   @override
   String toString() {
     // TODO: implement toString
-    print("Invoice");
+
 
     return "Nazwa kategorii: " +
-        categoryName +
+        categoryName.toString() +
         " Mail usera: " +
-        userMail +
+        userMail.toString() +
         " Mail nadawcy: " +
-        senderMail +
+        senderMail.toString() +
         " downloadPath : " +
         downloadPath.toString() +
         " paymentDate " +
-        paymentDate +
+        paymentDate.toString() +
         " paymentAmount " +
         paymentAmount.toString() +
         " accountForTransfer: " +

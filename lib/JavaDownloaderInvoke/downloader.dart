@@ -11,7 +11,7 @@ class Downloader{
       "trustedEmails": args[1],
       "path": args[2],
       "username": args[4],
-      "counter": args[5]
+      "frequency": args[5]
     });
   }
 }

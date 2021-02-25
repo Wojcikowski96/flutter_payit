@@ -51,143 +51,149 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
-    return Scaffold(
-      body: Column(children: [
-        SizedBox(
-          height: 40,
-        ),
-        Padding(
+      return Scaffold(
+          resizeToAvoidBottomInset: false,
+          body: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Text(
-            "Zaufana lista",
-            style: TextStyle(fontSize: 35, color: Colors.blue),
-          ),
-        ),
-        Container(
-          child: Image.asset(
-            "invoices.png",
-            height: 150,
-            width: 150,
-          ),
-        ),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(15.0),
-            child: ListView(
-              children: List.generate(
-                  emailPanels.length, (index) => emailPanels[index]),
+          child: Column(children: [
+            SizedBox(
+              height: 40,
             ),
-          ),
-        ),
-        SizedBox(
-          height: 20
-        ),
-        Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Expanded(
-                flex: 2,
-                child: Text(
-                  "Zresetuj UID:",
-                  style: TextStyle(
-                      fontSize: 24,
-                      color: Colors.blue
-                  ),
-                ),
-
-              ),
-              Expanded(
-                flex: 1,
-                child: SizedBox(
-                  width: 200,
-                  height: 50,
-                  child: Switch(
-
-                    value: isSwitched,
-                    onChanged: (value) {
-                      setState(() {
-                        if(isSwitched ==false){
-                          isSwitched = true;
-
-                        }else{
-                          isSwitched = false;
-                        }
-                      });
-                    },
-                    activeTrackColor: Colors.blue,
-                    activeColor: Colors.blue,
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 1,
-                child: CircleAvatar(
-                  backgroundColor: Colors.transparent,
-                  child: IconButton(
-                    padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-                    icon: Icon(Icons.info,size: 40,),
-                    color: Colors.blue,
-                    onPressed: () {
-                      showDialog(context: context,
-                          builder: (BuildContext context){
-                            return MyDialog(
-                              title: "O UID",
-                              descriptions: "Aktywowane ustawi wartość UID na 0, czyli aplikacja przejrzy wszystkie skrzynki pocztowe od nowa. Przydatne gdy dodasz nowy mail, a chcesz pobrać z niego starsze faktury. Będzie się to wiązać z wczytywaniem jak przy pierwszym uruchomieniu (kilka minut). Jeśli zależy Ci tylko na fakturach, które dopiero się pojawią, pozostaw wyłączone.",
-                              img: "warning.PNG",
-                              text: 'Rozumiem',
-                            );
-                          }
-                      );
-                    },
-                  ),
-
-                ),
-
-              )
-            ],
-          ),
-        ),
-        SizedBox(
-          width: 200,
-          height: 80,
-          child: RaisedButton(
-            color: Colors.white,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18.0),
-                side: BorderSide(color: Colors.blue, width: 5)),
-            onPressed: () {
-              if(isSwitched){
-                DatabaseOperations().resetUID(username);
-              }
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => homePage(DateTime.now(), new List())),
-              );
-            },
-            child: Center(
+            Padding(
+              padding: const EdgeInsets.all(8.0),
               child: Text(
-                'Zatwierdź i wróć',
-                maxLines: 2,
-                style: TextStyle(color: Colors.blue, fontSize: 20),
+                "Zaufana lista",
+                style: TextStyle(fontSize: 35, color: Colors.blue),
               ),
             ),
+            Container(
+              child: Image.asset(
+                "invoices.png",
+                height: 150,
+                width: 150,
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: ListView(
+                  children: List.generate(
+                      emailPanels.length, (index) => emailPanels[index]),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 20
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    "Zresetuj UID:",
+                    style: TextStyle(
+                        fontSize: 24,
+                        color: Colors.blue
+                    ),
+                  ),
 
-          ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: SizedBox(
+                    width: 200,
+                    height: 50,
+                    child: Switch(
+
+                     value: isSwitched,
+                     onChanged: (value) {
+                        setState(() {
+                          if(isSwitched ==false){
+                            isSwitched = true;
+
+                          }else{
+                            isSwitched = false;
+                          }
+                        });
+                      },
+                      activeTrackColor: Colors.blue,
+                     activeColor: Colors.blue,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: CircleAvatar(
+                    backgroundColor: Colors.transparent,
+                    child: IconButton(
+                      padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                      icon: Icon(Icons.info,size: 40,),
+                      color: Colors.blue,
+                      onPressed: () {
+                        showDialog(context: context,
+                            builder: (BuildContext context){
+                              return MyDialog(
+                                title: "O UID",
+                                descriptions: "Aktywowane ustawi wartość UID na 0, czyli aplikacja przejrzy wszystkie skrzynki pocztowe od nowa. Przydatne gdy dodasz nowy mail, a chcesz pobrać z niego starsze faktury. Będzie się to wiązać z wczytywaniem jak przy pierwszym uruchomieniu (kilka minut). Jeśli zależy Ci tylko na fakturach, które dopiero się pojawią, pozostaw wyłączone.",
+                                img: "warning.PNG",
+                                text: 'Rozumiem',
+                              );
+                            }
+                        );
+                      },
+                    ),
+
+                  ),
+
+                )
+              ],
+            ),
+            ),
+
+              SizedBox(
+                height: 80,
+                width: 200,
+                child: RaisedButton(
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18.0),
+                      side: BorderSide(color: Colors.blue, width: 5)),
+                  onPressed: () {
+                    if(isSwitched){
+                      DatabaseOperations().resetUID(username);
+                    }
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => homePage(DateTime.now(), new List())),
+                    );
+                  },
+                  child: Center(
+                    child: Text(
+                      'Zatwierdź i wróć',
+                      maxLines: 2,
+                     style: TextStyle(color: Colors.blue, fontSize: 20),
+                    ),
+                  ),
+                ),
+              ),
+
+            SizedBox(
+              height: 10,
+            ),
+          ]),
         ),
-        SizedBox(
-          height: 10,
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.blue,
+          child: Icon(Icons.add),
+          onPressed: () {
+            displayDialog(context, "Dodaj nadawcę faktur:");
+          },
         ),
-      ]),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blue,
-        child: Icon(Icons.add),
-        onPressed: () {
-          displayDialog(context, "Dodaj nadawcę faktur:");
-        },
-      ),
-    );
+      );
+
   }
 
   Padding emailPanel(String email, String emailKey, String customName) {
@@ -411,30 +417,31 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
                               ))),
                     ),
                     SizedBox(height: 25),
-                    RaisedButton(
-                        child: Text(
-                          'Dodaj',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        color: Colors.blue,
-                        onPressed: () {
-                          Navigator.pop(context, false);
-                          if (!checkIfEmailsTheSame(emailController.text))
-                            prepareListsForDrawing(
-                                emailController.text, nameController.text);
-                          else {
-                            Fluttertoast.showToast(
-                                msg: 'Taki mail jest już zdefiniowany',
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.CENTER,
-                                timeInSecForIos: 1,
-                                backgroundColor: Colors.red,
-                                textColor: Colors.white);
-                          }
-                        })
+                       RaisedButton(
+                          child: Text(
+                            'Dodaj',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          color: Colors.blue,
+                          onPressed: () {
+                            Navigator.pop(context, false);
+                            if (!checkIfEmailsTheSame(emailController.text))
+                              prepareListsForDrawing(
+                                  emailController.text, nameController.text);
+                            else {
+                              Fluttertoast.showToast(
+                                  msg: 'Taki mail jest już zdefiniowany',
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.CENTER,
+                                  timeInSecForIos: 1,
+                                  backgroundColor: Colors.red,
+                                  textColor: Colors.white);
+                            }
+                          }),
+
                   ],
                 ),
               ),

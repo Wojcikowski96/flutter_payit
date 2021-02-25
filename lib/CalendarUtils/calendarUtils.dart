@@ -12,7 +12,7 @@ class CalendarUtils{
       DateTime date = DateTime.parse(singleInvoiceInfo.paymentDate);
 
       String paymentEventValue = 'Opłata dla|' +
-          singleInvoiceInfo.categoryName +
+          singleInvoiceInfo.categoryName.toString() +
           "|" +
           singleInvoiceInfo.paymentAmount.toString() +
           "|" +
@@ -22,9 +22,9 @@ class CalendarUtils{
           "|" +
           singleInvoiceInfo.accountForTransfer.toString() +
           "|" +
-          singleInvoiceInfo.userMail +
+          singleInvoiceInfo.userMail.toString() +
           "|" +
-          singleInvoiceInfo.senderMail;
+          singleInvoiceInfo.senderMail.toString();
 
       if (paymentEvents.containsKey(date)) {
         paymentEvents[date].add(paymentEventValue);

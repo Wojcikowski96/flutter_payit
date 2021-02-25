@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 class Utils{
   Color setUrgencyColorBasedOnDate(DateTime date, List<int> preferences) {
     Color color = Colors.blue;
-    if ((date.difference(DateTime.now()).inDays).abs() <= preferences[0]) {
+    if ((date.difference(DateTime.now()).inDays).abs() <= preferences[3]) {
       color = Colors.red;
-    } else if ((date.difference(DateTime.now()).inDays).abs() > preferences[0] &&
-        (date.difference(DateTime.now()).inDays).abs() <= preferences[1]) {
+    } else if ((date.difference(DateTime.now()).inDays).abs() > preferences[3] &&
+        (date.difference(DateTime.now()).inDays).abs() <= preferences[2]) {
       color = Colors.amber;
-    } else if ((date.difference(DateTime.now()).inDays).abs() > preferences[1] &&
+    } else if ((date.difference(DateTime.now()).inDays).abs() > preferences[2] &&
         (date.difference(DateTime.now()).inDays).abs() <= 44000) {
       color = Colors.green;
     }
@@ -35,24 +35,15 @@ class Utils{
     String last22;
 
     first4 = accountNumber.substring(0, 4);
-    print("Pierwsze 4");
-    print(first4);
+
     last22 = accountNumber.substring(4, accountNumber.length );
-    print("Last 22: ");
-    print(last22);
 
     String changedAccountNum = (last22 + first4).replaceAll("PL","2521");
-    print("Zmieniony numer konta: ");
-    print(changedAccountNum);
 
     BigInt divR = BigInt.parse(changedAccountNum) % BigInt.from(97);
-    print("Reszta z dzielenia");
-    print(divR);
+
     if(divR == BigInt.from(1)){
       isNumberCorrect = true;
-      print("Prawidłowy numer konta");
-    }else{
-      print("Nieprawidłowy numer konta");
     }
 
     return isNumberCorrect;

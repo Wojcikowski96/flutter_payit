@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_payit/Objects/userEmail.dart';
@@ -49,7 +51,7 @@ class DatabaseOperations {
 
   Future<void> resetUID(String username) async {
     List<String> emailKeys = new List();
-    final dbSnapshot = await DBRef.child("Users").child(username).once();
+    final dbSnapshot = await DBRef.child("Users").child(username).child("myEmails").once();
 
     Map<dynamic, dynamic> values = dbSnapshot.value;
 
@@ -58,13 +60,17 @@ class DatabaseOperations {
         emailKeys.add(key);
       });
     }
-    print("emailKeys " + emailKeys.toString());
+
+    Map<String, dynamic> updates = new HashMap();
+
+    updates["lastUID"]=0;
+
     for (String emailKey in emailKeys) {
       DBRef.child('Users')
           .child(username)
           .child('myEmails')
           .child(emailKey)
-          .set({"lastUID": 0});
+          .update(updates);
     }
   }
 

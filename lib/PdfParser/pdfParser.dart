@@ -118,20 +118,17 @@ class PdfParser {
 
   String extractAccount(String singlePdfContent) {
     final accountRegex = RegExp(r'(\d{26})', multiLine: true);
-    List <String> correctAccountNums = new List();
+    List<String> correctAccountNums = new List();
     List<String> listOfAccounts = accountRegex
         .allMatches(singlePdfContent)
         .map((m) => m.group(0))
         .toList();
-    print("Lista numerów kont:");
-    print(listOfAccounts);
-    for(String accountNum in listOfAccounts){
-      if(Utils().checkIsAccountControlNumValid(accountNum)){
+
+    for (String accountNum in listOfAccounts) {
+      if (Utils().checkIsAccountControlNumValid(accountNum)) {
         correctAccountNums.add(accountNum);
       }
     }
-    print("correctAccountNums:");
-    print(correctAccountNums);
 
     if (correctAccountNums.length == 0) {
       print("Numer konta: 0");
@@ -141,17 +138,18 @@ class PdfParser {
       print("Numer konta: " + correctAccountNums.last);
       return correctAccountNums.last;
     }
-
   }
 }
 
 Future<String> pdfToString(String filename) async {
-  PdfDocument document =
-      PdfDocument(inputBytes: await PdfParser._readDocumentData(filename));
-  //Create a new instance of the PdfTextExtractor.
-  PdfTextExtractor extractor = PdfTextExtractor(document);
-  //Extract all the text from the document.
-  String text = extractor.extractText();
+  String text;
+  await PdfParser._readDocumentData(filename).then((value) {
+    PdfDocument document = PdfDocument(inputBytes: value);
+    PdfTextExtractor extractor = PdfTextExtractor(document);
+    text = extractor.extractText();
+  }).catchError((err) {
+    text="Proszę przelać 0.00 zł na konto 00000000000000000000000000 do dnia 01-01-1900";
+  });
 
   return text;
 }
