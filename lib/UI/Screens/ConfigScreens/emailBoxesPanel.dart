@@ -503,7 +503,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     emailPortController.text = "Pobieram ...";
     emailTypeController.text = "Pobieram ...";
 
-    AlertDialog discoverSettingsDialog = new UiElements().showLoaderDialog(context, "Odkrywam ustawienia...");
+    AlertDialog discoverSettingsDialog = new UiElements().showLoaderDialog(context, "Odkrywam ustawienia...",true);
 
     List<String> emailParams = await UserOperationsOnEmails().discoverSettings(email, password);
 

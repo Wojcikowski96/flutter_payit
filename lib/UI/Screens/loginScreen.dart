@@ -26,7 +26,6 @@ class User {
 
   static fromJson(json) {
     User u = new User();
-    print(json);
     u.login = json['login'];
     u.password = json['password'];
     return u;
@@ -151,7 +150,7 @@ class _LoginPageState extends State<LoginPage> {
 
                         getDataFromTextFields();
                         verifyUsername(getDataFromTextFields()[0],getDataFromTextFields()[1]);
-                        UiElements().showLoaderDialog(context, "Trwa logowanie, czekaj");
+                        UiElements().showLoaderDialog(context, "Trwa logowanie, czekaj",true);
 
                       },
 
@@ -238,8 +237,6 @@ class _LoginPageState extends State<LoginPage> {
       values.forEach((key, values) {
         usernames.add(values["login"]);
       });
-      print('usernames');
-      print(usernames);
       if (checkUsername(username,usernames)) {
         verifyPassword(username,password);
       } else {
@@ -255,17 +252,6 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
-  Future<int> getUsersNum() async {
-    var userCount = await DBRef.child('Statistics').child('userCount').once();
-
-    if (userCount.value == null) {
-      return 0;
-    } else {
-      print(userCount.value);
-      return userCount.value;
-    }
-  }
-
   verifyPassword(String username, String password) {
     String passwordForSpecifiedUser;
     final DBRef = FirebaseDatabase.instance.reference().child("Users").child(username);
@@ -276,8 +262,6 @@ class _LoginPageState extends State<LoginPage> {
         MySharedPreferences.instance
             .setBooleanValue("isLoggedIn", true);
 
-        print("Zapisane w shared preferences w loginpage:");
-        print(MySharedPreferences.instance.getBooleanValue("isLoggedIn"));
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => homePage(DateTime.now(),new List())),

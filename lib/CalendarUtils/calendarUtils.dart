@@ -8,7 +8,6 @@ class CalendarUtils{
 
     for (Invoice singleInvoiceInfo in invoicesInfo) {
 
-      print(singleInvoiceInfo.toString());
       DateTime date = DateTime.parse(singleInvoiceInfo.paymentDate);
 
       String paymentEventValue = 'Opłata dla|' +
@@ -33,7 +32,6 @@ class CalendarUtils{
       }
     }
 
-    print("Mapa " + paymentEvents.toString());
     return paymentEvents;
   }
 }

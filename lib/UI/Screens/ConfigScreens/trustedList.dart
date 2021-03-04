@@ -297,6 +297,36 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
     return emailPanels;
   }
 
+  void addTrustedEmail(BuildContext context)  {
+
+    if(emailController.text=="" || nameController.text==""){
+
+      Fluttertoast.showToast(
+          msg: 'Nie wszystkie pola zostały wypełnione',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIos: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white
+      );
+
+    }
+
+    else if (!checkIfEmailsTheSame(emailController.text)){
+      Navigator.pop(context, false);
+      prepareListsForDrawing(
+          emailController.text, nameController.text);
+    }else{
+      Fluttertoast.showToast(
+          msg: 'Taki mail jest już zdefiniowany',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIos: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white);
+    }
+  }
+
   prepareListsForDrawing(String email, String customName) {
     String emailKey = email.replaceAll(new RegExp(r'\.'), '');
     List<String> tempEmailKeys = emailKeys;
@@ -427,19 +457,7 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
                           ),
                           color: Colors.blue,
                           onPressed: () {
-                            Navigator.pop(context, false);
-                            if (!checkIfEmailsTheSame(emailController.text))
-                              prepareListsForDrawing(
-                                  emailController.text, nameController.text);
-                            else {
-                              Fluttertoast.showToast(
-                                  msg: 'Taki mail jest już zdefiniowany',
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.CENTER,
-                                  timeInSecForIos: 1,
-                                  backgroundColor: Colors.red,
-                                  textColor: Colors.white);
-                            }
+                            addTrustedEmail(context);
                           }),
 
                   ],

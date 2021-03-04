@@ -129,8 +129,6 @@ class DatabaseOperations {
     List<Invoice> modifiedInvoices = new List();
     final dbSnapshot = await DBRef.child("Users").child(username).child("editedInvoices").once();
     Map<dynamic, dynamic> values = dbSnapshot.value;
-    print("Wartość paymentAmount");
-    print(values);
     if (values != null) {
       values.forEach((key, values) {
         Invoice invoice = new Invoice(values["categoryName"], values["userMail"], values["senderMail"],

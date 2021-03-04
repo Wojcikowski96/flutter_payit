@@ -34,7 +34,6 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     platform.invokeMethod("stopService");
-    print("Zatrzymuj serwis");
     super.initState();
   }
 
@@ -43,27 +42,15 @@ class _MyAppState extends State<MyApp> {
         .getBooleanValue("isLoggedIn")
         .then((value) => setState(() {
               isLoggedIn = value;
-              print("isLoggedIn w MyAppState");
-              print(isLoggedIn);
             }));
   }
 
   Widget build(BuildContext context) {
-    print("Data w buildzie "+widget.date.toString());
     return MaterialApp(
         title: 'PayIt',
         theme: ThemeData(
           primarySwatch: Colors.lightBlue,
         ),
         home: isLoggedIn ? homePage(DateTime.now(),new List()) : LoginPage());
-  }
-
-  Future nativeMethodCallHandler(MethodCall call) async {
-    final args = call.arguments;
-    print("Args");
-    print(args);
-    print('on Dart ${call.method}!');
-
-    return Bringtoforeground.bringAppToForeground();
   }
 }

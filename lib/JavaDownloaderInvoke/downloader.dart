@@ -1,7 +1,7 @@
 class Downloader{
-  Future<void> downloadAttachment(List<dynamic> args) async {
-    //WidgetsFlutterBinding.ensureInitialized();
-    await args[3].invokeMethod("downloadAttachment", {
+  downloadAttachment(List<dynamic> args) {
+
+    args[3].invokeMethod("downloadAttachment", {
       "emailAddress": args[0][0],
       "password": args[0][1],
       "host": args[0][2],

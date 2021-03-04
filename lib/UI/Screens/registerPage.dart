@@ -284,9 +284,9 @@ class registerPage extends StatelessWidget {
       'myEmails' :null,
       'invoiceEmails' :null,
       'userPrefs' : {
-        'urgent' : 300,
-        'notUrgent' : 3000,
-        'monitorFreq' : 30,
+        'urgent' : 7,
+        'notUrgent' : 14,
+        'monitorFreq' : 60,
         'dailyReminds' : 1
       }
     });

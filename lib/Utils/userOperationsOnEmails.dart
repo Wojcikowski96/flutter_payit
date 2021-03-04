@@ -25,8 +25,6 @@ class UserOperationsOnEmails {
         emailSettings.add(singleEmailSettings);
       });
     }
-    print("getEmailSettings:");
-    print(emailSettings);
     return emailSettings;
   }
 
@@ -51,8 +49,6 @@ class UserOperationsOnEmails {
       });
 
     }
-    print("Nowa lista trusted: ");
-    print(trustedEmailsProps);
     return trustedEmailsProps;
   }
 

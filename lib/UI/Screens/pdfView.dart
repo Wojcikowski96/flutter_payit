@@ -189,8 +189,6 @@ class _PdfViewState extends State<PdfView> {
     invoice.paymentDate = invoicePaymentDateController.text;
     invoice.accountForTransfer = invoiceAccountNumController.text;
 
-    await changeModifyStatus(invoice);
-
     DatabaseOperations().addInvoiceToDatabase(
         invoice.paymentDate,
         invoice.paymentAmount.toString(),
@@ -200,6 +198,8 @@ class _PdfViewState extends State<PdfView> {
         invoice.accountForTransfer.toString(),
         invoice.downloadPath,
         username);
+
+    await changeModifyStatus(invoice);
 
     Navigator.push(
       context,

@@ -15,6 +15,7 @@ public class RunFlutterApp extends BroadcastReceiver{
 
         Intent runIntent = new Intent(Intent.ACTION_RUN);
         runIntent.setComponent(new ComponentName("com.example.flutter_payit", "com.example.flutter_payit.MainActivity"));
+        runIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(runIntent);
 
         //This is used to close the notification tray

@@ -13,7 +13,6 @@ import 'package:flutter_payit/UI/HelperClasses/mainUI.dart';
 import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
 import 'package:flutter_payit/UI/Screens/ConfigScreens/timeInterval.dart';
 import 'package:flutter_payit/UI/Screens/ConfigScreens/trustedList.dart';
-import 'package:flutter_payit/UI/Screens/loginScreen.dart';
 import 'package:flutter_payit/Utils/utils.dart';
 import 'PaymentPage.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -46,6 +45,8 @@ class _homePageState extends State<homePage> {
   String paymentDate;
   double paymentAmount;
   String categoryName;
+
+  String syncedEmailBoxName = "...";
 
   List<int> preferences;
   //List<Invoice> definedInvoicesInfo = new List();
@@ -87,6 +88,8 @@ class _homePageState extends State<homePage> {
 
   Color definedColor = Colors.blue;
 
+  String endMessage;
+
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
@@ -97,6 +100,8 @@ class _homePageState extends State<homePage> {
   @override
   void initState() {
     super.initState();
+
+    methodChannel.setMethodCallHandler(javaMethod);
 
     //startServiceInPlatform();
 
@@ -115,8 +120,6 @@ class _homePageState extends State<homePage> {
           '/invoicesPDF';
       preferences = await DatabaseOperations().getUserPrefsFromDB(username);
 
-      print("Urgency prefs z bazy :");
-      print(preferences);
       Directory invoicesDir = new Directory(path);
       invoicesDir.create(recursive: true);
 
@@ -124,31 +127,29 @@ class _homePageState extends State<homePage> {
 
       trustedEmails =
           await UserOperationsOnEmails().getInvoiceSenders(username);
-
+      print("Trusted emails na start " + trustedEmails.toString());
       if (emailSettings.isNotEmpty) {
-        setState(() {
-          isProgressBarVisible = true;
-        });
+//        setState(() {
+//          isProgressBarVisible = true;
+//        });
+//        print('Czy progress widoczny');
+//        print(isProgressBarVisible);
+        trustedEmails.isNotEmpty
+            ? downloadAttachmentForAllMailboxes(emailSettings, trustedEmails)
+            : print("Nothing to do");
 
-        trustedEmails.isNotEmpty ? downloadAttachmentForAllMailboxes(emailSettings, trustedEmails)
-            .then((value) => {
-                  setState(() {
-                    isProgressBarVisible = false;
-                  }),
-                  //print('Czy progress widoczny'),
-                  // print(isProgressBarVisible),
-                  //showNotificationOnEndSync(flutterLocalNotificationsPlugin),
-                  //startCheckingLatest(emailSettings, trustedEmails)
-                }):print("Nothing to do");
-
-        await watchForNewFiles(trustedEmails);
+        trustedEmails.isNotEmpty
+            ? await watchForNewFiles(trustedEmails)
+            : print("Nothing to do");
       }
 
       List<FileSystemEntity> invoiceFileList =
           await PdfParser().dirContents(path);
 
       for (FileSystemEntity file in invoiceFileList)
-        await setFileForDrawing(trustedEmails, file.path);
+        trustedEmails.isNotEmpty
+            ? await setFileForDrawing(trustedEmails, file.path)
+            : print("Nothing to do");
 
       await setModifiedInvoicesForDrawing();
     });
@@ -158,7 +159,10 @@ class _homePageState extends State<homePage> {
     List<Invoice> modifiedInvoices =
         await DatabaseOperations().getModifiedInvoices(username);
 
-    for (Invoice invoice in modifiedInvoices) invoicesInfo.add(invoice);
+    for (Invoice invoice in modifiedInvoices) {
+      startReminder(invoice);
+      invoicesInfo.add(invoice);
+    }
 
     setState(() {
       paymentEvents =
@@ -174,29 +178,18 @@ class _homePageState extends State<homePage> {
       String eventPath = event.path;
 
       if (eventString == "add") {
-        // print("Robię add");
+        print("Nowy plik " + eventPath);
+//        setState(() {
+//          isProgressBarVisible = false;
+//        });
         await setFileForDrawing(trustedEmails, eventPath);
       }
+      //else if (eventString == "modify")
+//        setState(() {
+//          isProgressBarVisible = false;
+//        });
     });
   }
-
-//  startCheckingLatest(
-//      List<List> emailSettings, List<List<String>> trustedEmails) {
-//    int counter = 0;
-//    oldTimer?.cancel();
-//    timer = Timer.periodic(
-//        Duration(seconds: preferences[0]),
-//        (Timer t) async => {
-//              // print("Timer " + timer.hashCode.toString()),
-//              counter = counter + 1,
-//              emailSettings =
-//                  await UserOperationsOnEmails().getEmailSettings(username),
-//              await downloadAttachmentForAllMailboxes(
-//                  emailSettings, trustedEmails, counter),
-//              showNotificationOnEndSync(flutterLocalNotificationsPlugin)
-//            });
-//    oldTimer = timer;
-//  }
 
   Future setFileForDrawing(
       List<List<String>> trustedEmails, String path) async {
@@ -226,15 +219,17 @@ class _homePageState extends State<homePage> {
           Utils().setUrgencyColorBasedOnDate(
               DateTime.parse(paymentDate), preferences));
 
+      print("Nowa faktura " + invoice.toString());
+
       startReminder(invoice);
 
       invoicesInfo.add(invoice);
-
-      setState(() {
-        paymentEvents =
-            CalendarUtils().generatePaymentEvents(invoicesInfo, preferences);
-        undefinedInvoicesInfo = generateUndefinedInvoicesList(invoicesInfo);
-      });
+      if (mounted)
+        setState(() {
+          paymentEvents =
+              CalendarUtils().generatePaymentEvents(invoicesInfo, preferences);
+          undefinedInvoicesInfo = generateUndefinedInvoicesList(invoicesInfo);
+        });
     }
   }
 
@@ -244,7 +239,7 @@ class _homePageState extends State<homePage> {
         "paymentDate": invoice.paymentDate,
         "categoryName": invoice.categoryName,
         "senderMail": invoice.senderMail,
-        "remindFreq" : preferences[1]
+        "remindFreq": preferences[1]
       });
   }
 
@@ -293,6 +288,7 @@ class _homePageState extends State<homePage> {
 
   @override
   Widget build(BuildContext context) {
+
     PageController pageController = PageController(initialPage: 0);
     if (emailSettings.isEmpty) {
       return MainUI().warningHomePage(context);
@@ -464,11 +460,12 @@ class _homePageState extends State<homePage> {
                 visible: isProgressBarVisible,
                 child: Row(
                   children: [
-                    Text("Synchronizuję ..."),
+                    SizedBox(width: MediaQuery.of(context).size.width / 7),
+                    Text("Synchronizuję ... " + syncedEmailBoxName),
                     CircularProgressIndicator(),
                   ],
                 ),
-              )
+              ),
             ]),
             appBar: AppBar(
               // leading: IconButton(icon: Icon(Icons.menu), onPressed: (){
@@ -507,6 +504,7 @@ class _homePageState extends State<homePage> {
                   ListTile(
                     title: Text('Zarządzaj adresami e-mail'),
                     onTap: () {
+                      methodChannel.invokeMethod("stopThreadsAndTimers");
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -517,6 +515,7 @@ class _homePageState extends State<homePage> {
                   ListTile(
                     title: Text('Edytuj zaufaną listę nadawców faktur'),
                     onTap: () {
+                      methodChannel.invokeMethod("stopThreadsAndTimers");
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -527,6 +526,7 @@ class _homePageState extends State<homePage> {
                   ListTile(
                     title: Text('Ustawienia'),
                     onTap: () {
+                      methodChannel.invokeMethod("stopThreadsAndTimers");
                       Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -536,6 +536,7 @@ class _homePageState extends State<homePage> {
                   ListTile(
                     title: Text('Przełącz użytkownika'),
                     onTap: () {
+                      methodChannel.invokeMethod("stopThreadsAndTimers");
                       MySharedPreferences.instance
                           .setBooleanValue("isLoggedIn", false);
                       Navigator.push(
@@ -588,7 +589,7 @@ class _homePageState extends State<homePage> {
     );
   }
 
-  Future<void> downloadAttachmentForAllMailboxes(
+  downloadAttachmentForAllMailboxes(
       List<List<dynamic>> emailSettings,
       List<List<String>> trustedEmails) async {
     print("Zaciągam maile");
@@ -596,6 +597,9 @@ class _homePageState extends State<homePage> {
     List<String> tempUserEmailsNames = new List();
 
     for (var singleEmailSettings in emailSettings) {
+
+      print("Zaciągam maile po stronie Dart "+ singleEmailSettings.toString());
+
       tempUserEmailsNames.add(singleEmailSettings[0].toString());
       List<dynamic> downloadAttachmentArgs = [
         singleEmailSettings,
@@ -718,12 +722,20 @@ class _homePageState extends State<homePage> {
   }
 
   String getInvoiceSenderName(List<List<String>> trustedEmails, String path) {
-    String nameWithFile;
+    String nameWithFile = "lol";
     for (List<String> trustedEmail in trustedEmails) {
       if (path.contains(trustedEmail[0])) {
         nameWithFile = trustedEmail[1];
       }
     }
+
+    print("Path " +
+        path +
+        " nazwa " +
+        nameWithFile +
+        " trusted emails " +
+        trustedEmails.toString());
+
     return nameWithFile;
   }
 
@@ -738,6 +750,22 @@ class _homePageState extends State<homePage> {
       }
     } else {
       return Future.value(true);
+    }
+  }
+
+  Future<void> javaMethod(MethodCall call) async {
+    switch (call.method) {
+      case 'syncCompleted':
+        setState(() {
+          isProgressBarVisible = false;
+        });
+        return;
+      case 'syncStarted':
+        setState(() {
+          syncedEmailBoxName = call.arguments;
+          isProgressBarVisible = true;
+        });
+        return;
     }
   }
 }

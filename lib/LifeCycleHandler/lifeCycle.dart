@@ -31,7 +31,6 @@ class _LifecycleWatcherState extends State<LifecycleWatcher>
     setState(() {
       _lastLifecycleState = state;
     });
-    print("Status lifecyclu to: " + state.toString());
     if (state == AppLifecycleState.paused) {
       startServiceInPlatform();
     }
@@ -45,7 +44,6 @@ class _LifecycleWatcherState extends State<LifecycleWatcher>
       //var methodChannel = MethodChannel("com.example.flutter_payit");
       String data =
           await LifecycleWatcher.methodChannel.invokeMethod("startService");
-      print("Serwis odpal się" + data);
     }
   }
 
@@ -54,7 +52,6 @@ class _LifecycleWatcherState extends State<LifecycleWatcher>
       //var methodChannel = MethodChannel("com.example.flutter_payit");
       String data =
       await LifecycleWatcher.methodChannel.invokeMethod("stopService");
-      print("Serwis stop " + data);
     }
   }
 

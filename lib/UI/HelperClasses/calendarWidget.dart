@@ -32,7 +32,6 @@ class _CalendarWidgetState extends State<CalendarWidget>
   void initState() {
     super.initState();
     _selectedDay = widget.selectedDay;
-    print("Selected day w init state");
     print(_selectedDay);
     _selectedEvents = widget.events[_selectedDay] ?? [];
     _calendarController = CalendarController();

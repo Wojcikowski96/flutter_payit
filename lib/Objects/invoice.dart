@@ -13,7 +13,6 @@ class Invoice {
   String toString() {
     // TODO: implement toString
 
-
     return "Nazwa kategorii: " +
         categoryName.toString() +
         " Mail usera: " +

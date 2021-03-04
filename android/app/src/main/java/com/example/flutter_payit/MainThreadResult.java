@@ -3,33 +3,15 @@ package com.example.flutter_payit;
 import android.os.Handler;
 import android.os.Looper;
 
+import androidx.annotation.NonNull;
+
+import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 
-public class MainThreadResult implements MethodChannel.Result {
-    private MethodChannel.Result result;
-    private Handler handler;
-
-    MainThreadResult(MethodChannel.Result result) {
-        this.result = result;
-        handler = new Handler(Looper.getMainLooper());
-    }
-
-        @Override
-        public void success(final Object r) {
-            handler.post(
-                    () -> result.success(r));
-    }
+public class MainThreadResult implements MethodChannel.MethodCallHandler {
 
     @Override
-    public void error(
-            final String errorCode, final String errorMessage, final Object errorDetails) {
-        handler.post(
-                () -> result.error(errorCode, errorMessage, errorDetails));
-    }
+    public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
 
-    @Override
-    public void notImplemented() {
-        handler.post(
-                () -> result.notImplemented());
     }
 }

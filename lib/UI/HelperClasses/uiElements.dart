@@ -45,14 +45,17 @@ class UiElements {
     );
   }
 
-  showLoaderDialog(BuildContext context, String message) {
+  showLoaderDialog(BuildContext context, String message, bool isVisible) {
     AlertDialog alert = AlertDialog(
-      content: new Row(
-        children: [
-          CircularProgressIndicator(),
-          Container(
-              margin: EdgeInsets.only(left: 7), child: Text(message + "...")),
-        ],
+      content: Visibility(
+        visible: isVisible,
+        child: new Row(
+          children: [
+            CircularProgressIndicator(),
+            Container(
+                margin: EdgeInsets.only(left: 7), child: Text(message + "...")),
+          ],
+        ),
       ),
     );
     showDialog(
