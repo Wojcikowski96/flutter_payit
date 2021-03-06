@@ -76,7 +76,7 @@ class _homePageState extends State<homePage> {
 
   bool isListOfEmailsVisible = true;
 
-  double fontSizeOfDefAndUndef  = 12;
+  double fontSizeOfDefAndUndef  = 8;
 
   static String username = "<Username>";
 
@@ -87,6 +87,10 @@ class _homePageState extends State<homePage> {
   List<AppNotification> appNotifications = new List();
 
   String selectedEmailAddress;
+
+  String definedText = "Zdefiniowane";
+
+  String undefinedText = "Niezdefiniowane";
 
   List<NotificationItem> notificationItems = new List();
 
@@ -367,6 +371,8 @@ class _homePageState extends State<homePage> {
                                   : isPlaceholderTextVisible = false;
                               isListOfEmailsVisible = false;
                               fontSizeOfDefAndUndef = 16;
+                              definedText = "Zdefiniowane";
+                              undefinedText = "Niezdefiniowane";
                             }),
                             child: Container(
                                 decoration: BoxDecoration(
@@ -379,13 +385,12 @@ class _homePageState extends State<homePage> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
                                     children: [
-                                      FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: RotatedBox(
+                                        RotatedBox(
                                             quarterTurns: definedTextRotated,
+
                                             child: RichText(
                                               text: TextSpan(
-                                                text: 'Zdefiniowane ',
+                                                text: definedText,
                                                 style: TextStyle(fontSize: fontSizeOfDefAndUndef),
                                                 children: <TextSpan>[
                                                   TextSpan(
@@ -403,7 +408,7 @@ class _homePageState extends State<homePage> {
                                                 ],
                                               ),
                                             )),
-                                      ),
+
                                       Visibility(
                                           visible: isDefinedVisible,
                                           child: Expanded(
@@ -441,6 +446,8 @@ class _homePageState extends State<homePage> {
                               isPlaceholderTextVisible = false;
                               isListOfEmailsVisible = false;
                               fontSizeOfDefAndUndef = 16;
+                              definedText = "Zdefiniowane";
+                              undefinedText = "Niezdefiniowane";
                             }),
                             child: Container(
 
@@ -454,13 +461,12 @@ class _homePageState extends State<homePage> {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Center(
-                                        child: FittedBox(
-                                          fit: BoxFit.scaleDown,
+
                                           child: RotatedBox(
                                               quarterTurns: undefinedTextRotated,
                                               child: RichText(
                                                 text: TextSpan(
-                                                  text: 'Niezdefiniowane ',
+                                                  text: undefinedText,
                                                   style: TextStyle(fontSize: fontSizeOfDefAndUndef),
                                                   children: <TextSpan>[
                                                     TextSpan(
@@ -478,7 +484,7 @@ class _homePageState extends State<homePage> {
                                                   ],
                                                 ),
                                               )),
-                                        )),
+                                        ),
                                     Visibility(
                                         visible: isUndefinedVisible,
                                         child: Expanded(
@@ -497,7 +503,9 @@ class _homePageState extends State<homePage> {
               GestureDetector(
                 onTap: () => setState(() {
                   isListOfEmailsVisible = true;
-                  fontSizeOfDefAndUndef = 12;
+                    fontSizeOfDefAndUndef = 16;
+                    definedText = "Zde...";
+                    undefinedText = "Nie...";
                 }),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
