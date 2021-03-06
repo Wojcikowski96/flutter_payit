@@ -74,9 +74,9 @@ class _homePageState extends State<homePage> {
 
   bool isProgressBarVisible = false;
 
-  bool isListOfEmailsVisible = false;
+  bool isListOfEmailsVisible = true;
 
-  double fontSizeOfDefAndUndef  = 16;
+  double fontSizeOfDefAndUndef  = 12;
 
   static String username = "<Username>";
 
