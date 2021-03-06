@@ -30,6 +30,7 @@ import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -81,7 +82,9 @@ public class MainActivity extends FlutterActivity {
 
         GeneratedPluginRegistrant.registerWith(this);
         forService = new Intent(this, MyService.class);
+
         methodChannel = new MethodChannel(getFlutterView(), CHANNEL);
+
         methodChannel.setMethodCallHandler((methodCall, result) -> {
             System.out.println("new MethodChannel ID wątku "+Thread.currentThread().getId()+" methodCall.method "+methodCall.method);
 
@@ -248,7 +251,9 @@ public class MainActivity extends FlutterActivity {
                 System.out.println("Email numer" + i + " UID "+ (int) ((UIDFolder) folderInbox).getUID(message) + "adres: "+ emailAddress);
 
                 int finalI = i;
-                new Handler(Looper.getMainLooper()).post(() -> methodChannel.invokeMethod("syncStarted", emailAddress + " postęp "+Math.round(((double) finalI / (double) arrayMessages.length)*100.0)+"%", null));
+                int percentage = (int) Math.round(((double) finalI / (double) arrayMessages.length)*100);
+                    String syncArguments = emailAddress+ " postęp: "+percentage+"%";
+                    new Handler(Looper.getMainLooper()).post(() -> methodChannel.invokeMethod("syncStarted", syncArguments, null));
 
                 Address[] fromAddress = message.getFrom();
 

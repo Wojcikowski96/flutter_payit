@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class UiElements {
+
   SizedBox drawButton(
       double width,
       double height,
@@ -25,8 +26,7 @@ class UiElements {
           if (method != null) {
             method(args);
           }
-          if (onPressedRoute != null)
-          {
+          if (onPressedRoute != null) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => onPressedRoute),
@@ -75,10 +75,10 @@ class UiElements {
     ]));
   }
 
-  TextField myCustomTextfield(TextEditingController controler, String hintText,
+  TextField myCustomTextfield(TextEditingController controller, String hintText,
       Color fillColor, IconData icon) {
     return TextField(
-      controller: controler,
+      controller: controller,
       decoration: InputDecoration(
           contentPadding: EdgeInsets.only(top: 20, bottom: 20),
           prefixIcon: Padding(

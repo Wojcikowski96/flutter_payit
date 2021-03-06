@@ -9,6 +9,8 @@ import 'package:flutter_payit/IsUserLoggedChecker/MySharedPreferences.dart';
 import 'package:flutter_payit/JavaDownloaderInvoke/downloader.dart';
 import 'package:flutter_payit/LifeCycleHandler/lifeCycle.dart';
 import 'package:flutter_payit/Main/main.dart';
+import 'package:flutter_payit/Objects/appNotification.dart';
+import 'package:flutter_payit/Objects/notificationItem.dart';
 import 'package:flutter_payit/UI/HelperClasses/mainUI.dart';
 import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
 import 'package:flutter_payit/UI/Screens/ConfigScreens/timeInterval.dart';
@@ -72,13 +74,21 @@ class _homePageState extends State<homePage> {
 
   bool isProgressBarVisible = false;
 
+  bool isListOfEmailsVisible = false;
+
+  double fontSizeOfDefAndUndef  = 16;
+
   static String username = "<Username>";
 
   List<String> userEmailsNames = new List();
 
   List<Invoice> invoicesInfo = new List();
 
+  List<AppNotification> appNotifications = new List();
+
   String selectedEmailAddress;
+
+  List<NotificationItem> notificationItems = new List();
 
   Timer timer;
 
@@ -100,8 +110,6 @@ class _homePageState extends State<homePage> {
   @override
   void initState() {
     super.initState();
-
-    methodChannel.setMethodCallHandler(javaMethod);
 
     //startServiceInPlatform();
 
@@ -125,15 +133,16 @@ class _homePageState extends State<homePage> {
 
       emailSettings = await UserOperationsOnEmails().getEmailSettings(username);
 
+      notificationItems = populateNotificationItemsList(emailSettings);
+
+      print("NotificationItems " + notificationItems[0].userEmail.toString());
+
+      methodChannel.setMethodCallHandler(javaMethod);
+
       trustedEmails =
           await UserOperationsOnEmails().getInvoiceSenders(username);
       print("Trusted emails na start " + trustedEmails.toString());
       if (emailSettings.isNotEmpty) {
-//        setState(() {
-//          isProgressBarVisible = true;
-//        });
-//        print('Czy progress widoczny');
-//        print(isProgressBarVisible);
         trustedEmails.isNotEmpty
             ? downloadAttachmentForAllMailboxes(emailSettings, trustedEmails)
             : print("Nothing to do");
@@ -153,6 +162,17 @@ class _homePageState extends State<homePage> {
 
       await setModifiedInvoicesForDrawing();
     });
+  }
+
+  String getEmailFromNotificationWidget(Padding notificationItem) {
+    Container temp = notificationItem.child;
+    Padding temp2 = temp.child;
+    Row temp3 = temp2.child;
+    Expanded temp4 = temp3.children[0];
+    FittedBox temp5 = temp4.child;
+    Text text = temp5.child;
+    String email = text.data;
+    return email;
   }
 
   Future setModifiedInvoicesForDrawing() async {
@@ -288,7 +308,6 @@ class _homePageState extends State<homePage> {
 
   @override
   Widget build(BuildContext context) {
-
     PageController pageController = PageController(initialPage: 0);
     if (emailSettings.isEmpty) {
       return MainUI().warningHomePage(context);
@@ -346,36 +365,45 @@ class _homePageState extends State<homePage> {
                               widget.definedInvoicesInfo.length == 0
                                   ? isPlaceholderTextVisible = true
                                   : isPlaceholderTextVisible = false;
+                              isListOfEmailsVisible = false;
+                              fontSizeOfDefAndUndef = 16;
                             }),
                             child: Container(
-                                color: definedColor,
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Colors.white60, width: 2),
+                                    color: definedColor,
+                                ),
                                 child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
                                     children: [
-                                      RotatedBox(
-                                          quarterTurns: definedTextRotated,
-                                          child: RichText(
-                                            text: TextSpan(
-                                              text: 'Zdefiniowane ',
-                                              style: TextStyle(fontSize: 16),
-                                              children: <TextSpan>[
-                                                TextSpan(
-                                                    text: (widget
-                                                            .definedInvoicesInfo
-                                                            .length)
-                                                        .toString(),
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: definedColor,
-                                                        backgroundColor:
-                                                            Colors.white,
-                                                        fontSize: 20)),
-                                              ],
-                                            ),
-                                          )),
+                                      FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: RotatedBox(
+                                            quarterTurns: definedTextRotated,
+                                            child: RichText(
+                                              text: TextSpan(
+                                                text: 'Zdefiniowane ',
+                                                style: TextStyle(fontSize: fontSizeOfDefAndUndef),
+                                                children: <TextSpan>[
+                                                  TextSpan(
+                                                      text: (widget
+                                                              .definedInvoicesInfo
+                                                              .length)
+                                                          .toString(),
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: definedColor,
+                                                          backgroundColor:
+                                                              Colors.white,
+                                                          fontSize: 20)),
+                                                ],
+                                              ),
+                                            )),
+                                      ),
                                       Visibility(
                                           visible: isDefinedVisible,
                                           child: Expanded(
@@ -411,36 +439,46 @@ class _homePageState extends State<homePage> {
                               isUndefinedVisible = true;
                               isDefinedVisible = false;
                               isPlaceholderTextVisible = false;
+                              isListOfEmailsVisible = false;
+                              fontSizeOfDefAndUndef = 16;
                             }),
                             child: Container(
-                                color: Colors.black26,
+
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Colors.white60, width: 2),
+                                    color: Colors.black26,
+                                ),
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Center(
-                                        child: RotatedBox(
-                                            quarterTurns: undefinedTextRotated,
-                                            child: RichText(
-                                              text: TextSpan(
-                                                text: 'Niezdefiniowane ',
-                                                style: TextStyle(fontSize: 16),
-                                                children: <TextSpan>[
-                                                  TextSpan(
-                                                      text:
-                                                          (undefinedInvoicesInfo
-                                                                  .length)
-                                                              .toString(),
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.white,
-                                                          backgroundColor:
-                                                              Colors.red,
-                                                          fontSize: 20)),
-                                                ],
-                                              ),
-                                            ))),
+                                        child: FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          child: RotatedBox(
+                                              quarterTurns: undefinedTextRotated,
+                                              child: RichText(
+                                                text: TextSpan(
+                                                  text: 'Niezdefiniowane ',
+                                                  style: TextStyle(fontSize: fontSizeOfDefAndUndef),
+                                                  children: <TextSpan>[
+                                                    TextSpan(
+                                                        text:
+                                                            (undefinedInvoicesInfo
+                                                                    .length)
+                                                                .toString(),
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: Colors.white,
+                                                            backgroundColor:
+                                                                Colors.red,
+                                                            fontSize: 20)),
+                                                  ],
+                                                ),
+                                              )),
+                                        )),
                                     Visibility(
                                         visible: isUndefinedVisible,
                                         child: Expanded(
@@ -456,16 +494,56 @@ class _homePageState extends State<homePage> {
                   ),
                 ),
               ),
-              Visibility(
-                visible: isProgressBarVisible,
-                child: Row(
+              GestureDetector(
+                onTap: () => setState(() {
+                  isListOfEmailsVisible = true;
+                  fontSizeOfDefAndUndef = 12;
+                }),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(width: MediaQuery.of(context).size.width / 7),
-                    Text("Synchronizuję ... " + syncedEmailBoxName),
-                    CircularProgressIndicator(),
+//                    SizedBox(width: MediaQuery.of(context).size.width / 7),
+//                    Text("Synchronizuję ... " + syncedEmailBoxName),
+//                    CircularProgressIndicator(),
+                    Container(
+                        color: Colors.blue,
+                        height: MediaQuery.of(context).size.height / 16,
+                        child: Center(
+                          child: RichText(
+                            text: TextSpan(
+                              text: 'Twoje skrzynki e-mail ',
+                              style: TextStyle(fontSize: 16),
+                              children: <TextSpan>[
+                                TextSpan(
+                                    text: (notificationItems.length).toString(),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.blue,
+                                        backgroundColor: Colors.white,
+                                        fontSize: 20)),
+                              ],
+                            ),
+                          ),
+                        )),
+                    Visibility(
+                      visible: isListOfEmailsVisible,
+                      child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.height / 8.7,
+                        color: Colors.blue,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          children: List.generate(
+                              notificationItems.length,
+                              (index) =>
+                                  notificationItems[index].notificationItem()),
+                        ),
+                      ),
+                    )
                   ],
                 ),
-              ),
+              )
             ]),
             appBar: AppBar(
               // leading: IconButton(icon: Icon(Icons.menu), onPressed: (){
@@ -589,18 +667,23 @@ class _homePageState extends State<homePage> {
     );
   }
 
-  downloadAttachmentForAllMailboxes(
-      List<List<dynamic>> emailSettings,
+  downloadAttachmentForAllMailboxes(List<List<dynamic>> emailSettings,
       List<List<String>> trustedEmails) async {
     print("Zaciągam maile");
 
     List<String> tempUserEmailsNames = new List();
+    List<Padding> tempNotificationItems = new List();
 
+    int i = 0;
     for (var singleEmailSettings in emailSettings) {
-
-      print("Zaciągam maile po stronie Dart "+ singleEmailSettings.toString());
+      //AppNotification appNotification = new AppNotification(singleEmailSettings[0], false);
+      print("Zaciągam maile po stronie Dart " + singleEmailSettings.toString());
 
       tempUserEmailsNames.add(singleEmailSettings[0].toString());
+      //appNotifications.add(appNotification);
+
+      //tempNotificationItems.add(UiElements().notificationItem(appNotification, true, false));
+
       List<dynamic> downloadAttachmentArgs = [
         singleEmailSettings,
         getMailSenderAddresses(trustedEmails),
@@ -615,6 +698,7 @@ class _homePageState extends State<homePage> {
     setState(() {
       userEmailsNames = tempUserEmailsNames;
       selectedEmailAddress = userEmailsNames.last;
+      //notificationItems = tempNotificationItems;
     });
   }
 
@@ -756,16 +840,46 @@ class _homePageState extends State<homePage> {
   Future<void> javaMethod(MethodCall call) async {
     switch (call.method) {
       case 'syncCompleted':
-        setState(() {
-          isProgressBarVisible = false;
-        });
-        return;
+        print("syncCompleted " + call.arguments.toString());
+        for (NotificationItem notificationItem in notificationItems) {
+          print("Sraczka");
+
+          if (call.arguments.toString().contains(notificationItem.userEmail)) {
+            setState(() {
+              notificationItem.isProgressVisible = false;
+            });
+          }
+        }
+        break;
+
       case 'syncStarted':
-        setState(() {
-          syncedEmailBoxName = call.arguments;
-          isProgressBarVisible = true;
-        });
-        return;
+        print("syncStarted " + call.arguments.toString());
+        List<String> parts = call.arguments.toString().split(" ");
+
+        for (NotificationItem notificationItem in notificationItems) {
+          print("Wyciągany progress w for");
+          print(parts[2]);
+          if (call.arguments.toString().contains(notificationItem.userEmail)) {
+            setState(() {
+              notificationItem.isProgressVisible = true;
+              notificationItem.progressPercentage = parts[2];
+            });
+          }
+        }
+
+        break;
     }
+  }
+
+  List<NotificationItem> populateNotificationItemsList(
+      List<List<dynamic>> emailSettings) {
+    List<NotificationItem> populatedList = new List();
+
+    for (List<dynamic> singleEmailSetting in emailSettings) {
+      print("SingleEmailSetting w populacji " + singleEmailSetting[0]);
+      populatedList
+          .add(new NotificationItem(singleEmailSetting[0], true, "0%"));
+    }
+    return populatedList;
   }
 }
