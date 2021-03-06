@@ -76,7 +76,7 @@ class _homePageState extends State<homePage> {
 
   bool isListOfEmailsVisible = true;
 
-  double fontSizeOfDefAndUndef  = 8;
+  double fontSizeOfDefAndUndef  = 16;
 
   static String username = "<Username>";
 

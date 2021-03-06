@@ -17,9 +17,15 @@ class NotificationItem {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
+        decoration: BoxDecoration(
+            border: Border.all(
+              color: Colors.white60,
+              width: 0.1,
+            ),
+            color: Colors.white,
+            borderRadius: BorderRadius.all(Radius.circular(15))),
         width: 200,
         height: 80,
-        color: Colors.white,
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
