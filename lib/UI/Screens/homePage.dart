@@ -495,6 +495,9 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
                                   definedText = "Zde...";
                                   undefinedText = "Nie...";
                                 }
+                                if(definedTextRotated == 1){
+                                  fontSizeOfDefAndUndef = 17;
+                                }
                               }),
                               child: Container(
                                   width: 0.0,
