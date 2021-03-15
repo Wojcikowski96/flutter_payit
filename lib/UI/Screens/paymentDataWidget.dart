@@ -23,21 +23,27 @@ class PaymentWidget {
             child: Column(
               children: [
                 Center(
-                  child: Text(
-                    invoice.categoryName,
-                    style: TextStyle(
-                      fontSize: 35,
-                      color: color,
+                  child: FittedBox(
+                    fit:BoxFit.scaleDown,
+                    child: Text(
+                      invoice.categoryName,
+                      style: TextStyle(
+                        fontSize: 35,
+                        color: color,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
                   ),
                 ),
                 SizedBox(
                   height: 5,
                 ),
-                Text(
-                  "Od nadawcy:",
-                  style: TextStyle(fontSize: 25, color: color),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    "Od nadawcy:",
+                    style: TextStyle(fontSize: 25, color: color),
+                  ),
                 ),
                 FittedBox(
                   fit: BoxFit.scaleDown,
@@ -49,20 +55,29 @@ class PaymentWidget {
                 SizedBox(
                   height: 5,
                 ),
-                Text(
-                  invoice.paymentAmount.toString() + " PLN",
-                  style: TextStyle(fontSize: 25, color: color),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    invoice.paymentAmount.toString() + " PLN",
+                    style: TextStyle(fontSize: 25, color: color),
+                  ),
                 ),
                 SizedBox(
                   height: 5,
                 ),
-                Text(
-                  'Termin zapłaty: ',
-                  style: TextStyle(fontSize: 15, color: color),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    'Termin zapłaty: ',
+                    style: TextStyle(fontSize: 15, color: color),
+                  ),
                 ),
-                Text(
-                  invoice.paymentDate,
-                  style: TextStyle(fontSize: 20, color: color),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    invoice.paymentDate,
+                    style: TextStyle(fontSize: 20, color: color),
+                  ),
                 ),
                 SizedBox(
                   height: 5,
