@@ -11,6 +11,7 @@ import 'package:flutter_payit/LifeCycleHandler/lifeCycle.dart';
 import 'package:flutter_payit/Main/main.dart';
 import 'package:flutter_payit/Objects/appNotification.dart';
 import 'package:flutter_payit/Objects/notificationItem.dart';
+import 'package:flutter_payit/UI/HelperClasses/consolidedEventsView.dart';
 import 'package:flutter_payit/UI/HelperClasses/mainUI.dart';
 import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
 import 'package:flutter_payit/UI/Screens/ConfigScreens/timeInterval.dart';
@@ -35,10 +36,11 @@ Timer oldTimer;
 
 class homePage extends StatefulWidget {
   DateTime selectedDate;
+  bool isCalendarViewEnabled = true;
   List<Invoice> definedInvoicesInfo;
   @override
   _homePageState createState() => _homePageState();
-  homePage(this.selectedDate, this.definedInvoicesInfo);
+  homePage(this.selectedDate, this.definedInvoicesInfo, this.isCalendarViewEnabled);
 }
 
 class _homePageState extends State<homePage> with TickerProviderStateMixin {
@@ -75,6 +77,8 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
   bool isProgressBarVisible = false;
 
   bool isInvoiceVisible = true;
+
+
 
   bool isListOfEmailsVisible = true;
 
@@ -339,7 +343,7 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
     }
     if (trustedEmails.isEmpty) {
       return MainUI().warningHomePageForTrustedEmpty(context);
-    } else {
+    } else if(widget.isCalendarViewEnabled) {
       return WillPopScope(
         onWillPop: () {
           if (Platform.isAndroid) {
@@ -651,6 +655,19 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
 
               iconTheme:
                   IconThemeData(color: Colors.white), //add this line here
+              actions: <Widget>[
+                IconButton(
+                  icon: Icon(
+                    Icons.view_list,
+                    color: Colors.white,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      widget.isCalendarViewEnabled = false;
+                    });
+                  },
+                )
+              ],
             ),
             drawer: Drawer(
               // Add a ListView to the drawer. This ensures the user can scroll
@@ -732,6 +749,8 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
               ),
             )),
       );
+    } else if(!widget.isCalendarViewEnabled){
+      return new ConsolidedView();
     }
   }
 
@@ -937,7 +956,6 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
       case 'syncCompleted':
         print("syncCompleted " + call.arguments.toString());
         for (NotificationItem notificationItem in notificationItems) {
-          print("Sraczka");
 
           if (call.arguments.toString().contains(notificationItem.userEmail)) {
             setState(() {

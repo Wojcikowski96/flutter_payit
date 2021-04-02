@@ -159,74 +159,69 @@ class registerPage extends StatelessWidget {
                       )
                   ),
                   SizedBox(height: 25,),
-                  Text("Dane do konta mailowego:",
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black)),
-                  SizedBox(height: 10,),
-                  Container(
-                      margin: EdgeInsets.only(right: 10, left: 10),
-                      child: TextField(
-                        controller: emailController,
-                        decoration: InputDecoration(
-                            contentPadding: EdgeInsets.only(top: 20, bottom: 20),
-                            prefixIcon: Padding(
-                              padding: const EdgeInsets.only(left: 20, right: 20),
-                              child: Icon(Icons.person_outline),
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey.withOpacity(0.7),
-                            hintText: "Podaj swój pierwszy adres e-mail",
-                            focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                                borderSide: BorderSide(
-                                    color: Colors.blueAccent,
-                                    width: 2
-                                )
-                            ),
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                borderSide: BorderSide(
-                                  width: 2,
-                                  color: Colors.blueAccent,
-                                )
-                            )
-                        ),
-                      )
-                  ),
 
-                  SizedBox(height: 25,),
-                  Container(
-                      margin: EdgeInsets.only(right: 10, left: 10),
-                      child: TextField(
-                        controller: emailPasswordController,
-                        decoration: InputDecoration(
-                            contentPadding: EdgeInsets.only(top: 20, bottom: 20),
-                            prefixIcon: Padding(
-                              padding: const EdgeInsets.only(left: 20, right: 20),
-                              child: Icon(Icons.person_outline),
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey.withOpacity(0.7),
-                            hintText: "Podaj hasło do poczty",
-                            focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                                borderSide: BorderSide(
-                                    color: Colors.blueAccent,
-                                    width: 2
-                                )
-                            ),
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                borderSide: BorderSide(
-                                  width: 2,
-                                  color: Colors.blueAccent,
-                                )
-                            )
-                        ),
-                      )
-                  ),
+//                  Container(
+//                      margin: EdgeInsets.only(right: 10, left: 10),
+//                      child: TextField(
+//                        controller: emailController,
+//                        decoration: InputDecoration(
+//                            contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+//                            prefixIcon: Padding(
+//                              padding: const EdgeInsets.only(left: 20, right: 20),
+//                              child: Icon(Icons.person_outline),
+//                            ),
+//                            filled: true,
+//                            fillColor: Colors.grey.withOpacity(0.7),
+//                            hintText: "Podaj swój pierwszy adres e-mail",
+//                            focusedBorder: OutlineInputBorder(
+//                                borderRadius: BorderRadius.circular(30),
+//                                borderSide: BorderSide(
+//                                    color: Colors.blueAccent,
+//                                    width: 2
+//                                )
+//                            ),
+//                            border: OutlineInputBorder(
+//                                borderRadius: BorderRadius.circular(20),
+//                                borderSide: BorderSide(
+//                                  width: 2,
+//                                  color: Colors.blueAccent,
+//                                )
+//                            )
+//                        ),
+//                      )
+//                  ),
+//
+//                  SizedBox(height: 25,),
+//                  Container(
+//                      margin: EdgeInsets.only(right: 10, left: 10),
+//                      child: TextField(
+//                        controller: emailPasswordController,
+//                        decoration: InputDecoration(
+//                            contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+//                            prefixIcon: Padding(
+//                              padding: const EdgeInsets.only(left: 20, right: 20),
+//                              child: Icon(Icons.person_outline),
+//                            ),
+//                            filled: true,
+//                            fillColor: Colors.grey.withOpacity(0.7),
+//                            hintText: "Podaj hasło do poczty",
+//                            focusedBorder: OutlineInputBorder(
+//                                borderRadius: BorderRadius.circular(30),
+//                                borderSide: BorderSide(
+//                                    color: Colors.blueAccent,
+//                                    width: 2
+//                                )
+//                            ),
+//                            border: OutlineInputBorder(
+//                                borderRadius: BorderRadius.circular(20),
+//                                borderSide: BorderSide(
+//                                  width: 2,
+//                                  color: Colors.blueAccent,
+//                                )
+//                            )
+//                        ),
+//                      )
+//                  ),
                   SizedBox(height: 25,),
                   SizedBox(
                     child: RaisedButton(
@@ -275,8 +270,8 @@ class registerPage extends StatelessWidget {
   Future<void> writeData(BuildContext context) async {
     String login = loginController.text;
     String password = password1Controller.text;
-    String email = emailController.text;
-    String emailPassword = emailPasswordController.text;
+//    String email = emailController.text;
+//    String emailPassword = emailPasswordController.text;
 
     DBRef.child('Users').child(login).set({
       'login': login,
@@ -291,42 +286,42 @@ class registerPage extends StatelessWidget {
       }
     });
 
-    String emailKey = email.replaceAll(new RegExp(r'\.'),'');
-    //Todo przeniesc moze wyzej
-    List <String> emailConfig = await UserOperationsOnEmails().discoverSettings(email, emailPassword);
+//    String emailKey = email.replaceAll(new RegExp(r'\.'),'');
+//    //Todo przeniesc moze wyzej
+//    List <String> emailConfig = await UserOperationsOnEmails().discoverSettings(email, emailPassword);
 
-    if (UserOperationsOnEmails().checkIfInteria(emailConfig[2])) {
-      showDialog(context: context,
-          builder: (BuildContext context){
-            return MyDialog(
-              title: "Jeśli używasz poczty Interia",
-              descriptions: "Zaznacz powyższe w ustawieniach swojej poczty aby można było pobierać z niej faktury. Z powodu błędu w Javamail, bez zmiany tego ustawienia aplikacja się zawiesi.",
-              img: "interia_settings.png",
-              text: 'Rozumiem',
-            );
-          }
-      );
-    }
+//    if (UserOperationsOnEmails().checkIfInteria(emailConfig[2])) {
+//      showDialog(context: context,
+//          builder: (BuildContext context){
+//            return MyDialog(
+//              title: "Jeśli używasz poczty Interia",
+//              descriptions: "Zaznacz powyższe w ustawieniach swojej poczty aby można było pobierać z niej faktury. Z powodu błędu w Javamail, bez zmiany tego ustawienia aplikacja się zawiesi.",
+//              img: "interia_settings.png",
+//              text: 'Rozumiem',
+//            );
+//          }
+//      );
+//    }
 
-    DBRef.child('Users').child(login).child('myEmails').child(emailKey).set({
-      "username": email,
-      "password": emailPassword,
-      "hostname": emailConfig[2],
-      "port": emailConfig[3],
-      "protocol": emailConfig[4],
-      "lastUID" : 0
-    });
-
-    DBRef.child('Users').child(login).child('invoiceEmails').set({
-    });
+//    DBRef.child('Users').child(login).child('myEmails').child(emailKey).set({
+//      "username": email,
+//      "password": emailPassword,
+//      "hostname": emailConfig[2],
+//      "port": emailConfig[3],
+//      "protocol": emailConfig[4],
+//      "lastUID" : 0
+//    });
+//
+//    DBRef.child('Users').child(login).child('invoiceEmails').set({
+//    });
 
   }
 
   void register(BuildContext context) async {
-    String email = emailController.text;
-    String emailPassword = emailPasswordController.text;
+//    String email = emailController.text;
+//    String emailPassword = emailPasswordController.text;
 
-    if((password1Controller.text == password2Controller.text) && emailController.text.contains('@')){
+    if((password1Controller.text == password2Controller.text)){
       writeData(context);
 
       Navigator.push(

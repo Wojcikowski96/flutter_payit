@@ -19,6 +19,8 @@ import androidx.annotation.RequiresApi;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import org.jetbrains.annotations.NotNull;
+
 import io.flutter.app.FlutterActivity;
 import io.flutter.plugin.common.MethodChannel;
 
@@ -207,22 +209,8 @@ public class MainActivity extends FlutterActivity {
 
         System.setProperty("mail.mime.decodeparameters", "false");
 
-        String protocolPart = "";
-
-        if (protocol.equals("ServerType.pop"))
-            protocolPart = "pop3s";
-        else if (protocol.equals("ServerType.imap"))
-            protocolPart = "imaps";
-
-        Properties properties = new Properties();
-
-        // server setting
-        properties.put(String.format("mail.%s.host", protocolPart), host);
-        properties.put(String.format("mail.%s.port", protocolPart), port);
-        properties.put(String.format("mail.%s.auth", protocolPart), "true");
-
-        // SSL setting
-        properties.put(String.format("mail.ssl.%s.enable", protocolPart), "true");
+        String protocolPart = getProtocolType(protocol);
+        Properties properties = generateProperties(host, port, protocolPart);
 
         Session session = Session.getInstance(properties, new Authenticator() {
             public PasswordAuthentication getPasswordAuthentication() {
@@ -354,6 +342,33 @@ public class MainActivity extends FlutterActivity {
 
     }
 
+    @NotNull
+    private Properties generateProperties(String host, String port, String protocolPart) {
+        //String oauthToken = AccessTokenFromRefreshToken.getAccessToken();
+        //System.out.println("OauthToken" + oauthToken);
+        Properties properties = new Properties();
+
+        // server setting
+        properties.put(String.format("mail.%s.host", protocolPart), host);
+        properties.put(String.format("mail.%s.port", protocolPart), port);
+        properties.put(String.format("mail.%s.auth", protocolPart), "true");
+
+        // SSL setting
+        properties.put(String.format("mail.ssl.%s.enable", protocolPart), "true");
+        return properties;
+    }
+
+    @NotNull
+    private String getProtocolType(String protocol) {
+        String protocolPart = "";
+
+        if (protocol.equals("ServerType.pop"))
+            protocolPart = "pop3s";
+        else if (protocol.equals("ServerType.imap"))
+            protocolPart = "imaps";
+        return protocolPart;
+    }
+
     private void CreateNewFinishedSyncNotification(String emailAddress, int UID, Context context) {
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -373,6 +388,7 @@ public class MainActivity extends FlutterActivity {
     }
 
     private void CreateOverdueNotification(Context context, String emailAddress, String category, String date) {
+
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         Intent forRunApp = new Intent(context, RunFlutterApp.class);

@@ -167,7 +167,7 @@ class _TrustedListPanelState extends State<TrustedListPanel> {
                     }
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => homePage(DateTime.now(), new List())),
+                      MaterialPageRoute(builder: (context) => homePage(DateTime.now(), new List(), true)),
                     );
                   },
                   child: Center(

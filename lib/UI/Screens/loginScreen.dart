@@ -264,7 +264,7 @@ class _LoginPageState extends State<LoginPage> {
 
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => homePage(DateTime.now(),new List())),
+          MaterialPageRoute(builder: (context) => homePage(DateTime.now(),new List(), true)),
         );
 
         storage.write(key: "username", value: username);

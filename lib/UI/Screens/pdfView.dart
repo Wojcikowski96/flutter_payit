@@ -169,7 +169,7 @@ class _PdfViewState extends State<PdfView> {
                             Colors.white,
                             Colors.white,
                             context,
-                            homePage(DateTime.now(),new List()),
+                            homePage(DateTime.now(),new List(), true),
                             null,
                             null)),
                   ],
@@ -203,7 +203,7 @@ class _PdfViewState extends State<PdfView> {
 
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => homePage(DateTime.parse(invoice.paymentDate),widget.invoices)),
+      MaterialPageRoute(builder: (context) => homePage(DateTime.parse(invoice.paymentDate),widget.invoices, true)),
     );
 
   }

@@ -48,6 +48,7 @@ android {
         targetSdkVersion 29
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -75,5 +76,9 @@ dependencies {
     implementation 'com.sun.mail:android-mail:1.6.2'
     implementation 'com.sun.mail:android-activation:1.6.2'
     implementation 'com.google.firebase:firebase-database:19.5.1'
+    implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation files('jackson-annotations-2.9.0.jar')
+    implementation files('jackson-core-2.9.5.jar')
+    implementation files('jackson-databind-2.9.5.jar')
 }

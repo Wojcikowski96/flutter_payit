@@ -51,6 +51,6 @@ class _MyAppState extends State<MyApp> {
         theme: ThemeData(
           primarySwatch: Colors.lightBlue,
         ),
-        home: isLoggedIn ? homePage(DateTime.now(),new List()) : LoginPage());
+        home: isLoggedIn ? homePage(DateTime.now(),new List(), true) : LoginPage());
   }
 }
