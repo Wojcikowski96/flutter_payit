@@ -99,5 +99,18 @@ class UiElements {
               ))),
     );
   }
+
+  Icon listIcon() {
+    return Icon(
+      Icons.view_list,
+      color: Colors.white,
+    );
+  }
+  Icon calendarIcon() {
+    return Icon(
+      Icons.table_chart,
+      color: Colors.white,
+    );
+  }
   //
 }

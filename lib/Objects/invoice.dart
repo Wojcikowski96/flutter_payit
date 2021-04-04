@@ -5,9 +5,9 @@ class Invoice {
   double paymentAmount;
   Color color;
 
-  bool isTrusted;
+  bool isDefined;
   Invoice(this.categoryName, this.userMail, this.senderMail, this.paymentAmount, this.paymentDate,
-      this.accountForTransfer, this.isTrusted, this.downloadPath, this.color);
+      this.accountForTransfer, this.isDefined, this.downloadPath, this.color);
 
   @override
   String toString() {

@@ -12,6 +12,8 @@ class Utils{
     } else if ((date.difference(DateTime.now()).inDays).abs() > preferences[2] &&
         (date.difference(DateTime.now()).inDays).abs() <= 44000) {
       color = Colors.green;
+    }else{
+      color = Colors.black26;
     }
     return color;
   }
