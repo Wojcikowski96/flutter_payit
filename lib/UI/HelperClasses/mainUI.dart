@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
 import 'file:///C:/Users/wojci/AndroidStudioProjects/flutter_payit/lib/UI/Screens/ConfigScreens/emailBoxesPanel.dart';
 import 'package:flutter_payit/UI/Screens/ConfigScreens/trustedList.dart';
@@ -34,6 +35,17 @@ class MainUI{
                 ),
               ],
             )));
+  }
+
+  Scaffold homeScreenLayout(PageController pageController, BuildContext context,
+       GlobalKey<ScaffoldState> scaffoldKey, bool isCalendarViewEnnabled, Column calendarView, AppBar homePageAppBar, List<String> urgencyNames, List<Color> colors, List<List<Widget>> invoicesTilesForConsolided, MethodChannel methodChannel, String username,  DropdownButton<String> selectEmailAddress) {
+    return Scaffold(
+        key: scaffoldKey,
+        body: isCalendarViewEnnabled
+            ? calendarView
+            : UiElements().consolidedInvoicesView(urgencyNames, colors, invoicesTilesForConsolided),
+        appBar: homePageAppBar,
+        drawer: UiElements().homePageDrawerMenu(context, methodChannel, username, selectEmailAddress));
   }
 
   Scaffold warningHomePageForTrustedEmpty(BuildContext context) {

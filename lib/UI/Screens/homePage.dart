@@ -56,10 +56,11 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
     "Pilne",
     "Średnio pilne",
     "Mało pilne",
-    "Niezdefiniowane"
+    "Niezdefiniowane",
+    "Twoje skrzynki e-mail"
   ];
-  List<Color> colors = [Colors.red, Colors.amber, Colors.green, Colors.grey];
-  List<List<Widget>> invoicesForConsolided = new List();
+  List<Color> colors = [Colors.red, Colors.amber, Colors.green, Colors.grey, Colors.blue];
+  List<List<Widget>> invoicesTilesForConsolided = new List();
 
   String syncedEmailBoxName = "...";
 
@@ -150,28 +151,15 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
 
     userEmailsNames.add("Wszystkie adresy");
     Future.delayed(Duration.zero, () async {
-      username = (await storage.read(key: "username")).toString();
-
-      path = (await PathProviderEx.getStorageInfo())[0].appFilesDir +
-          '/' +
-          username +
-          '/invoicesPDF';
+      username = await getUsernameFromFlutterStorage();
+      path = await generatePathForStoringAttachments();
       preferences = await DatabaseOperations().getUserPrefsFromDB(username);
-
-      Directory invoicesDir = new Directory(path);
-      invoicesDir.create(recursive: true);
-
+      generateDirectory();
       emailSettings = await UserOperationsOnEmails().getEmailSettings(username);
-
       notificationItems = populateNotificationItemsList(emailSettings);
-
-      print("NotificationItems " + notificationItems[0].userEmail.toString());
-
       methodChannel.setMethodCallHandler(javaMethod);
+      trustedEmails = await UserOperationsOnEmails().getInvoiceSenders(username);
 
-      trustedEmails =
-          await UserOperationsOnEmails().getInvoiceSenders(username);
-      print("Trusted emails na start " + trustedEmails.toString());
       if (emailSettings.isNotEmpty) {
         trustedEmails.isNotEmpty
             ? downloadAttachmentForAllMailboxes(emailSettings, trustedEmails)
@@ -192,6 +180,20 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
 
       await setModifiedInvoicesForDrawing();
     });
+  }
+
+  void generateDirectory() {
+    Directory invoicesDir = new Directory(path);
+    invoicesDir.create(recursive: true);
+  }
+
+  Future<String> getUsernameFromFlutterStorage() async => (await storage.read(key: "username")).toString();
+
+  Future<String> generatePathForStoringAttachments() async {
+    return (await PathProviderEx.getStorageInfo())[0].appFilesDir +
+        '/' +
+        username +
+        '/invoicesPDF';
   }
 
   void setAnimationParameters() {
@@ -268,7 +270,7 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
 
       paymentAmount = PdfParser().extractPayments(singlePdfContent);
       paymentDate = PdfParser().extractDateForParser(singlePdfContent);
-      categoryName = getInvoiceSenderName(trustedEmails, path);
+      categoryName = Utils().getInvoiceSenderCustomName(trustedEmails, path);
       String userMailName = basename(path).split(";")[0];
       String senderMailName = basename(path).split(";")[1];
       String account = PdfParser().extractAccount(singlePdfContent);
@@ -278,20 +280,8 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
       bool isInvoiceDefined =
           checkIfInvoiceIsDefined(paymentAmount, paymentDate, account);
 
-      Invoice invoice = new Invoice(
-          categoryName,
-          userMailName,
-          senderMailName,
-          paymentAmount,
-          paymentDate,
-          account,
-          isInvoiceDefined,
-          path,
-          Utils().setUrgencyColorBasedOnDate(
-              DateTime.parse(paymentDate), preferences));
-
+      Invoice invoice = constructInvoiceByAttachment(userMailName, senderMailName, account, isInvoiceDefined, path);
       print("Nowa faktura " + invoice.toString());
-
       startReminder(invoice);
 
       if (invoice.isDefined)
@@ -308,6 +298,20 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
     }
   }
 
+  Invoice constructInvoiceByAttachment(String userMailName, String senderMailName, String account, bool isInvoiceDefined, String path) {
+    return new Invoice(
+        categoryName,
+        userMailName,
+        senderMailName,
+        paymentAmount,
+        paymentDate,
+        account,
+        isInvoiceDefined,
+        path,
+        Utils().setUrgencyColorBasedOnDate(
+            DateTime.parse(paymentDate), preferences));
+  }
+
   void startReminder(Invoice invoice) {
     if (invoice.color == Colors.red)
       methodChannel.invokeMethod("startMonitoringUrgentPayment", {
@@ -318,52 +322,11 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
       });
   }
 
-  Color setUrgencyColor(List<Invoice> tempInvoicesInfo) {
-    Color color = Colors.blue;
-    for (Invoice singleInvoice in tempInvoicesInfo) {
-      if ((DateTime.parse(singleInvoice.paymentDate)
-                  .difference(DateTime.now())
-                  .inDays)
-              .abs() <=
-          preferences[3]) {
-        color = Colors.red;
-      } else if ((DateTime.parse(singleInvoice.paymentDate)
-                      .difference(DateTime.now())
-                      .inDays)
-                  .abs() >
-              preferences[3] &&
-          (DateTime.parse(singleInvoice.paymentDate)
-                      .difference(DateTime.now())
-                      .inDays)
-                  .abs() <=
-              preferences[2]) {
-        color = Colors.amber;
-      } else if ((DateTime.parse(singleInvoice.paymentDate)
-                      .difference(DateTime.now())
-                      .inDays)
-                  .abs() >
-              preferences[2] &&
-          (DateTime.parse(singleInvoice.paymentDate)
-                      .difference(DateTime.now())
-                      .inDays)
-                  .abs() <=
-              44000) {
-        color = Colors.green;
-      }
-      return color;
-    }
-  }
-
-  @override
-  void dispose() {
-    timer?.cancel();
-    super.dispose();
-    print("robie Dispose");
-  }
-
   @override
   Widget build(BuildContext context) {
-    invoicesForConsolided = sortInvoicesForConsolided(invoicesInfo, context);
+    invoicesTilesForConsolided = sortInvoicesForConsolided(invoicesInfo, context);
+    invoicesTilesForConsolided.add(List.generate(notificationItems.length,
+            (index) => notificationItems[index].notificationItem()));
     PageController pageController = PageController(initialPage: 0);
     if (emailSettings.isEmpty) {
       return MainUI().warningHomePage(context);
@@ -371,98 +334,8 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
     if (trustedEmails.isEmpty) {
       return MainUI().warningHomePageForTrustedEmpty(context);
     }
-    return homeScreenLayout(
-        pageController, context, widget.isCalendarViewEnabled);
-  }
-
-  Scaffold homeScreenLayout(PageController pageController, BuildContext context,
-      bool isCalendarViewEnnabled) {
-    return Scaffold(
-        key: scaffoldKey,
-        body: isCalendarViewEnnabled
-            ? calendarView(pageController, context)
-            : consolidedInvoicesView(),
-        appBar: homePageAppBar(),
-        drawer: homePageDrawerMenu(context));
-  }
-
-  ListView consolidedInvoicesView() {
-    return ListView.builder(
-              itemBuilder: (BuildContext context, int index) {
-                return ExpandableListViewItem(
-                    title: urgencyNames[index],
-                    color: colors[index],
-                    invoices: invoicesForConsolided[index]);
-              },
-              itemCount: 4,
-            );
-  }
-
-  Drawer homePageDrawerMenu(BuildContext context) {
-    return Drawer(
-      // Add a ListView to the drawer. This ensures the user can scroll
-      // through the options in the drawer if there isn't enough vertical
-      // space to fit everything.
-      child: ListView(
-        // Important: Remove any padding from the ListView.
-        padding: EdgeInsets.zero,
-        children: <Widget>[
-          DrawerHeader(
-            child: Column(
-              children: [
-                Text(
-                  username,
-                  style: TextStyle(fontSize: 50, color: Colors.white),
-                ),
-                Container(child: buildDropdownButton(), width: 300)
-              ],
-            ),
-            decoration: BoxDecoration(
-              color: Colors.blue,
-            ),
-          ),
-          ListTile(
-            title: Text('Zarządzaj adresami e-mail'),
-            onTap: () {
-              methodChannel.invokeMethod("stopThreadsAndTimers");
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => EmailBoxesPanel()),
-              );
-            },
-          ),
-          ListTile(
-            title: Text('Edytuj zaufaną listę nadawców faktur'),
-            onTap: () {
-              methodChannel.invokeMethod("stopThreadsAndTimers");
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => TrustedListPanel()),
-              );
-            },
-          ),
-          ListTile(
-            title: Text('Ustawienia'),
-            onTap: () {
-              methodChannel.invokeMethod("stopThreadsAndTimers");
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => TimeInterval()));
-            },
-          ),
-          ListTile(
-            title: Text('Przełącz użytkownika'),
-            onTap: () {
-              methodChannel.invokeMethod("stopThreadsAndTimers");
-              MySharedPreferences.instance.setBooleanValue("isLoggedIn", false);
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => MyApp(DateTime.now())));
-            },
-          ),
-        ],
-      ),
-    );
+    return MainUI().homeScreenLayout(
+        pageController, context, scaffoldKey, widget.isCalendarViewEnabled, calendarView(pageController, context), homePageAppBar(), urgencyNames, colors, invoicesTilesForConsolided, methodChannel, username, buildDropdownButton());
   }
 
   AppBar homePageAppBar() {
@@ -727,48 +600,52 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
         print("animation or email value:");
         print(_animationForEmails.value);
       }),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
+      child: userEmailTileListWithStats(context),
+    );
+  }
+
+  Column userEmailTileListWithStats(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
 //                    SizedBox(width: MediaQuery.of(context).size.width / 7),
 //                    Text("Synchronizuję ... " + syncedEmailBoxName),
 //                    CircularProgressIndicator(),
-          Container(
-              color: Colors.blue,
-              height: MediaQuery.of(context).size.height / 20,
-              child: Center(
-                child: RichText(
-                  text: TextSpan(
-                    text: 'Twoje skrzynki e-mail ',
-                    style: TextStyle(fontSize: 12),
-                    children: <TextSpan>[
-                      TextSpan(
-                          text: (notificationItems.length).toString(),
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue,
-                              backgroundColor: Colors.white,
-                              fontSize: 20)),
-                    ],
-                  ),
-                ),
-              )),
-
-          Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height /
-                    _animationForEmails.value +
-                10,
+        Container(
             color: Colors.blue,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: List.generate(notificationItems.length,
-                  (index) => notificationItems[index].notificationItem()),
-            ),
+            height: MediaQuery.of(context).size.height / 20,
+            child: Center(
+              child: RichText(
+                text: TextSpan(
+                  text: 'Twoje skrzynki e-mail ',
+                  style: TextStyle(fontSize: 12),
+                  children: <TextSpan>[
+                    TextSpan(
+                        text: (notificationItems.length).toString(),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue,
+                            backgroundColor: Colors.white,
+                            fontSize: 20)),
+                  ],
+                ),
+              ),
+            )),
+
+        Container(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height /
+                  _animationForEmails.value +
+              10,
+          color: Colors.blue,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: List.generate(notificationItems.length,
+                (index) => notificationItems[index].notificationItem()),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -886,7 +763,7 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
     } else {
       setState(() {
         widget.definedInvoicesInfo = tempDefinedInvoicesInfo;
-        definedColor = setUrgencyColor(widget.definedInvoicesInfo);
+        definedColor = Utils().setUrgencyColor(widget.definedInvoicesInfo, preferences);
         isPlaceholderTextVisible = false;
         isDefinedVisible = true;
       });
@@ -922,23 +799,7 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
     });
   }
 
-  String getInvoiceSenderName(List<List<String>> trustedEmails, String path) {
-    String nameWithFile = "lol";
-    for (List<String> trustedEmail in trustedEmails) {
-      if (path.contains(trustedEmail[0])) {
-        nameWithFile = trustedEmail[1];
-      }
-    }
 
-    print("Path " +
-        path +
-        " nazwa " +
-        nameWithFile +
-        " trusted emails " +
-        trustedEmails.toString());
-
-    return nameWithFile;
-  }
 
   Future<bool> _onWillPop(BuildContext context) async {
     print("OnWillPop");

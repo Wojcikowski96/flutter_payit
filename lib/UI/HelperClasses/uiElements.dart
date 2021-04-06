@@ -1,5 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_payit/IsUserLoggedChecker/MySharedPreferences.dart';
+import 'package:flutter_payit/Main/main.dart';
+import 'package:flutter_payit/Objects/invoice.dart';
+import 'package:flutter_payit/UI/Screens/ConfigScreens/emailBoxesPanel.dart';
+import 'package:flutter_payit/UI/Screens/ConfigScreens/timeInterval.dart';
+import 'package:flutter_payit/UI/Screens/ConfigScreens/trustedList.dart';
+
+import 'consolidedEventsView.dart';
 
 class UiElements {
 
@@ -97,6 +106,85 @@ class UiElements {
                 width: 2,
                 color: Colors.grey,
               ))),
+    );
+  }
+
+  Drawer homePageDrawerMenu(BuildContext context, MethodChannel methodChannel, String username, DropdownButton<String> selectEmailAddress) {
+    return Drawer(
+      // Add a ListView to the drawer. This ensures the user can scroll
+      // through the options in the drawer if there isn't enough vertical
+      // space to fit everything.
+      child: ListView(
+        // Important: Remove any padding from the ListView.
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          DrawerHeader(
+            child: Column(
+              children: [
+                Text(
+                  username,
+                  style: TextStyle(fontSize: 50, color: Colors.white),
+                ),
+                Container(child: selectEmailAddress, width: 300)
+              ],
+            ),
+            decoration: BoxDecoration(
+              color: Colors.blue,
+            ),
+          ),
+          ListTile(
+            title: Text('Zarządzaj adresami e-mail'),
+            onTap: () {
+              methodChannel.invokeMethod("stopThreadsAndTimers");
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => EmailBoxesPanel()),
+              );
+            },
+          ),
+          ListTile(
+            title: Text('Edytuj zaufaną listę nadawców faktur'),
+            onTap: () {
+              methodChannel.invokeMethod("stopThreadsAndTimers");
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => TrustedListPanel()),
+              );
+            },
+          ),
+          ListTile(
+            title: Text('Ustawienia'),
+            onTap: () {
+              methodChannel.invokeMethod("stopThreadsAndTimers");
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => TimeInterval()));
+            },
+          ),
+          ListTile(
+            title: Text('Przełącz użytkownika'),
+            onTap: () {
+              methodChannel.invokeMethod("stopThreadsAndTimers");
+              MySharedPreferences.instance.setBooleanValue("isLoggedIn", false);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => MyApp(DateTime.now())));
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  ListView consolidedInvoicesView(List<String> urgencyNames, List<Color> colors, List<List<Widget>> invoicesTilesForConsolided) {
+    return ListView.builder(
+      itemBuilder: (BuildContext context, int index) {
+        return ExpandableListViewItem(
+            title: urgencyNames[index],
+            color: colors[index],
+            invoices: invoicesTilesForConsolided[index]);
+      },
+      itemCount: 5,
     );
   }
 

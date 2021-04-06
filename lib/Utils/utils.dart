@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_payit/Objects/invoice.dart';
 
 class Utils{
   Color setUrgencyColorBasedOnDate(DateTime date, List<int> preferences) {
@@ -17,6 +18,41 @@ class Utils{
     }
     return color;
   }
+  Color setUrgencyColor(List<Invoice> tempInvoicesInfo, List<int> preferences) {
+    Color color = Colors.blue;
+    for (Invoice singleInvoice in tempInvoicesInfo) {
+      if ((DateTime.parse(singleInvoice.paymentDate)
+          .difference(DateTime.now())
+          .inDays)
+          .abs() <=
+          preferences[3]) {
+        color = Colors.red;
+      } else if ((DateTime.parse(singleInvoice.paymentDate)
+          .difference(DateTime.now())
+          .inDays)
+          .abs() >
+          preferences[3] &&
+          (DateTime.parse(singleInvoice.paymentDate)
+              .difference(DateTime.now())
+              .inDays)
+              .abs() <=
+              preferences[2]) {
+        color = Colors.amber;
+      } else if ((DateTime.parse(singleInvoice.paymentDate)
+          .difference(DateTime.now())
+          .inDays)
+          .abs() >
+          preferences[2] &&
+          (DateTime.parse(singleInvoice.paymentDate)
+              .difference(DateTime.now())
+              .inDays)
+              .abs() <=
+              44000) {
+        color = Colors.green;
+      }
+      return color;
+    }
+  }
 
   Color colorFromName(String name) {
     if (name == "MaterialColor(primary value: Color(0xfff44336))") {
@@ -26,6 +62,24 @@ class Utils{
     } else {
       return Colors.green;
     }
+  }
+
+  String getInvoiceSenderCustomName(List<List<String>> trustedEmails, String path) {
+    String nameWithFile = "lol";
+    for (List<String> trustedEmail in trustedEmails) {
+      if (path.contains(trustedEmail[0])) {
+        nameWithFile = trustedEmail[1];
+      }
+    }
+
+    print("Path " +
+        path +
+        " nazwa " +
+        nameWithFile +
+        " trusted emails " +
+        trustedEmails.toString());
+
+    return nameWithFile;
   }
 
   bool checkIsAccountControlNumValid(String accountNumber){
