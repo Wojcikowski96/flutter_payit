@@ -12,6 +12,7 @@ import 'package:flutter_payit/Main/main.dart';
 import 'package:flutter_payit/Objects/appNotification.dart';
 import 'package:flutter_payit/Objects/notificationItem.dart';
 import 'package:flutter_payit/UI/HelperClasses/consolidedEventsView.dart';
+import 'package:flutter_payit/UI/HelperClasses/customPlaceHolderLoading.dart';
 import 'package:flutter_payit/UI/HelperClasses/mainUI.dart';
 import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
 import 'package:flutter_payit/UI/Screens/ConfigScreens/timeInterval.dart';
@@ -59,7 +60,13 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
     "Niezdefiniowane",
     "Twoje skrzynki e-mail"
   ];
-  List<Color> colors = [Colors.red, Colors.amber, Colors.green, Colors.grey, Colors.blue];
+  List<Color> colors = [
+    Colors.red,
+    Colors.amber,
+    Colors.green,
+    Colors.grey,
+    Colors.blue
+  ];
   List<List<Widget>> invoicesTilesForConsolided = new List();
 
   String syncedEmailBoxName = "...";
@@ -91,6 +98,8 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
   bool isInvoiceVisible = true;
 
   bool isListOfEmailsVisible = true;
+
+  bool isProgressOfInsertingVisible = false;
 
   bool isTipTextVisible = false;
 
@@ -158,7 +167,8 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
       emailSettings = await UserOperationsOnEmails().getEmailSettings(username);
       notificationItems = populateNotificationItemsList(emailSettings);
       methodChannel.setMethodCallHandler(javaMethod);
-      trustedEmails = await UserOperationsOnEmails().getInvoiceSenders(username);
+      trustedEmails =
+          await UserOperationsOnEmails().getInvoiceSenders(username);
 
       if (emailSettings.isNotEmpty) {
         trustedEmails.isNotEmpty
@@ -173,12 +183,20 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
       List<FileSystemEntity> invoiceFileList =
           await PdfParser().dirContents(path);
 
+      setState(() {
+        isProgressOfInsertingVisible = true;
+      });
+
       for (FileSystemEntity file in invoiceFileList)
         trustedEmails.isNotEmpty
             ? await setFileForDrawing(trustedEmails, file.path)
             : print("Nothing to do");
 
       await setModifiedInvoicesForDrawing();
+
+      setState(() {
+        isProgressOfInsertingVisible = false;
+      });
     });
   }
 
@@ -187,7 +205,8 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
     invoicesDir.create(recursive: true);
   }
 
-  Future<String> getUsernameFromFlutterStorage() async => (await storage.read(key: "username")).toString();
+  Future<String> getUsernameFromFlutterStorage() async =>
+      (await storage.read(key: "username")).toString();
 
   Future<String> generatePathForStoringAttachments() async {
     return (await PathProviderEx.getStorageInfo())[0].appFilesDir +
@@ -248,11 +267,17 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
       String eventPath = event.path;
 
       if (eventString == "add") {
+        setState(() {
+          isProgressOfInsertingVisible = true;
+        });
         print("Nowy plik " + eventPath);
 //        setState(() {
 //          isProgressBarVisible = false;
 //        });
         await setFileForDrawing(trustedEmails, eventPath);
+        setState(() {
+          isProgressOfInsertingVisible = false;
+        });
       }
       //else if (eventString == "modify")
 //        setState(() {
@@ -280,7 +305,8 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
       bool isInvoiceDefined =
           checkIfInvoiceIsDefined(paymentAmount, paymentDate, account);
 
-      Invoice invoice = constructInvoiceByAttachment(userMailName, senderMailName, account, isInvoiceDefined, path);
+      Invoice invoice = constructInvoiceByAttachment(
+          userMailName, senderMailName, account, isInvoiceDefined, path);
       print("Nowa faktura " + invoice.toString());
       startReminder(invoice);
 
@@ -298,7 +324,12 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
     }
   }
 
-  Invoice constructInvoiceByAttachment(String userMailName, String senderMailName, String account, bool isInvoiceDefined, String path) {
+  Invoice constructInvoiceByAttachment(
+      String userMailName,
+      String senderMailName,
+      String account,
+      bool isInvoiceDefined,
+      String path) {
     return new Invoice(
         categoryName,
         userMailName,
@@ -324,18 +355,33 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    invoicesTilesForConsolided = sortInvoicesForConsolided(invoicesInfo, context);
+    //Visibility( visible: true, child: UiElements().showLoaderDialog(context, "Nanoszę zdarzenia na kalendarz...", true),);
+    invoicesTilesForConsolided =
+        sortInvoicesForConsolided(invoicesInfo, context);
     invoicesTilesForConsolided.add(List.generate(notificationItems.length,
-            (index) => notificationItems[index].notificationItem()));
+        (index) => notificationItems[index].notificationItem()));
     PageController pageController = PageController(initialPage: 0);
-    if (emailSettings.isEmpty) {
-      return MainUI().warningHomePage(context);
-    }
-    if (trustedEmails.isEmpty) {
+    if (isProgressOfInsertingVisible) {
+      return MainUI().placeholderCalendarView();
+    } else if (emailSettings.isEmpty) {
+      //return MainUI().warningHomePage(context);
+    } else if (trustedEmails.isEmpty) {
       return MainUI().warningHomePageForTrustedEmpty(context);
+    } else {
+      return MainUI().homeScreenLayout(
+          pageController,
+          context,
+          scaffoldKey,
+          widget.isCalendarViewEnabled,
+          calendarView(pageController, context),
+          homePageAppBar(),
+          urgencyNames,
+          colors,
+          invoicesTilesForConsolided,
+          methodChannel,
+          username,
+          buildDropdownButton());
     }
-    return MainUI().homeScreenLayout(
-        pageController, context, scaffoldKey, widget.isCalendarViewEnabled, calendarView(pageController, context), homePageAppBar(), urgencyNames, colors, invoicesTilesForConsolided, methodChannel, username, buildDropdownButton());
   }
 
   AppBar homePageAppBar() {
@@ -400,113 +446,107 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
 
   Expanded undefinedColumn(PageController pageController) {
     return Expanded(
-                  flex: 30,
-                  child: GestureDetector(
-                    onTap: () => setState(() {
-                      print("_animationValue");
-                      print(_animationForInvoices.value);
-                      definedFlex = 1;
-                      undefinedFlex = 4;
-                      isDefinedVisible = false;
-                      isPlaceholderTextVisible = false;
-                      isListOfEmailsVisible = false;
-                      fontSizeOfDefAndUndef = 12;
-                      definedText = "Zdefiniowane";
-                      undefinedText = "Niezdefiniowane";
-                      if (_animationControllerForInvoices.value == 0.0) {
-                        _animationControllerForInvoices.forward();
-                      } else {
-                        _animationControllerForInvoices.reverse();
-                      }
-                      if (_animationForInvoices.value == 10) {
-                        isDefinedVisible = true;
-                        definedTextRotated = 0;
-                        undefinedTextRotated = 1;
-                        isTipTextVisible = false;
-                        isUndefinedVisible = false;
-                      } else {
-                        isUndefinedVisible = true;
-                        undefinedTextRotated = 0;
-                        definedTextRotated = 1;
-                        isTipTextVisible = true;
-                      }
+        flex: 30,
+        child: GestureDetector(
+          onTap: () => setState(() {
+            print("_animationValue");
+            print(_animationForInvoices.value);
+            definedFlex = 1;
+            undefinedFlex = 4;
+            isDefinedVisible = false;
+            isPlaceholderTextVisible = false;
+            isListOfEmailsVisible = false;
+            fontSizeOfDefAndUndef = 12;
+            definedText = "Zdefiniowane";
+            undefinedText = "Niezdefiniowane";
+            if (_animationControllerForInvoices.value == 0.0) {
+              _animationControllerForInvoices.forward();
+            } else {
+              _animationControllerForInvoices.reverse();
+            }
+            if (_animationForInvoices.value == 10) {
+              isDefinedVisible = true;
+              definedTextRotated = 0;
+              undefinedTextRotated = 1;
+              isTipTextVisible = false;
+              isUndefinedVisible = false;
+            } else {
+              isUndefinedVisible = true;
+              undefinedTextRotated = 0;
+              definedTextRotated = 1;
+              isTipTextVisible = true;
+            }
 
-                      if (_animationForEmails.value == 10) {
-                        definedText = "Zde...";
-                        undefinedText = "Nie...";
-                      }
-                      if (definedTextRotated == 1) {
-                        fontSizeOfDefAndUndef = 17;
-                      }
-                    }),
-                    child: Container(
-                        width: 0.0,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.white60, width: 2),
-                          color: Colors.black26,
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            AnimatedIcon(
-                              icon: AnimatedIcons.menu_arrow,
-                              progress: _animationControllerForInvoices,
-                              color: Colors.white,
-                            ),
-                            Center(
-                              child: RotatedBox(
-                                  quarterTurns: undefinedTextRotated,
-                                  child: RichText(
-                                    text: TextSpan(
-                                      text: undefinedText + " ",
-                                      style: TextStyle(
-                                          fontSize: fontSizeOfDefAndUndef),
-                                      children: <TextSpan>[
-                                        TextSpan(
-                                            text:
-                                                (undefinedInvoicesInfo.length)
-                                                    .toString(),
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white,
-                                                backgroundColor: Colors.red,
-                                                fontSize: 20)),
-                                      ],
-                                    ),
-                                  )),
-                            ),
-                            Visibility(
-                                visible: isTipTextVisible,
-                                child: Center(
-                                  child: AnimatedOpacity(
-                                      opacity: isTipTextVisible ? 1.0 : 0.0,
-                                      duration: Duration(seconds: 3),
-                                      child: Container(
-                                          child: Text(
-                                        "Stuknij aby ukryć",
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 10),
-                                      ))),
-                                )),
-                            Visibility(
-                                visible: isUndefinedVisible,
-                                child: Expanded(
-                                    child: PaymentPage(
-                                        pageController,
-                                        undefinedInvoicesInfo,
-                                        Colors.black26,
-                                        "Pilne"))),
-                          ],
+            if (_animationForEmails.value == 10) {
+              definedText = "Zde...";
+              undefinedText = "Nie...";
+            }
+            if (definedTextRotated == 1) {
+              fontSizeOfDefAndUndef = 17;
+            }
+          }),
+          child: Container(
+              width: 0.0,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.white60, width: 2),
+                color: Colors.black26,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  AnimatedIcon(
+                    icon: AnimatedIcons.menu_arrow,
+                    progress: _animationControllerForInvoices,
+                    color: Colors.white,
+                  ),
+                  Center(
+                    child: RotatedBox(
+                        quarterTurns: undefinedTextRotated,
+                        child: RichText(
+                          text: TextSpan(
+                            text: undefinedText + " ",
+                            style: TextStyle(fontSize: fontSizeOfDefAndUndef),
+                            children: <TextSpan>[
+                              TextSpan(
+                                  text:
+                                      (undefinedInvoicesInfo.length).toString(),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      backgroundColor: Colors.red,
+                                      fontSize: 20)),
+                            ],
+                          ),
                         )),
-                  ));
+                  ),
+                  Visibility(
+                      visible: isTipTextVisible,
+                      child: Center(
+                        child: AnimatedOpacity(
+                            opacity: isTipTextVisible ? 1.0 : 0.0,
+                            duration: Duration(seconds: 3),
+                            child: Container(
+                                child: Text(
+                              "Stuknij aby ukryć",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 10),
+                            ))),
+                      )),
+                  Visibility(
+                      visible: isUndefinedVisible,
+                      child: Expanded(
+                          child: PaymentPage(pageController,
+                              undefinedInvoicesInfo, Colors.black26, "Pilne"))),
+                ],
+              )),
+        ));
   }
 
   Expanded definedColumn(PageController pageController) {
     return Expanded(
-                  flex: _animationForInvoices.value,
-                  child: GestureDetector(
+        flex: _animationForInvoices.value,
+        child: GestureDetector(
 //                            onTap: () => setState(() {
 //                              definedFlex = 4;
 //                              undefinedFlex = 1;
@@ -525,59 +565,57 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
 //                              undefinedText = "Niezdefiniowane";
 //
 //                            }),
-                    child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.white60, width: 2),
-                          color: definedColor,
-                        ),
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              RotatedBox(
-                                  quarterTurns: definedTextRotated,
-                                  child: RichText(
-                                    text: TextSpan(
-                                      text: definedText+ " ",
-                                      style: TextStyle(
-                                          fontSize: fontSizeOfDefAndUndef),
-                                      children: <TextSpan>[
-                                        TextSpan(
-                                            text: (widget.definedInvoicesInfo
-                                                    .length)
-                                                .toString(),
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: definedColor,
-                                                backgroundColor: Colors.white,
-                                                fontSize: 20)),
-                                      ],
-                                    ),
-                                  )),
-                              Visibility(
-                                  visible: isDefinedVisible,
-                                  child: Expanded(
-                                    child: PaymentPage(
-                                        pageController,
-                                        widget.definedInvoicesInfo,
-                                        definedColor,
-                                        "Pilne"),
-                                  )),
-                              Visibility(
-                                  visible: isPlaceholderTextVisible,
-                                  child: Expanded(
-                                    child: Center(
-                                      child: Text(
-                                        "< Nic do pokazania >",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ),
-                                  )),
-                            ])),
-                  ));
+          child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.white60, width: 2),
+                color: definedColor,
+              ),
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    RotatedBox(
+                        quarterTurns: definedTextRotated,
+                        child: RichText(
+                          text: TextSpan(
+                            text: definedText + " ",
+                            style: TextStyle(fontSize: fontSizeOfDefAndUndef),
+                            children: <TextSpan>[
+                              TextSpan(
+                                  text: (widget.definedInvoicesInfo.length)
+                                      .toString(),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: definedColor,
+                                      backgroundColor: Colors.white,
+                                      fontSize: 20)),
+                            ],
+                          ),
+                        )),
+                    Visibility(
+                        visible: isDefinedVisible,
+                        child: Expanded(
+                          child: PaymentPage(
+                              pageController,
+                              widget.definedInvoicesInfo,
+                              definedColor,
+                              "Pilne"),
+                        )),
+                    Visibility(
+                        visible: isPlaceholderTextVisible,
+                        child: Expanded(
+                          child: Center(
+                            child: Text(
+                              "< Nic do pokazania >",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        )),
+                  ])),
+        ));
   }
 
   GestureDetector bottomUserEmailPanel(BuildContext context) {
@@ -635,9 +673,9 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
 
         Container(
           width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height /
-                  _animationForEmails.value +
-              10,
+          height:
+              MediaQuery.of(context).size.height / _animationForEmails.value +
+                  10,
           color: Colors.blue,
           child: ListView(
             scrollDirection: Axis.horizontal,
@@ -763,7 +801,8 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
     } else {
       setState(() {
         widget.definedInvoicesInfo = tempDefinedInvoicesInfo;
-        definedColor = Utils().setUrgencyColor(widget.definedInvoicesInfo, preferences);
+        definedColor =
+            Utils().setUrgencyColor(widget.definedInvoicesInfo, preferences);
         isPlaceholderTextVisible = false;
         isDefinedVisible = true;
       });
@@ -798,8 +837,6 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
           CalendarUtils().generatePaymentEvents(tempInvoicesInfo, preferences);
     });
   }
-
-
 
   Future<bool> _onWillPop(BuildContext context) async {
     print("OnWillPop");

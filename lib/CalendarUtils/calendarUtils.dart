@@ -1,5 +1,7 @@
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_payit/Objects/invoice.dart';
+import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
 import 'package:flutter_payit/Utils/utils.dart';
 
 class CalendarUtils{
@@ -26,6 +28,7 @@ class CalendarUtils{
           singleInvoiceInfo.senderMail.toString();
 
       if (paymentEvents.containsKey(date)) {
+
         paymentEvents[date].add(paymentEventValue);
       } else {
         paymentEvents[date] = [paymentEventValue];
