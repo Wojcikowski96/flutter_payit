@@ -78,65 +78,75 @@ class UiElements {
     );
   }
 
-  Visibility showNotificationsFrostedContainer(BuildContext context, List <WarningNotification> warnings, bool isThisVisible) {
-   return Visibility(
-     visible: isThisVisible,
-     child: ClipRect(  // <-- clips to the 200x200 [Container] below
-        child: BackdropFilter(
-          filter: ImageFilter.blur(
-            sigmaX: 4.0,
-            sigmaY: 4.0,
-          ),
-          child: Container(
-            alignment: Alignment.center,
-
+  Visibility showNotificationsFrostedContainer(BuildContext context,
+      List<WarningNotification> warnings, bool isThisVisible) {
+    return Visibility(
+      visible: isThisVisible,
+      child: ClipRect(
+          // <-- clips to the 200x200 [Container] below
+          child: BackdropFilter(
+        filter: ImageFilter.blur(
+          sigmaX: 4.0,
+          sigmaY: 4.0,
+        ),
+        child: Container(
+          alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.5),
+            color: Colors.blue.withOpacity(0.25),
             border: Border.all(
-              color:  Colors.grey.shade100.withOpacity(1),
-              width: 3
-            ),
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-
-      ),
-
-            width: MediaQuery.of(context).size.width / 1.3,
-            height:  MediaQuery.of(context).size.height / 1.6,
-            child: Column(
-              children: [
-                Expanded(flex: 1,child: Text("Ostrzeżenia", style: TextStyle(color: Colors.blue.shade300.withOpacity(1), fontSize: 40, fontWeight: FontWeight.bold),)),
-                Visibility(
-                  visible: warnings.length!=0 ? true : false,
-                  child: Expanded(
-                    flex: 5,
-                    child: Container(
-                      alignment: Alignment.topCenter,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: ListView(
-
-                          children:
-                          List.generate(warnings.length, (index2) => warnings[index2]),
-                        ),
+                color: Colors.grey.shade100.withOpacity(1), width: 3),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          width: MediaQuery.of(context).size.width / 1.3,
+          height: MediaQuery.of(context).size.height / 2.2,
+          child: Column(
+            children: [
+              Expanded(
+                  flex: 1,
+                  child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.25),
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                      ),
+                      width: MediaQuery.of(context).size.width / 1.3,
+                      child: Center(
+                          child: Text(
+                        "Ostrzeżenia",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold),
+                      )))),
+              Visibility(
+                visible: warnings.length != 0 ? true : false,
+                child: Expanded(
+                  flex: 5,
+                  child: Container(
+                    alignment: Alignment.topCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ListView(
+                        children: List.generate(
+                            warnings.length, (index2) => warnings[index2]),
                       ),
                     ),
                   ),
                 ),
-                Visibility(
-                    visible: warnings.length ==0 ? true : false,
-                    child: Expanded(flex: 1,child: Text("<Nic do pokazania>", style: TextStyle(color: Colors.grey, fontSize: 16),))
-
-                ),
-
-              ],
-
-            ),
-
+              ),
+              Visibility(
+                  visible: warnings.length == 0 ? true : false,
+                  child: Expanded(
+                      flex: 1,
+                      child: Text(
+                        "<Nic do pokazania>",
+                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      ))),
+            ],
+          ),
         ),
       )),
-   );
+    );
   }
-
 
   SnackBar myShowSnackBar(String text) {
     return SnackBar(
@@ -273,15 +283,17 @@ class UiElements {
           child: Container(
             height: 25,
             width: 25,
-            decoration:
-                BoxDecoration(color: Colors.red, shape: BoxShape.circle,
-                border: Border.all(
-                    color: Colors.blue
-                )),
+            decoration: BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.blue)),
             child: Center(
                 child: Text(
               notificationsLength.toString(),
-              style: TextStyle(fontSize: 15, color: Colors.blue, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.blue,
+                  fontWeight: FontWeight.bold),
             )),
           ));
     } else {
