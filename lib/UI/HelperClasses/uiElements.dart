@@ -136,10 +136,12 @@ class UiElements {
               Visibility(
                   visible: warnings.length == 0 ? true : false,
                   child: Expanded(
-                      flex: 1,
-                      child: Text(
-                        "<Nic do pokazania>",
-                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      flex: 5,
+                      child: Center(
+                        child: Text(
+                          "<Nic do pokazania>",
+                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                        ),
                       ))),
             ],
           ),
