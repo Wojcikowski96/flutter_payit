@@ -1,7 +1,7 @@
 import 'dart:ui';
 
-class AppNotification {
+class SyncStatus {
   String userMail;
   bool isSyncDone;
-  AppNotification(this.userMail, this.isSyncDone);
+  SyncStatus(this.userMail, this.isSyncDone);
 }

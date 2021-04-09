@@ -11,6 +11,8 @@ import 'package:flutter_payit/LifeCycleHandler/lifeCycle.dart';
 import 'package:flutter_payit/Main/main.dart';
 import 'package:flutter_payit/Objects/appNotification.dart';
 import 'package:flutter_payit/Objects/notificationItem.dart';
+import 'package:flutter_payit/Objects/userEmail.dart';
+import 'package:flutter_payit/Objects/warningNotification.dart';
 import 'package:flutter_payit/UI/HelperClasses/consolidedEventsView.dart';
 import 'package:flutter_payit/UI/HelperClasses/customPlaceHolderLoading.dart';
 import 'package:flutter_payit/UI/HelperClasses/mainUI.dart';
@@ -103,11 +105,15 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
 
   bool isTipTextVisible = false;
 
+  bool isContainerWithNotificationsVisible = false;
+
   double fontSizeOfDefAndUndef = 12;
 
   static String username = "<Username>";
 
   List<String> userEmailsNames = new List();
+
+  List<WarningNotification> warnings = new List();
 
   List<Invoice> invoicesInfo = new List();
   List<Invoice> urgent = new List();
@@ -115,7 +121,7 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
   List<Invoice> noturgent = new List();
   List<Invoice> undefined = new List();
 
-  List<AppNotification> appNotifications = new List();
+  List<SyncStatus> appNotifications = new List();
 
   String selectedEmailAddress;
 
@@ -178,7 +184,21 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
         trustedEmails.isNotEmpty
             ? await watchForNewFiles(trustedEmails)
             : print("Nothing to do");
+      } else {
+        warnings.add(
+            new WarningNotification("Brak skrzynek e-mail", EmailBoxesPanel()));
       }
+
+      if (trustedEmails.isEmpty) {
+        warnings.add(new WarningNotification(
+            "Brak zaufanych adresów", TrustedListPanel()));
+      }
+      setState(() {
+        isContainerWithNotificationsVisible = true;
+      });
+
+      print("Dlugosc warningów");
+      print(warnings.length);
 
       List<FileSystemEntity> invoiceFileList =
           await PdfParser().dirContents(path);
@@ -363,10 +383,6 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
     PageController pageController = PageController(initialPage: 0);
     if (isProgressOfInsertingVisible) {
       return MainUI().placeholderCalendarView();
-    } else if (emailSettings.isEmpty) {
-      //return MainUI().warningHomePage(context);
-    } else if (trustedEmails.isEmpty) {
-      return MainUI().warningHomePageForTrustedEmpty(context);
     } else {
       return MainUI().homeScreenLayout(
           pageController,
@@ -374,17 +390,19 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
           scaffoldKey,
           widget.isCalendarViewEnabled,
           calendarView(pageController, context),
-          homePageAppBar(),
+          homePageAppBar(context),
           urgencyNames,
           colors,
           invoicesTilesForConsolided,
           methodChannel,
           username,
-          buildDropdownButton());
+          buildDropdownButton(),
+          isContainerWithNotificationsVisible,
+          warnings);
     }
   }
 
-  AppBar homePageAppBar() {
+  AppBar homePageAppBar(BuildContext context) {
     return AppBar(
       // leading: IconButton(icon: Icon(Icons.menu), onPressed: (){
       //
@@ -405,7 +423,57 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
               widget.isCalendarViewEnabled = !widget.isCalendarViewEnabled;
             });
           },
-        )
+        ),
+        Stack(
+          alignment: Alignment.bottomRight,
+          children: [
+            IconButton(
+              icon: warnings.length != 0
+                  ? Icon(
+                      Icons.warning_amber_outlined,
+                      color: Colors.red,
+                    )
+                  : Icon(
+                      Icons.notifications,
+                      color: Colors.white,
+                    ),
+              iconSize: warnings.length!=0 ? 40 : 25,
+              onPressed: () {
+                setState(() {
+                  isContainerWithNotificationsVisible =
+                      !isContainerWithNotificationsVisible;
+                });
+              },
+            ),
+            UiElements().notificationsNumIcon(warnings.length),
+          ],
+        ),
+//        AnimatedOpacity(
+//            opacity: isContainerWithNotificationsVisible ? 1.0 : 0.0 ,
+//            duration: Duration(milliseconds: 500),
+//            child: Container(
+//              alignment: Alignment.center,
+//              width: 100,
+//              height: 100,
+//              decoration: new BoxDecoration(
+//                color: Colors.red,
+//                shape: BoxShape.circle,
+//              ),
+//              child: IconButton(
+//                icon: Icon(
+//                  Icons.warning_amber_outlined,
+//                  color: Colors.white,
+//                ),
+//                iconSize: 50,
+//                onPressed: () {
+//                  setState(() {
+//                    isContainerWithNotificationsVisible =
+//                    !isContainerWithNotificationsVisible;
+//                  });
+//                },
+//              ),
+//            )
+//        )
       ],
     );
   }

@@ -1,9 +1,12 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_payit/IsUserLoggedChecker/MySharedPreferences.dart';
 import 'package:flutter_payit/Main/main.dart';
 import 'package:flutter_payit/Objects/invoice.dart';
+import 'package:flutter_payit/Objects/warningNotification.dart';
 import 'package:flutter_payit/UI/Screens/ConfigScreens/emailBoxesPanel.dart';
 import 'package:flutter_payit/UI/Screens/ConfigScreens/timeInterval.dart';
 import 'package:flutter_payit/UI/Screens/ConfigScreens/trustedList.dart';
@@ -11,7 +14,6 @@ import 'package:flutter_payit/UI/Screens/ConfigScreens/trustedList.dart';
 import 'consolidedEventsView.dart';
 
 class UiElements {
-
   SizedBox drawButton(
       double width,
       double height,
@@ -76,6 +78,66 @@ class UiElements {
     );
   }
 
+  Visibility showNotificationsFrostedContainer(BuildContext context, List <WarningNotification> warnings, bool isThisVisible) {
+   return Visibility(
+     visible: isThisVisible,
+     child: ClipRect(  // <-- clips to the 200x200 [Container] below
+        child: BackdropFilter(
+          filter: ImageFilter.blur(
+            sigmaX: 4.0,
+            sigmaY: 4.0,
+          ),
+          child: Container(
+            alignment: Alignment.center,
+
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.5),
+            border: Border.all(
+              color:  Colors.grey.shade100.withOpacity(1),
+              width: 3
+            ),
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+
+      ),
+
+            width: MediaQuery.of(context).size.width / 1.3,
+            height:  MediaQuery.of(context).size.height / 1.6,
+            child: Column(
+              children: [
+                Expanded(flex: 1,child: Text("Ostrzeżenia", style: TextStyle(color: Colors.blue.shade300.withOpacity(1), fontSize: 40, fontWeight: FontWeight.bold),)),
+                Visibility(
+                  visible: warnings.length!=0 ? true : false,
+                  child: Expanded(
+                    flex: 5,
+                    child: Container(
+                      alignment: Alignment.topCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ListView(
+
+                          children:
+                          List.generate(warnings.length, (index2) => warnings[index2]),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Visibility(
+                    visible: warnings.length ==0 ? true : false,
+                    child: Expanded(flex: 1,child: Text("<Nic do pokazania>", style: TextStyle(color: Colors.grey, fontSize: 16),))
+
+                ),
+
+              ],
+
+            ),
+
+        ),
+      )),
+   );
+  }
+
+
   SnackBar myShowSnackBar(String text) {
     return SnackBar(
         content: Row(children: [
@@ -109,7 +171,8 @@ class UiElements {
     );
   }
 
-  Drawer homePageDrawerMenu(BuildContext context, MethodChannel methodChannel, String username, DropdownButton<String> selectEmailAddress) {
+  Drawer homePageDrawerMenu(BuildContext context, MethodChannel methodChannel,
+      String username, DropdownButton<String> selectEmailAddress) {
     return Drawer(
       // Add a ListView to the drawer. This ensures the user can scroll
       // through the options in the drawer if there isn't enough vertical
@@ -176,7 +239,8 @@ class UiElements {
     );
   }
 
-  ListView consolidedInvoicesView(List<String> urgencyNames, List<Color> colors, List<List<Widget>> invoicesTilesForConsolided) {
+  ListView consolidedInvoicesView(List<String> urgencyNames, List<Color> colors,
+      List<List<Widget>> invoicesTilesForConsolided) {
     return ListView.builder(
       itemBuilder: (BuildContext context, int index) {
         return ExpandableListViewItem(
@@ -194,11 +258,47 @@ class UiElements {
       color: Colors.white,
     );
   }
+
   Icon calendarIcon() {
     return Icon(
       Icons.table_chart,
       color: Colors.white,
     );
+  }
+
+  Opacity notificationsNumIcon(int notificationsLength) {
+    if (notificationsLength != 0) {
+      return Opacity(
+          opacity: 1.0,
+          child: Container(
+            height: 25,
+            width: 25,
+            decoration:
+                BoxDecoration(color: Colors.red, shape: BoxShape.circle,
+                border: Border.all(
+                    color: Colors.blue
+                )),
+            child: Center(
+                child: Text(
+              notificationsLength.toString(),
+              style: TextStyle(fontSize: 15, color: Colors.blue, fontWeight: FontWeight.bold),
+            )),
+          ));
+    } else {
+      return Opacity(
+          opacity: 0.0,
+          child: Container(
+            height: 18,
+            width: 18,
+            decoration:
+                BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+            child: Center(
+                child: Text(
+              notificationsLength.toString(),
+              style: TextStyle(fontSize: 15, color: Colors.blue),
+            )),
+          ));
+    }
   }
   //
 }
