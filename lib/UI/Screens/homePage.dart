@@ -15,6 +15,7 @@ import 'package:flutter_payit/Objects/userEmail.dart';
 import 'package:flutter_payit/Objects/warningNotification.dart';
 import 'package:flutter_payit/UI/HelperClasses/consolidedEventsView.dart';
 import 'package:flutter_payit/UI/HelperClasses/customPlaceHolderLoading.dart';
+import 'package:flutter_payit/UI/HelperClasses/homeScreenLayout.dart';
 import 'package:flutter_payit/UI/HelperClasses/mainUI.dart';
 import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
 import 'package:flutter_payit/UI/Screens/ConfigScreens/timeInterval.dart';
@@ -107,6 +108,10 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
 
   bool isContainerWithNotificationsVisible = false;
 
+  bool isTrustedEmailsEmpty = false;
+
+  bool isUserEmailsEmpty = false;
+
   double fontSizeOfDefAndUndef = 12;
 
   static String username = "<Username>";
@@ -115,11 +120,7 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
 
   List<WarningNotification> warnings = new List();
 
-  List<Invoice> invoicesInfo = new List();
-  List<Invoice> urgent = new List();
-  List<Invoice> medium = new List();
-  List<Invoice> noturgent = new List();
-  List<Invoice> undefined = new List();
+  List<Invoice> definedInvoicesInfo = new List();
 
   List<SyncStatus> appNotifications = new List();
 
@@ -185,14 +186,17 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
             ? await watchForNewFiles(trustedEmails)
             : print("Nothing to do");
       } else {
-        warnings.add(
-            new WarningNotification("Brak skrzynek e-mail", EmailBoxesPanel()));
+        setState(() {
+          isUserEmailsEmpty = true;
+        });
+      }
+      if(trustedEmails.isEmpty){
+        setState(() {
+          isTrustedEmailsEmpty = true;
+        });
       }
 
-      if (trustedEmails.isEmpty) {
-        warnings.add(new WarningNotification(
-            "Brak zaufanych adresów", TrustedListPanel()));
-      }
+
       setState(() {
         isContainerWithNotificationsVisible = true;
       });
@@ -218,6 +222,39 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
         isProgressOfInsertingVisible = false;
       });
     });
+  }
+
+
+
+  @override
+  Widget build(BuildContext context) {
+    //Visibility( visible: true, child: UiElements().showLoaderDialog(context, "Nanoszę zdarzenia na kalendarz...", true),);
+    invoicesTilesForConsolided =
+        sortInvoicesForConsolided(definedInvoicesInfo, context);
+
+    PageController pageController = PageController(initialPage: 0);
+    if (isProgressOfInsertingVisible) {
+      return MainUI().placeholderCalendarView();
+    } else {
+      return new HomeScreenLayout(
+          pageController,
+          context,
+          scaffoldKey,
+          widget.isCalendarViewEnabled,
+          calendarView(pageController, context),
+          homePageAppBar(context),
+          invoicesTilesForConsolided,
+          methodChannel,
+          username,
+          buildDropdownButton(),
+          isContainerWithNotificationsVisible,
+          warnings,
+      isTrustedEmailsEmpty,
+      isUserEmailsEmpty,
+      undefinedInvoicesInfo,
+      definedInvoicesInfo,
+      notificationItems);
+    }
   }
 
   void generateDirectory() {
@@ -264,19 +301,19 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
 
   Future setModifiedInvoicesForDrawing() async {
     List<Invoice> modifiedInvoices =
-        await DatabaseOperations().getModifiedInvoices(username);
+    await DatabaseOperations().getModifiedInvoices(username);
 
     for (Invoice invoice in modifiedInvoices) {
       startReminder(invoice);
       if (invoice.isDefined)
-        invoicesInfo.add(invoice);
+        definedInvoicesInfo.add(invoice);
       else
         undefinedInvoicesInfo.add(invoice);
     }
 
     setState(() {
       paymentEvents =
-          CalendarUtils().generatePaymentEvents(invoicesInfo, preferences);
+          CalendarUtils().generatePaymentEvents(definedInvoicesInfo, preferences);
     });
   }
 
@@ -323,7 +360,7 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
       //DatabaseOperations().addInvoiceToDatabase(paymentDate, paymentAmount.toString(), categoryName, userMailName, senderMailName, account.toString(), username, path);
 
       bool isInvoiceDefined =
-          checkIfInvoiceIsDefined(paymentAmount, paymentDate, account);
+      checkIfInvoiceIsDefined(paymentAmount, paymentDate, account);
 
       Invoice invoice = constructInvoiceByAttachment(
           userMailName, senderMailName, account, isInvoiceDefined, path);
@@ -331,14 +368,14 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
       startReminder(invoice);
 
       if (invoice.isDefined)
-        invoicesInfo.add(invoice);
+        definedInvoicesInfo.add(invoice);
       else
         undefinedInvoicesInfo.add(invoice);
 
       if (mounted)
         setState(() {
           paymentEvents =
-              CalendarUtils().generatePaymentEvents(invoicesInfo, preferences);
+              CalendarUtils().generatePaymentEvents(definedInvoicesInfo, preferences);
           //undefinedInvoicesInfo = generateUndefinedInvoicesList(invoicesInfo);
         });
     }
@@ -371,35 +408,6 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
         "senderMail": invoice.senderMail,
         "remindFreq": preferences[1]
       });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    //Visibility( visible: true, child: UiElements().showLoaderDialog(context, "Nanoszę zdarzenia na kalendarz...", true),);
-    invoicesTilesForConsolided =
-        sortInvoicesForConsolided(invoicesInfo, context);
-    invoicesTilesForConsolided.add(List.generate(notificationItems.length,
-        (index) => notificationItems[index].notificationItem()));
-    PageController pageController = PageController(initialPage: 0);
-    if (isProgressOfInsertingVisible) {
-      return MainUI().placeholderCalendarView();
-    } else {
-      return MainUI().homeScreenLayout(
-          pageController,
-          context,
-          scaffoldKey,
-          widget.isCalendarViewEnabled,
-          calendarView(pageController, context),
-          homePageAppBar(context),
-          urgencyNames,
-          colors,
-          invoicesTilesForConsolided,
-          methodChannel,
-          username,
-          buildDropdownButton(),
-          isContainerWithNotificationsVisible,
-          warnings);
-    }
   }
 
   AppBar homePageAppBar(BuildContext context) {
@@ -880,7 +888,7 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
   void filterByUserMailbox(String selectedEmailAddress) {
     List<Invoice> tempInvoicesInfo = new List();
 
-    tempInvoicesInfo.addAll(invoicesInfo);
+    tempInvoicesInfo.addAll(definedInvoicesInfo);
 
     List<int> doUsuniecia = new List();
 
@@ -897,7 +905,7 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
         j++;
       }
     } else {
-      tempInvoicesInfo = invoicesInfo;
+      tempInvoicesInfo = definedInvoicesInfo;
     }
 
     setState(() {
