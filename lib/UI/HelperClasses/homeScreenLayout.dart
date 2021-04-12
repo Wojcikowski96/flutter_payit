@@ -9,6 +9,7 @@ import 'package:flutter_payit/Objects/warningNotification.dart';
 import 'package:flutter_payit/UI/HelperClasses/mainUI.dart';
 import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
 
+import 'calendarView.dart';
 import 'consolidedInvoicesView.dart';
 import 'frostedContainer.dart';
 
@@ -27,17 +28,17 @@ class HomeScreenLayout extends StatefulWidget {
   List<WarningNotification> warnings;
   bool isTrustedEmailsEmpty;
   bool isUserEmailsEmpty;
+  bool isContainerWithNotificationsVisible = false;
       List<Invoice> undefinedInvoicesInfo;
       List<Invoice> definedInvoicesInfo;
       List<NotificationItem> notificationItem;
+  Map<DateTime, List> paymentEvents;
 
   HomeScreenLayout(
       this.pageController,
       this.context,
       this.scaffoldKey,
       this.isCalendarViewEnabled,
-      this.calendarView,
-      this.homePageAppBar,
       this.invoicesTilesForConsolided,
       this.methodChannel,
       this.username,
@@ -48,7 +49,8 @@ class HomeScreenLayout extends StatefulWidget {
       this.isUserEmailsEmpty,
       this.undefinedInvoicesInfo,
       this.definedInvoicesInfo,
-      this.notificationItem
+      this.notificationItem,
+      this.paymentEvents
   );
 
   @override
@@ -56,6 +58,7 @@ class HomeScreenLayout extends StatefulWidget {
 }
 
 class _HomeScreenLayoutState extends State<HomeScreenLayout> {
+  String selectedEmailAddress;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,21 +67,74 @@ class _HomeScreenLayoutState extends State<HomeScreenLayout> {
             ? Stack(
                 alignment: Alignment.topRight,
                 children: [
-                  widget.calendarView,
+                  //widget.calendarView,
+                  new CalendarView(widget.definedInvoicesInfo, widget.undefinedInvoicesInfo, widget.notificationItem, widget.paymentEvents, widget.username),
                   AnimatedOpacity(
-                      opacity: widget.isNotificationsClicked ? 1.0 : 0.0,
+                      opacity: widget.isContainerWithNotificationsVisible ? 1.0 : 0.0,
                       duration: Duration(milliseconds: 500),
                       child: new FrostedContainer(
                           context,
                           widget.warnings,
-                          widget.isNotificationsClicked,
+                          widget.isContainerWithNotificationsVisible,
                       widget.isTrustedEmailsEmpty,
                       widget.isUserEmailsEmpty))
                 ],
               )
             : new ConsolidedInvoicesView(widget.username, widget.undefinedInvoicesInfo, widget.definedInvoicesInfo, widget.notificationItem),
-        appBar: widget.homePageAppBar,
+        appBar: homePageAppBar(context),
         drawer: UiElements().homePageDrawerMenu(context, widget.methodChannel,
             widget.username, widget.selectEmailAddress));
   }
+
+  AppBar homePageAppBar(BuildContext context) {
+    return AppBar(
+      // leading: IconButton(icon: Icon(Icons.menu), onPressed: (){
+      //
+      // })
+      title: Text(
+        "PayIT",
+        style: TextStyle(fontSize: 25, color: Colors.white),
+      ),
+
+      iconTheme: IconThemeData(color: Colors.white), //add this line here
+      actions: <Widget>[
+        IconButton(
+          icon: widget.isCalendarViewEnabled
+              ? UiElements().listIcon()
+              : UiElements().calendarIcon(),
+          onPressed: () {
+            setState(() {
+              widget.isCalendarViewEnabled = !widget.isCalendarViewEnabled;
+            });
+          },
+        ),
+        Stack(
+          alignment: Alignment.bottomRight,
+          children: [
+            IconButton(
+              icon: widget.warnings.length != 0
+                  ? Icon(
+                Icons.warning_amber_outlined,
+                color: Colors.red,
+              )
+                  : Icon(
+                Icons.notifications,
+                color: Colors.white,
+              ),
+              iconSize: widget.warnings.length!=0 ? 40 : 25,
+              onPressed: () {
+                setState(() {
+                  widget.isContainerWithNotificationsVisible =
+                  !widget.isContainerWithNotificationsVisible;
+                });
+              },
+            ),
+            UiElements().notificationsNumIcon(widget.warnings.length),
+          ],
+        ),
+      ],
+    );
+
+  }
+
 }
