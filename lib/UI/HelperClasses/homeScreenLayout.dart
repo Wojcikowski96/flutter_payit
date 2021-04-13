@@ -14,44 +14,75 @@ import 'consolidedInvoicesView.dart';
 import 'frostedContainer.dart';
 
 class HomeScreenLayout extends StatefulWidget {
-  PageController pageController;
   BuildContext context;
   GlobalKey<ScaffoldState> scaffoldKey;
   bool isCalendarViewEnabled;
   Column calendarView;
   AppBar homePageAppBar;
-  List<List<Widget>> invoicesTilesForConsolided;
   MethodChannel methodChannel;
   String username;
   DropdownButton<String> selectEmailAddress;
   bool isNotificationsClicked;
   List<WarningNotification> warnings;
-  bool isTrustedEmailsEmpty;
-  bool isUserEmailsEmpty;
-  bool isContainerWithNotificationsVisible = false;
-      List<Invoice> undefinedInvoicesInfo;
-      List<Invoice> definedInvoicesInfo;
-      List<NotificationItem> notificationItem;
+  List<Invoice> undefinedInvoicesInfo;
+  List<Invoice> definedInvoicesInfo;
+  List<NotificationItem> notificationItem;
+
+  List<List<dynamic>> emailSettings;
+
   Map<DateTime, List> paymentEvents;
 
+  bool isProgressOfInsertingVisible;
+  bool isContainerWithNotificationsVisible;
+  bool isTrustedEmailsEmpty;
+  bool isUserEmailsEmpty;
+  bool isListOfEmailsVisible;
+  bool isPlaceholderTextVisible;
+  bool isUndefinedVisible;
+  bool isDefinedVisible;
+  bool isTipTextVisible;
+  bool isInvoiceVisible;
+
+  int definedFlex;
+  int undefinedFlex;
+  int undefinedTextRotated;
+  int definedTextRotated;
+
+  String definedText;
+  String undefinedText;
+
+  double fontSizeOfDefAndUndef;
+
   HomeScreenLayout(
-      this.pageController,
       this.context,
       this.scaffoldKey,
       this.isCalendarViewEnabled,
-      this.invoicesTilesForConsolided,
       this.methodChannel,
       this.username,
       this.selectEmailAddress,
-      this.isNotificationsClicked,
       this.warnings,
-      this.isTrustedEmailsEmpty,
-      this.isUserEmailsEmpty,
       this.undefinedInvoicesInfo,
       this.definedInvoicesInfo,
       this.notificationItem,
-      this.paymentEvents
-  );
+      this.isTrustedEmailsEmpty,
+      this.isUserEmailsEmpty,
+      this.paymentEvents,
+      this.isProgressOfInsertingVisible,
+      this.isContainerWithNotificationsVisible,
+      this.isListOfEmailsVisible,
+      this.isPlaceholderTextVisible,
+      this.isUndefinedVisible,
+      this.isDefinedVisible,
+      this.isTipTextVisible,
+      this.isInvoiceVisible,
+      this.definedFlex,
+      this.undefinedFlex,
+      this.definedTextRotated,
+      this.undefinedTextRotated,
+      this.definedText,
+      this.undefinedText,
+      this.fontSizeOfDefAndUndef,
+      this.emailSettings);
 
   @override
   _HomeScreenLayoutState createState() => _HomeScreenLayoutState();
@@ -61,6 +92,11 @@ class _HomeScreenLayoutState extends State<HomeScreenLayout> {
   String selectedEmailAddress;
   @override
   Widget build(BuildContext context) {
+    if (widget.isTrustedEmailsEmpty || widget.isUserEmailsEmpty) {
+      widget.isContainerWithNotificationsVisible = true;
+    }
+    print("Czy kontener z notyfikacjami widoczny w homescreen layout");
+    print(widget.isContainerWithNotificationsVisible);
     return Scaffold(
         key: widget.scaffoldKey,
         body: widget.isCalendarViewEnabled
@@ -68,19 +104,44 @@ class _HomeScreenLayoutState extends State<HomeScreenLayout> {
                 alignment: Alignment.topRight,
                 children: [
                   //widget.calendarView,
-                  new CalendarView(widget.definedInvoicesInfo, widget.undefinedInvoicesInfo, widget.notificationItem, widget.paymentEvents, widget.username),
+                  CalendarView(
+                      widget.definedInvoicesInfo,
+                      widget.undefinedInvoicesInfo,
+                      widget.notificationItem,
+                      widget.paymentEvents,
+                      widget.username,
+                      widget.isListOfEmailsVisible,
+                      widget.isPlaceholderTextVisible,
+                      widget.isUndefinedVisible,
+                      widget.isDefinedVisible,
+                      widget.isTipTextVisible,
+                      widget.isInvoiceVisible,
+                      widget.definedFlex,
+                      widget.undefinedFlex,
+                      widget.definedTextRotated,
+                      widget.undefinedTextRotated,
+                      widget.definedText,
+                      widget.undefinedText,
+                      widget.fontSizeOfDefAndUndef,
+                  widget.emailSettings),
                   AnimatedOpacity(
-                      opacity: widget.isContainerWithNotificationsVisible ? 1.0 : 0.0,
+                      opacity: widget.isContainerWithNotificationsVisible
+                          ? 1.0
+                          : 0.0,
                       duration: Duration(milliseconds: 500),
                       child: new FrostedContainer(
                           context,
                           widget.warnings,
                           widget.isContainerWithNotificationsVisible,
-                      widget.isTrustedEmailsEmpty,
-                      widget.isUserEmailsEmpty))
+                          widget.isTrustedEmailsEmpty,
+                          widget.isUserEmailsEmpty))
                 ],
               )
-            : new ConsolidedInvoicesView(widget.username, widget.undefinedInvoicesInfo, widget.definedInvoicesInfo, widget.notificationItem),
+            : new ConsolidedInvoicesView(
+                widget.username,
+                widget.undefinedInvoicesInfo,
+                widget.definedInvoicesInfo,
+                widget.notificationItem),
         appBar: homePageAppBar(context),
         drawer: UiElements().homePageDrawerMenu(context, widget.methodChannel,
             widget.username, widget.selectEmailAddress));
@@ -88,9 +149,6 @@ class _HomeScreenLayoutState extends State<HomeScreenLayout> {
 
   AppBar homePageAppBar(BuildContext context) {
     return AppBar(
-      // leading: IconButton(icon: Icon(Icons.menu), onPressed: (){
-      //
-      // })
       title: Text(
         "PayIT",
         style: TextStyle(fontSize: 25, color: Colors.white),
@@ -114,18 +172,18 @@ class _HomeScreenLayoutState extends State<HomeScreenLayout> {
             IconButton(
               icon: widget.warnings.length != 0
                   ? Icon(
-                Icons.warning_amber_outlined,
-                color: Colors.red,
-              )
+                      Icons.warning_amber_outlined,
+                      color: Colors.red,
+                    )
                   : Icon(
-                Icons.notifications,
-                color: Colors.white,
-              ),
-              iconSize: widget.warnings.length!=0 ? 40 : 25,
+                      Icons.notifications,
+                      color: Colors.white,
+                    ),
+              iconSize: widget.warnings.length != 0 ? 40 : 25,
               onPressed: () {
                 setState(() {
                   widget.isContainerWithNotificationsVisible =
-                  !widget.isContainerWithNotificationsVisible;
+                      !widget.isContainerWithNotificationsVisible;
                 });
               },
             ),
@@ -134,7 +192,5 @@ class _HomeScreenLayoutState extends State<HomeScreenLayout> {
         ),
       ],
     );
-
   }
-
 }

@@ -23,7 +23,7 @@ class _FrostedContainerState extends State<FrostedContainer> {
   @override
   void initState() {
     super.initState();
-
+    widget.warnings.clear();
     if(widget.isTrustedEmailsEmpty){
       setState(() {
         widget.warnings.add(new WarningNotification(

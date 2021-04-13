@@ -5,35 +5,21 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_payit/IsUserLoggedChecker/MySharedPreferences.dart';
 import 'package:flutter_payit/JavaDownloaderInvoke/downloader.dart';
-import 'package:flutter_payit/LifeCycleHandler/lifeCycle.dart';
-import 'package:flutter_payit/Main/main.dart';
-import 'package:flutter_payit/Objects/appNotification.dart';
 import 'package:flutter_payit/Objects/notificationItem.dart';
-import 'package:flutter_payit/Objects/userEmail.dart';
 import 'package:flutter_payit/Objects/warningNotification.dart';
-import 'package:flutter_payit/UI/HelperClasses/consolidedEventsView.dart';
-import 'package:flutter_payit/UI/HelperClasses/customPlaceHolderLoading.dart';
 import 'package:flutter_payit/UI/HelperClasses/homeScreenLayout.dart';
 import 'package:flutter_payit/UI/HelperClasses/mainUI.dart';
 import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
-import 'package:flutter_payit/UI/Screens/ConfigScreens/timeInterval.dart';
-import 'package:flutter_payit/UI/Screens/ConfigScreens/trustedList.dart';
-import 'package:flutter_payit/UI/Screens/paymentDataWidget.dart';
 import 'package:flutter_payit/Utils/utils.dart';
-import 'PaymentPage.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider_ex/path_provider_ex.dart';
 import 'package:flutter_payit/CalendarUtils/calendarUtils.dart';
-import 'package:flutter_payit/UI/HelperClasses/calendarWidget.dart';
 import 'package:flutter_payit/Database/databaseOperations.dart';
-import 'ConfigScreens/emailBoxesPanel.dart';
 import 'package:flutter_payit/Objects/invoice.dart';
 import 'package:flutter_payit/Utils/userOperationsOnEmails.dart';
 import 'package:flutter_payit/PdfParser/pdfParser.dart';
-import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 import 'package:watcher/watcher.dart';
 
@@ -51,13 +37,11 @@ class homePage extends StatefulWidget {
 
 class _homePageState extends State<homePage> with TickerProviderStateMixin {
   var storage = FlutterSecureStorage();
-  String path;
+  String pathForStoringAttachments;
   String paymentDate;
   double paymentAmount;
   String categoryName;
 
-
-  List<List<Widget>> invoicesTilesForConsolided = new List();
   String syncedEmailBoxName = "...";
   static const methodChannel = const MethodChannel("com.example.flutter_payit");
 
@@ -67,6 +51,22 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
   bool isContainerWithNotificationsVisible = false;
   bool isTrustedEmailsEmpty = false;
   bool isUserEmailsEmpty = false;
+  bool isListOfEmailsVisible = true;
+  bool isPlaceholderTextVisible = true;
+  bool isUndefinedVisible = false;
+  bool isDefinedVisible = true;
+  bool isTipTextVisible = false;
+  bool isInvoiceVisible = true;
+
+  int definedFlex = 4;
+  int undefinedFlex = 1;
+  int undefinedTextRotated = 1;
+  int definedTextRotated = 0;
+
+  String definedText = "Zdefiniowane";
+  String undefinedText = "Niezdefiniowane";
+
+  double fontSizeOfDefAndUndef = 12;
 
   List<String> userEmailsNames = new List();
   List<WarningNotification> warnings = new List();
@@ -102,12 +102,12 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
     userEmailsNames.add("Wszystkie adresy");
     Future.delayed(Duration.zero, () async {
       username = await getUsernameFromFlutterStorage();
-      path = await generatePathForStoringAttachments();
+      pathForStoringAttachments = await generatePathForStoringAttachments();
       preferences = await DatabaseOperations().getUserPrefsFromDB(username);
       generateDirectory();
       emailSettings = await UserOperationsOnEmails().getEmailSettings(username);
       notificationItems = populateNotificationItemsList(emailSettings);
-      methodChannel.setMethodCallHandler(javaMethod);
+      //methodChannel.setMethodCallHandler(javaMethod);
       trustedEmails =
           await UserOperationsOnEmails().getInvoiceSenders(username);
 
@@ -124,22 +124,17 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
           isUserEmailsEmpty = true;
         });
       }
-      if(trustedEmails.isEmpty){
+      if (trustedEmails.isEmpty) {
         setState(() {
           isTrustedEmailsEmpty = true;
         });
       }
 
-
-      setState(() {
-        isContainerWithNotificationsVisible = true;
-      });
-
       print("Dlugosc warningów");
       print(warnings.length);
 
       List<FileSystemEntity> invoiceFileList =
-          await PdfParser().dirContents(path);
+          await PdfParser().dirContents(pathForStoringAttachments);
 
       setState(() {
         isProgressOfInsertingVisible = true;
@@ -158,41 +153,58 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
     });
   }
 
-
-
   @override
   Widget build(BuildContext context) {
-    //Visibility( visible: true, child: UiElements().showLoaderDialog(context, "Nanoszę zdarzenia na kalendarz...", true),);
-    invoicesTilesForConsolided =
-        sortInvoicesForConsolided(definedInvoicesInfo, context);
-    print("User preferences w build HomePage");
-    print(preferences);
-    PageController pageController = PageController(initialPage: 0);
     if (isProgressOfInsertingVisible) {
       return MainUI().placeholderCalendarView();
     } else {
-      return new HomeScreenLayout(
-          pageController,
+      return HomeScreenLayout(
           context,
           scaffoldKey,
           widget.isCalendarViewEnabled,
-          invoicesTilesForConsolided,
           methodChannel,
           username,
           buildDropdownButton(),
-          isContainerWithNotificationsVisible,
           warnings,
-      isTrustedEmailsEmpty,
-      isUserEmailsEmpty,
-      undefinedInvoicesInfo,
-      definedInvoicesInfo,
-      notificationItems,
-      paymentEvents);
+          undefinedInvoicesInfo,
+          definedInvoicesInfo,
+          notificationItems,
+          isTrustedEmailsEmpty,
+          isUserEmailsEmpty,
+          paymentEvents,
+          isProgressOfInsertingVisible,
+          isContainerWithNotificationsVisible,
+          isListOfEmailsVisible,
+          isPlaceholderTextVisible,
+          isUndefinedVisible,
+          isDefinedVisible,
+          isTipTextVisible,
+          isInvoiceVisible,
+          definedFlex,
+          undefinedFlex,
+          definedTextRotated,
+          undefinedTextRotated,
+          definedText,
+          undefinedText,
+          fontSizeOfDefAndUndef,
+      emailSettings);
     }
   }
 
+  List<NotificationItem> populateNotificationItemsList(
+      List<List<dynamic>> emailSettings) {
+    List<NotificationItem> populatedList = new List();
+
+    for (List<dynamic> singleEmailSetting in emailSettings) {
+      print("SingleEmailSetting w populacji " + singleEmailSetting[0]);
+      populatedList
+          .add(new NotificationItem(singleEmailSetting[0], true, "0%"));
+    }
+    return populatedList;
+  }
+
   void generateDirectory() {
-    Directory invoicesDir = new Directory(path);
+    Directory invoicesDir = new Directory(pathForStoringAttachments);
     invoicesDir.create(recursive: true);
   }
 
@@ -205,8 +217,6 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
         username +
         '/invoicesPDF';
   }
-
-
 
   String getEmailFromNotificationWidget(Padding notificationItem) {
     Container temp = notificationItem.child;
@@ -221,7 +231,7 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
 
   Future setModifiedInvoicesForDrawing() async {
     List<Invoice> modifiedInvoices =
-    await DatabaseOperations().getModifiedInvoices(username);
+        await DatabaseOperations().getModifiedInvoices(username);
 
     for (Invoice invoice in modifiedInvoices) {
       startReminder(invoice);
@@ -232,13 +242,13 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
     }
 
     setState(() {
-      paymentEvents =
-          CalendarUtils().generatePaymentEvents(definedInvoicesInfo, preferences);
+      paymentEvents = CalendarUtils()
+          .generatePaymentEvents(definedInvoicesInfo, preferences);
     });
   }
 
   Future watchForNewFiles(List<List<String>> trustedEmails) async {
-    var watcher = DirectoryWatcher(path);
+    var watcher = DirectoryWatcher(pathForStoringAttachments);
     watcher.events.listen((event) async {
       String eventString = event.toString().split(" ")[0];
       String eventPath = event.path;
@@ -248,18 +258,11 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
           isProgressOfInsertingVisible = true;
         });
         print("Nowy plik " + eventPath);
-//        setState(() {
-//          isProgressBarVisible = false;
-//        });
         await setFileForDrawing(trustedEmails, eventPath);
         setState(() {
           isProgressOfInsertingVisible = false;
         });
       }
-      //else if (eventString == "modify")
-//        setState(() {
-//          isProgressBarVisible = false;
-//        });
     });
   }
 
@@ -280,7 +283,7 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
       //DatabaseOperations().addInvoiceToDatabase(paymentDate, paymentAmount.toString(), categoryName, userMailName, senderMailName, account.toString(), username, path);
 
       bool isInvoiceDefined =
-      checkIfInvoiceIsDefined(paymentAmount, paymentDate, account);
+          checkIfInvoiceIsDefined(paymentAmount, paymentDate, account);
 
       Invoice invoice = constructInvoiceByAttachment(
           userMailName, senderMailName, account, isInvoiceDefined, path);
@@ -294,8 +297,8 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
 
       if (mounted)
         setState(() {
-          paymentEvents =
-              CalendarUtils().generatePaymentEvents(definedInvoicesInfo, preferences);
+          paymentEvents = CalendarUtils()
+              .generatePaymentEvents(definedInvoicesInfo, preferences);
           //undefinedInvoicesInfo = generateUndefinedInvoicesList(invoicesInfo);
         });
     }
@@ -329,7 +332,6 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
         "remindFreq": preferences[1]
       });
   }
-
 
   DropdownButton<String> buildDropdownButton() {
     return new DropdownButton<String>(
@@ -378,7 +380,7 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
       List<dynamic> downloadAttachmentArgs = [
         singleEmailSettings,
         getMailSenderAddresses(trustedEmails),
-        path,
+        pathForStoringAttachments,
         methodChannel,
         username,
         preferences[0]
@@ -408,8 +410,6 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
       //print("Serwis odpal się"+ data);
     }
   }
-
-
 
   void filterByUserMailbox(String selectedEmailAddress) {
     List<Invoice> tempInvoicesInfo = new List();
@@ -441,82 +441,7 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
   }
 
 
-  Future<void> javaMethod(MethodCall call) async {
-    switch (call.method) {
-      case 'syncCompleted':
-        print("syncCompleted " + call.arguments.toString());
-        for (NotificationItem notificationItem in notificationItems) {
-          if (call.arguments.toString().contains(notificationItem.userEmail)) {
-            setState(() {
-              notificationItem.isProgressVisible = false;
-            });
-          }
-        }
-        break;
 
-      case 'syncStarted':
-        print("syncStarted " + call.arguments.toString());
-        List<String> parts = call.arguments.toString().split(" ");
-
-        for (NotificationItem notificationItem in notificationItems) {
-          print("Wyciągany progress w for");
-          print(parts[2]);
-          if (call.arguments.toString().contains(notificationItem.userEmail)) {
-            setState(() {
-              notificationItem.isProgressVisible = true;
-              notificationItem.progressPercentage = parts[2];
-            });
-          }
-        }
-
-        break;
-    }
-  }
-
-  List<NotificationItem> populateNotificationItemsList(
-      List<List<dynamic>> emailSettings) {
-    List<NotificationItem> populatedList = new List();
-
-    for (List<dynamic> singleEmailSetting in emailSettings) {
-      print("SingleEmailSetting w populacji " + singleEmailSetting[0]);
-      populatedList
-          .add(new NotificationItem(singleEmailSetting[0], true, "0%"));
-    }
-    return populatedList;
-  }
-
-  List<List<Widget>> sortInvoicesForConsolided(
-      List<Invoice> invoicesInfo, BuildContext context) {
-    List<List<Widget>> all = new List();
-    List<Widget> urgent = new List();
-    List<Widget> mediumUrgent = new List();
-    List<Widget> notUrgent = new List();
-    List<Widget> undefined = new List();
-
-    for (Invoice i in invoicesInfo) {
-      if (i.color == Colors.red) {
-        urgent
-            .add(PaymentWidget.paymentCard(invoicesInfo, i, i.color, context));
-      } else if (i.color == Colors.amber) {
-        mediumUrgent
-            .add(PaymentWidget.paymentCard(invoicesInfo, i, i.color, context));
-      } else if (i.color == Colors.green) {
-        notUrgent
-            .add(PaymentWidget.paymentCard(invoicesInfo, i, i.color, context));
-      }
-    }
-
-    for (Invoice u in undefinedInvoicesInfo) {
-      undefined.add(PaymentWidget.paymentCard(
-          undefinedInvoicesInfo, u, u.color, context));
-    }
-
-    all.add(urgent);
-    all.add(mediumUrgent);
-    all.add(notUrgent);
-    all.add(undefined);
-    return all;
-  }
 
   bool checkIfInvoiceIsDefined(
       double paymentAmount, String paymentDate, String account) {

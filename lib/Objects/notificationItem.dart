@@ -1,19 +1,31 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-class NotificationItem {
+class NotificationItem extends StatefulWidget{
   String userEmail;
-  bool isProgressVisible = true;
+  bool isProgressVisible;
   String progressPercentage;
 
   NotificationItem(
-      String userEmail, bool isProgressVisible, String progressPercentage) {
-    this.userEmail = userEmail;
-    this.isProgressVisible = isProgressVisible;
-    this.progressPercentage = progressPercentage;
+  this.userEmail,
+  this.isProgressVisible,
+  this.progressPercentage);
+
+  @override
+  _NotificationItemState createState() => _NotificationItemState();
+
+}
+
+class _NotificationItemState extends State<NotificationItem>{
+  static const methodChannel = const MethodChannel("com.example.flutter_payit");
+  @override
+  void initState() {
+    methodChannel.setMethodCallHandler(javaMethod);
   }
 
-  Padding notificationItem() {
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
@@ -39,13 +51,13 @@ class NotificationItem {
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-                        userEmail,
+                        widget.userEmail,
                         style: TextStyle(fontSize: 25, color: Colors.blue),
                       ),
                     ),
                   ),
                   Visibility(
-                    visible: isProgressVisible,
+                    visible: widget.isProgressVisible,
                     child: Expanded(
                       flex: 2,
                       child: Padding(
@@ -54,22 +66,22 @@ class NotificationItem {
                           children: [
                             CircularProgressIndicator(),
                             Positioned(
-                                child: Padding(
-                                  padding: EdgeInsets.all(2),
-                                  child: Text(
-                                    progressPercentage,
-                                    style: TextStyle(color: Colors.blue),
-                                  ),
+                              child: Padding(
+                                padding: EdgeInsets.all(2),
+                                child: Text(
+                                  widget.progressPercentage,
+                                  style: TextStyle(color: Colors.blue),
                                 ),
-                                top: 8,
-                            left: 3,)
+                              ),
+                              top: 8,
+                              left: 3,)
                           ],
                         ),
                       ),
                     ),
                   ),
                   Visibility(
-                    visible: !isProgressVisible,
+                    visible: !widget.isProgressVisible,
                     child: Expanded(
                       flex: 4,
                       child: Icon(
@@ -82,7 +94,7 @@ class NotificationItem {
                 ],
               ),
               Visibility(
-                visible: !isProgressVisible,
+                visible: !widget.isProgressVisible,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -97,5 +109,31 @@ class NotificationItem {
         ),
       ),
     );
+  }
+  Future<void> javaMethod(MethodCall call) async {
+    switch (call.method) {
+      case 'syncCompleted':
+        print("syncCompleted " + call.arguments.toString());
+
+          if (call.arguments.toString().contains(widget.userEmail)) {
+            setState(() {
+            widget.isProgressVisible = false;
+          });
+          }
+        break;
+      case 'syncStarted':
+        print("syncStarted " + call.arguments.toString());
+        List<String> parts = call.arguments.toString().split(" ");
+
+          if (call.arguments.toString().contains(widget.userEmail)) {
+            setState(() {
+            widget.isProgressVisible = true;
+            widget.progressPercentage = parts[2];
+            });
+          }
+
+
+        break;
+    }
   }
 }

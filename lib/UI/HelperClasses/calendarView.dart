@@ -1,53 +1,72 @@
 import 'dart:core';
-import'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_payit/Database/databaseOperations.dart';
 import 'package:flutter_payit/LifeCycleHandler/lifeCycle.dart';
 import 'package:flutter_payit/Objects/notificationItem.dart';
+import 'package:flutter_payit/PdfParser/pdfParser.dart';
 import 'package:flutter_payit/UI/Screens/PaymentPage.dart';
+import 'package:flutter_payit/Utils/userOperationsOnEmails.dart';
 import 'package:flutter_payit/Utils/utils.dart';
 import 'package:flutter_payit/UI/HelperClasses/calendarWidget.dart';
 import 'package:flutter_payit/Objects/invoice.dart';
 import 'package:intl/intl.dart';
 
-
-
-class CalendarView extends StatefulWidget{
+class CalendarView extends StatefulWidget {
   Color definedColor = Colors.blue;
 
   Map<DateTime, List> paymentEvents;
   String username;
 
+  int definedFlex;
+  int undefinedFlex;
+  int undefinedTextRotated;
+  int definedTextRotated;
 
-  int definedFlex = 4;
-  int undefinedFlex = 1;
-  int undefinedTextRotated = 1;
-  int definedTextRotated = 0;
+  String definedText;
+  String undefinedText;
 
-  String definedText = "Zdefiniowane";
-  String undefinedText = "Niezdefiniowane";
-
-  List <Invoice> definedInvoicesInfo;
-  List <Invoice> undefinedInvoicesInfo;
+  List<Invoice> definedInvoicesInfo;
+  List<Invoice> undefinedInvoicesInfo;
   List<NotificationItem> notificationItems;
-  bool isListOfEmailsVisible = true;
-  bool isPlaceholderTextVisible = true;
-  bool isUndefinedVisible = false;
-  bool isDefinedVisible = true;
-  bool isTipTextVisible = false;
 
-  double fontSizeOfDefAndUndef = 12;
+  bool isListOfEmailsVisible;
+  bool isPlaceholderTextVisible;
+  bool isUndefinedVisible;
+  bool isDefinedVisible;
+  bool isTipTextVisible;
+
+  double fontSizeOfDefAndUndef;
+  List<List<dynamic>> emailSettings;
 
   DateTime selectedDate;
   bool isInvoiceVisible = true;
 
-
-
-  _CalendarViewState createState() =>  _CalendarViewState();
-  CalendarView(this.definedInvoicesInfo, this.undefinedInvoicesInfo, this.notificationItems, this.paymentEvents, this.username);
+  _CalendarViewState createState() => _CalendarViewState();
+  CalendarView(this.definedInvoicesInfo,
+      this.undefinedInvoicesInfo,
+      this.notificationItems,
+      this.paymentEvents,
+      this.username,
+      this.isListOfEmailsVisible,
+      this.isPlaceholderTextVisible,
+      this.isUndefinedVisible,
+      this.isDefinedVisible,
+      this.isTipTextVisible,
+      this.isInvoiceVisible,
+      this.definedFlex,
+      this.undefinedFlex,
+      this.definedTextRotated,
+      this.undefinedTextRotated,
+      this.definedText,
+      this.undefinedText,
+      this.fontSizeOfDefAndUndef,
+      this.emailSettings);
 }
 
-class _CalendarViewState extends State <CalendarView> with TickerProviderStateMixin {
+class _CalendarViewState extends State<CalendarView>
+    with TickerProviderStateMixin {
   AnimationController _animationControllerForInvoices;
   Animation _animationForInvoices;
 
@@ -59,16 +78,17 @@ class _CalendarViewState extends State <CalendarView> with TickerProviderStateMi
   @override
   void initState() {
     super.initState();
+    print("Robię init state calendara");
     setAnimationParameters();
     Future.delayed(Duration.zero, () async {
       userPreferences =
-      await DatabaseOperations().getUserPrefsFromDB(widget.username);
+          await DatabaseOperations().getUserPrefsFromDB(widget.username);
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
+    print("Robię build kalendarza");
     PageController pageController = PageController(initialPage: 0);
     return Column(children: [
       LifecycleWatcher(),
@@ -80,17 +100,16 @@ class _CalendarViewState extends State <CalendarView> with TickerProviderStateMi
       Visibility(
         visible: widget.isInvoiceVisible,
         child: Expanded(
-            child: Row(
-              children: [
-                definedColumn(pageController),
-                undefinedColumn(pageController)
-              ],
-            ),
+          child: Row(
+            children: [
+              definedColumn(pageController),
+              undefinedColumn(pageController)
+            ],
           ),
         ),
+      ),
       bottomUserEmailPanel(context),
     ]);
-
   }
 
   GestureDetector bottomUserEmailPanel(BuildContext context) {
@@ -117,21 +136,24 @@ class _CalendarViewState extends State <CalendarView> with TickerProviderStateMi
     );
   }
 
+
+
+
   void setAnimationParameters() {
     _animationControllerForInvoices =
-  AnimationController(duration: Duration(milliseconds: 600), vsync: this);
-  _animationForInvoices =
-  IntTween(begin: 100, end: 10).animate(_animationControllerForInvoices);
-  _animationForInvoices.addListener(() => setState(() {}));
+        AnimationController(duration: Duration(milliseconds: 600), vsync: this);
+    _animationForInvoices =
+        IntTween(begin: 100, end: 10).animate(_animationControllerForInvoices);
+    _animationForInvoices.addListener(() => setState(() {}));
 
-  _animationControllerForEmails =
-  AnimationController(duration: Duration(milliseconds: 600), vsync: this);
-  _animationForEmails =
-  IntTween(begin: 100, end: 10).animate(_animationControllerForEmails);
-  _animationForEmails.addListener(() => setState(() {}));
+    _animationControllerForEmails =
+        AnimationController(duration: Duration(milliseconds: 600), vsync: this);
+    _animationForEmails =
+        IntTween(begin: 100, end: 10).animate(_animationControllerForEmails);
+    _animationForEmails.addListener(() => setState(() {}));
 
-  widget.definedFlex = _animationForInvoices.value;
-}
+    widget.definedFlex = _animationForInvoices.value;
+  }
 
   void generateDefinedPaymentInput(DateTime date, List events) {
     List<Invoice> tempDefinedInvoicesInfo = new List();
@@ -169,8 +191,8 @@ class _CalendarViewState extends State <CalendarView> with TickerProviderStateMi
     } else {
       setState(() {
         widget.definedInvoicesInfo = tempDefinedInvoicesInfo;
-        widget.definedColor =
-            Utils().setUrgencyColor(widget.definedInvoicesInfo, userPreferences);
+        widget.definedColor = Utils()
+            .setUrgencyColor(widget.definedInvoicesInfo, userPreferences);
         widget.isPlaceholderTextVisible = false;
         widget.isDefinedVisible = true;
       });
@@ -193,7 +215,7 @@ class _CalendarViewState extends State <CalendarView> with TickerProviderStateMi
             if (_animationControllerForInvoices.value == 0.0) {
               _animationControllerForInvoices.forward();
             } else {
-             _animationControllerForInvoices.reverse();
+              _animationControllerForInvoices.reverse();
             }
             if (_animationForInvoices.value == 10) {
               widget.isDefinedVisible = true;
@@ -237,11 +259,12 @@ class _CalendarViewState extends State <CalendarView> with TickerProviderStateMi
                         child: RichText(
                           text: TextSpan(
                             text: widget.undefinedText + " ",
-                            style: TextStyle(fontSize: widget.fontSizeOfDefAndUndef),
+                            style: TextStyle(
+                                fontSize: widget.fontSizeOfDefAndUndef),
                             children: <TextSpan>[
                               TextSpan(
-                                  text:
-                                  (widget.undefinedInvoicesInfo.length).toString(),
+                                  text: (widget.undefinedInvoicesInfo.length)
+                                      .toString(),
                                   style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
@@ -259,16 +282,19 @@ class _CalendarViewState extends State <CalendarView> with TickerProviderStateMi
                             duration: Duration(seconds: 3),
                             child: Container(
                                 child: Text(
-                                  "Stuknij aby ukryć",
-                                  style:
+                              "Stuknij aby ukryć",
+                              style:
                                   TextStyle(color: Colors.white, fontSize: 10),
-                                ))),
+                            ))),
                       )),
                   Visibility(
                       visible: widget.isUndefinedVisible,
                       child: Expanded(
-                          child: PaymentPage(pageController,
-                              widget.undefinedInvoicesInfo, Colors.black26, "Pilne"))),
+                          child: PaymentPage(
+                              pageController,
+                              widget.undefinedInvoicesInfo,
+                              Colors.black26,
+                              "Pilne"))),
                 ],
               )),
         ));
@@ -292,7 +318,8 @@ class _CalendarViewState extends State <CalendarView> with TickerProviderStateMi
                         child: RichText(
                           text: TextSpan(
                             text: widget.definedText + " ",
-                            style: TextStyle(fontSize: widget.fontSizeOfDefAndUndef),
+                            style: TextStyle(
+                                fontSize: widget.fontSizeOfDefAndUndef),
                             children: <TextSpan>[
                               TextSpan(
                                   text: (widget.definedInvoicesInfo.length)
@@ -356,22 +383,19 @@ class _CalendarViewState extends State <CalendarView> with TickerProviderStateMi
                 ),
               ),
             )),
-
         Container(
           width: MediaQuery.of(context).size.width,
           height:
-          MediaQuery.of(context).size.height / _animationForEmails.value +
-              10,
+              MediaQuery.of(context).size.height / _animationForEmails.value +
+                  10,
           color: Colors.blue,
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: List.generate(widget.notificationItems.length,
-                    (index) => widget.notificationItems[index].notificationItem()),
+                (index) => widget.notificationItems[index]),
           ),
         ),
       ],
     );
   }
-
-
 }

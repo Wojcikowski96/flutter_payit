@@ -24,6 +24,7 @@ class ConsolidedInvoicesView extends StatefulWidget {
   ];
   List<Invoice> undefinedInvoicesInfo;
   List<Invoice> definedInvoicesInfo;
+  List<List<Widget>> invoicesTilesForConsolided = new List();
 
   String loggedUserName;
   List<NotificationItem> notificationItems;
@@ -37,9 +38,10 @@ class _ConsolidedInvoicesViewState extends State<ConsolidedInvoicesView> {
 
   @override
   Widget build(BuildContext context) {
+
     List<List<Widget>> listForExpandables = constructInvoicesWidgets(widget.definedInvoicesInfo, context);
     listForExpandables.add(List.generate(widget.notificationItems.length,
-            (index) => widget.notificationItems[index].notificationItem()));
+            (index) => widget.notificationItems[index]));
     return ListView.builder(
       itemBuilder: (BuildContext context, int index) {
         return ExpandableListViewItem(
@@ -83,4 +85,6 @@ class _ConsolidedInvoicesViewState extends State<ConsolidedInvoicesView> {
     all.add(undefined);
     return all;
   }
+
+
 }

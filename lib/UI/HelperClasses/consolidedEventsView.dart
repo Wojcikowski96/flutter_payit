@@ -5,45 +5,11 @@ import 'package:flutter_payit/UI/Screens/homePage.dart';
 import 'package:flutter_payit/UI/Screens/paymentDataWidget.dart';
 
 
-class ConsolidedView extends StatelessWidget {
-  List<String> urgencyNames = ["Pilne", "Średnio pilne", "Mało pilne", "Niezdefiniowane"];
-  List <Color> colors = [Colors.red, Colors.amber, Colors.green, Colors.grey];
-  @override
-  Widget build(BuildContext context) {
-    return new Scaffold(
-      backgroundColor: Colors.grey,
-//      appBar: new AppBar(
-//        title: new Text("PayIT",style: TextStyle(color: Colors.white, fontSize: 25)),
-//        backgroundColor: Colors.blue,
-//        actions: <Widget>[
-//          IconButton(
-//            icon: Icon(
-//              Icons.calendar_today,
-//              color: Colors.white,
-//            ),
-//            onPressed: () {
-//              Navigator.push(
-//                context,
-//                MaterialPageRoute(builder: (context) => homePage(DateTime.now(),new List(), true)),
-//              );
-//            },
-//          )
-//        ],
-//      ),
-      body: new ListView.builder(
-        itemBuilder: (BuildContext context, int index) {
-          return new ExpandableListViewItem(title: urgencyNames[index], color: colors[index]);
-        },
-        itemCount: 4,
-      ),
-    );
-  }
-}
-
 class ExpandableListViewItem extends StatefulWidget {
   final String title;
   final Color color;
   final List<Widget> invoices;
+
 
   const ExpandableListViewItem({Key key, this.title, this.color, this.invoices}) : super(key: key);
 
@@ -133,7 +99,6 @@ class ExpandableContainer extends StatelessWidget {
     this.expanded = true,
     this.color
   });
-
 
   @override
   Widget build(BuildContext context) {
