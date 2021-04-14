@@ -41,7 +41,7 @@ class _ConsolidedInvoicesViewState extends State<ConsolidedInvoicesView> {
 
     List<List<Widget>> listForExpandables = constructInvoicesWidgets(widget.definedInvoicesInfo, context);
     listForExpandables.add(List.generate(widget.notificationItems.length,
-            (index) => widget.notificationItems[index]));
+            (index) => widget.notificationItems[index].notificationItem()));
     return ListView.builder(
       itemBuilder: (BuildContext context, int index) {
         return ExpandableListViewItem(

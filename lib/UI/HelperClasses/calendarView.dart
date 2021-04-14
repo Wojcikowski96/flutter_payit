@@ -6,6 +6,7 @@ import 'package:flutter_payit/Database/databaseOperations.dart';
 import 'package:flutter_payit/LifeCycleHandler/lifeCycle.dart';
 import 'package:flutter_payit/Objects/notificationItem.dart';
 import 'package:flutter_payit/PdfParser/pdfParser.dart';
+import 'package:flutter_payit/UI/HelperClasses/userEmailsStatusPanel.dart';
 import 'package:flutter_payit/UI/Screens/PaymentPage.dart';
 import 'package:flutter_payit/Utils/userOperationsOnEmails.dart';
 import 'package:flutter_payit/Utils/utils.dart';
@@ -132,7 +133,7 @@ class _CalendarViewState extends State<CalendarView>
         print("animation or email value:");
         print(_animationForEmails.value);
       }),
-      child: userEmailTileListWithStats(context),
+      child: UserEmailsStatusPanel(widget.emailSettings, _animationForEmails),
     );
   }
 
@@ -358,44 +359,5 @@ class _CalendarViewState extends State<CalendarView>
         ));
   }
 
-  Column userEmailTileListWithStats(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-            color: Colors.blue,
-            height: MediaQuery.of(context).size.height / 20,
-            child: Center(
-              child: RichText(
-                text: TextSpan(
-                  text: 'Twoje skrzynki e-mail ',
-                  style: TextStyle(fontSize: 12),
-                  children: <TextSpan>[
-                    TextSpan(
-                        text: (widget.notificationItems.length).toString(),
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue,
-                            backgroundColor: Colors.white,
-                            fontSize: 20)),
-                  ],
-                ),
-              ),
-            )),
-        Container(
-          width: MediaQuery.of(context).size.width,
-          height:
-              MediaQuery.of(context).size.height / _animationForEmails.value +
-                  10,
-          color: Colors.blue,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: List.generate(widget.notificationItems.length,
-                (index) => widget.notificationItems[index]),
-          ),
-        ),
-      ],
-    );
-  }
+
 }

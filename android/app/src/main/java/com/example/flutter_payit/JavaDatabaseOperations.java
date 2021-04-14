@@ -20,8 +20,8 @@ class JavaDatabaseOperations {
                 int UID;
                 try {
                     UID=snapshot.child("lastUID").getValue(int.class);
-                } catch (Error e) {
-                    System.out.println("Java nie ma takiego rekordu");
+                } catch (Exception e) {
+                    System.out.println("Java nie ma takiego rekordu, może masz pusty rekord z mailami");
                     UID=0;
                 }
                 callbackFromFirebase.onCallback(UID);
@@ -29,6 +29,7 @@ class JavaDatabaseOperations {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
+
             }
         }));
         thread.start();

@@ -38,41 +38,7 @@ class MainUI {
     )));
   }
 
-  Scaffold homeScreenLayout(
-      PageController pageController,
-      BuildContext context,
-      GlobalKey<ScaffoldState> scaffoldKey,
-      bool isCalendarViewEnnabled,
-      Column calendarView,
-      AppBar homePageAppBar,
-      List<String> urgencyNames,
-      List<Color> colors,
-      List<List<Widget>> invoicesTilesForConsolided,
-      MethodChannel methodChannel,
-      String username,
-      DropdownButton<String> selectEmailAddress,
-      bool isNotificationsClicked,
-      List<WarningNotification> warnings) {
-    return Scaffold(
-        key: scaffoldKey,
-        body: isCalendarViewEnnabled
-            ? Stack(
-                alignment: Alignment.topRight,
-                children: [
-                  calendarView,
-                  AnimatedOpacity(
-                      opacity: isNotificationsClicked ? 1.0 : 0.0 ,
-                      duration: Duration(milliseconds: 500),
-                      child: UiElements()
-                          .showNotificationsFrostedContainer(context, warnings, isNotificationsClicked))
-                ],
-              )
-            : UiElements().consolidedInvoicesView(
-                urgencyNames, colors, invoicesTilesForConsolided),
-        appBar: homePageAppBar,
-        drawer: UiElements().homePageDrawerMenu(
-            context, methodChannel, username, selectEmailAddress));
-  }
+
 
   Scaffold warningHomePageForTrustedEmpty(BuildContext context) {
     return Scaffold(

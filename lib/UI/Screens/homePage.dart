@@ -87,8 +87,6 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  final SnackBar snackBarProgressIndicator =
-      UiElements().myShowSnackBar("Synchronizuję ...");
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
