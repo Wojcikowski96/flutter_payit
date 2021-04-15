@@ -113,7 +113,6 @@ class _HomeScreenLayoutState extends State<HomeScreenLayout> {
                       widget.isListOfEmailsVisible,
                       widget.isPlaceholderTextVisible,
                       widget.isUndefinedVisible,
-                      widget.isDefinedVisible,
                       widget.isTipTextVisible,
                       widget.isInvoiceVisible,
                       widget.definedFlex,

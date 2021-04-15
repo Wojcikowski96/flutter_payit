@@ -293,7 +293,7 @@ public class MainActivity extends FlutterActivity {
                             if (attachFiles.length() > 1) {
                                 attachFiles = attachFiles.substring(0, attachFiles.length() - 2);
                             }
-
+                            System.out.println("Tworzę powiadomienie o nowej fakturze");
                             CreateNewInvoiceNotification(emailAddress, trustedEmails, context, t, sentDate);
 
                         } else if (contentType.contains("text/plain")

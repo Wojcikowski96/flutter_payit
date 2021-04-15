@@ -66,7 +66,7 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
   String definedText = "Zdefiniowane";
   String undefinedText = "Niezdefiniowane";
 
-  double fontSizeOfDefAndUndef = 12;
+  double fontSizeOfDefAndUndef = 16;
 
   List<String> userEmailsNames = new List();
   List<WarningNotification> warnings = new List();

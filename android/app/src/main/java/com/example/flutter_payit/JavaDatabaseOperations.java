@@ -21,7 +21,7 @@ class JavaDatabaseOperations {
                 try {
                     UID=snapshot.child("lastUID").getValue(int.class);
                 } catch (Exception e) {
-                    System.out.println("Java nie ma takiego rekordu, może masz pusty rekord z mailami");
+                    System.out.println("Java nie ma takiego rekordu, może masz pusty rekord z mailami?");
                     UID=0;
                 }
                 callbackFromFirebase.onCallback(UID);

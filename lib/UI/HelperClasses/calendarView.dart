@@ -35,7 +35,7 @@ class CalendarView extends StatefulWidget {
   bool isListOfEmailsVisible;
   bool isPlaceholderTextVisible;
   bool isUndefinedVisible;
-  bool isDefinedVisible;
+  bool isDefinedVisible = false;
   bool isTipTextVisible;
 
   double fontSizeOfDefAndUndef;
@@ -53,7 +53,6 @@ class CalendarView extends StatefulWidget {
       this.isListOfEmailsVisible,
       this.isPlaceholderTextVisible,
       this.isUndefinedVisible,
-      this.isDefinedVisible,
       this.isTipTextVisible,
       this.isInvoiceVisible,
       this.definedFlex,
@@ -117,7 +116,7 @@ class _CalendarViewState extends State<CalendarView>
     return GestureDetector(
       onTap: () => setState(() {
         widget.isListOfEmailsVisible = !widget.isListOfEmailsVisible;
-        widget.fontSizeOfDefAndUndef = 12;
+        widget.fontSizeOfDefAndUndef = 16;
 
         if (widget.isListOfEmailsVisible == false) {
           widget.definedText = "Zdefiniowane";
@@ -188,6 +187,10 @@ class _CalendarViewState extends State<CalendarView>
         widget.isPlaceholderTextVisible = true;
         widget.isDefinedVisible = false;
         widget.definedColor = Colors.blue;
+        if(_animationForInvoices.value==10){
+          widget.isPlaceholderTextVisible = false;
+        }
+
       });
     } else {
       setState(() {
@@ -196,6 +199,10 @@ class _CalendarViewState extends State<CalendarView>
             .setUrgencyColor(widget.definedInvoicesInfo, userPreferences);
         widget.isPlaceholderTextVisible = false;
         widget.isDefinedVisible = true;
+        if(_animationForInvoices.value==10){
+          widget.isDefinedVisible = false;
+          widget.isPlaceholderTextVisible = false;
+        }
       });
     }
   }
@@ -210,7 +217,7 @@ class _CalendarViewState extends State<CalendarView>
             widget.isDefinedVisible = false;
             widget.isPlaceholderTextVisible = false;
             widget.isListOfEmailsVisible = false;
-            widget.fontSizeOfDefAndUndef = 12;
+            widget.fontSizeOfDefAndUndef = 16;
             widget.definedText = "Zdefiniowane";
             widget.undefinedText = "Niezdefiniowane";
             if (_animationControllerForInvoices.value == 0.0) {
@@ -224,11 +231,15 @@ class _CalendarViewState extends State<CalendarView>
               widget.undefinedTextRotated = 1;
               widget.isTipTextVisible = false;
               widget.isUndefinedVisible = false;
+              widget.fontSizeOfDefAndUndef = 16;
+
             } else {
               widget.isUndefinedVisible = true;
+              widget.isDefinedVisible = false;
               widget.undefinedTextRotated = 0;
               widget.definedTextRotated = 1;
               widget.isTipTextVisible = true;
+              widget.isPlaceholderTextVisible = false;
             }
 
             if (_animationForEmails.value == 10) {
@@ -236,7 +247,7 @@ class _CalendarViewState extends State<CalendarView>
               widget.undefinedText = "Nie...";
             }
             if (widget.definedTextRotated == 1) {
-              widget.fontSizeOfDefAndUndef = 17;
+              widget.fontSizeOfDefAndUndef = 16;
             }
           }),
           child: Container(
