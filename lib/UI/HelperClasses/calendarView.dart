@@ -108,7 +108,7 @@ class _CalendarViewState extends State<CalendarView>
           ),
         ),
       ),
-      bottomUserEmailPanel(context),
+      //bottomUserEmailPanel(context),
     ]);
   }
 

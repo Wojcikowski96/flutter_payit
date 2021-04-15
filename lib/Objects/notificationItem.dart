@@ -19,7 +19,7 @@ class NotificationItem{
               color: Colors.white60,
               width: 0.1,
             ),
-            color: Colors.white,
+            color: Colors.white.withOpacity(0.8),
             borderRadius: BorderRadius.all(Radius.circular(15))),
         width: 200,
         height: 80,

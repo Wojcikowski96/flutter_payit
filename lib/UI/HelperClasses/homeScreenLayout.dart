@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_payit/Objects/invoice.dart';
 import 'package:flutter_payit/Objects/notificationItem.dart';
 import 'package:flutter_payit/Objects/warningNotification.dart';
+import 'package:flutter_payit/UI/HelperClasses/frostedEmailPanel.dart';
 import 'package:flutter_payit/UI/HelperClasses/mainUI.dart';
 import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
 
@@ -122,7 +123,8 @@ class _HomeScreenLayoutState extends State<HomeScreenLayout> {
                       widget.definedText,
                       widget.undefinedText,
                       widget.fontSizeOfDefAndUndef,
-                  widget.emailSettings),
+                      widget.emailSettings),
+                      FrostedEmailPanel(widget.emailSettings, true),
                   AnimatedOpacity(
                       opacity: widget.isContainerWithNotificationsVisible
                           ? 1.0
