@@ -357,11 +357,27 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
   DropdownButton<String> buildDropdownButtonForUserCategoryNames() {
     return new DropdownButton<String>(
       isExpanded: true,
-      hint: Center(
-          child: Text(
-        "Wszystko",
-        style: TextStyle(fontSize: 30, color: Colors.white),
-      )),
+      hint: Row(
+        children: [
+          Center(
+              child: Text(
+            "Wszystko",
+            style: TextStyle(fontSize: 30, color: Colors.white),
+          )),
+          SizedBox(width: 50),
+          Container(
+            alignment: Alignment.center,
+              color: Colors.white,
+            child: Text(
+              definedInvoicesInfo.length.toString(),
+              style: TextStyle(
+                  color: Colors.lightBlue,
+                  fontSize: 30
+              ),
+            )
+          )
+        ],
+      ),
       value: selectedCategoryName,
       items: userCategoriesNames.map((String value) {
         return new DropdownMenuItem<String>(
@@ -381,12 +397,11 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
                     maxLines: 1,
                     style: TextStyle(fontSize: 35, color: Colors.white),
                   ),
-
+                  SizedBox(width: 50),
                   Container(
                     color: Colors.white,
                     child: Text(
-                      generateNumOfCategory(value, definedInvoicesInfo)
-                          .toString(),
+                      generateNumOfCategory(value, definedInvoicesInfo).toString(),
                       style: TextStyle(
                         color: Colors.lightBlue,
                         fontSize: 30
@@ -506,7 +521,7 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
       }
     }
 
-    if (selectedCategoryName != "Wszyscy nadawcy") {
+    if (selectedCategoryName != "Wszystko") {
       int j = 0;
       for (int i in doUsuniecia) {
         tempInvoicesInfo.removeAt(i - j);
@@ -536,10 +551,14 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
 
   int generateNumOfCategory(String value, List<Invoice> definedInvoicesInfo) {
     int counter = 0;
-    for (Invoice invoice in definedInvoicesInfo) {
-      if (invoice.categoryName == value) {
-        counter++;
+    if(value != "Wszystko"){
+      for (Invoice invoice in definedInvoicesInfo) {
+        if (invoice.categoryName == value) {
+          counter++;
+        }
       }
+    }else{
+      counter = definedInvoicesInfo.length;
     }
     return counter;
   }
