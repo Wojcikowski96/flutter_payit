@@ -112,33 +112,6 @@ class _CalendarViewState extends State<CalendarView>
     ]);
   }
 
-  GestureDetector bottomUserEmailPanel(BuildContext context) {
-    return GestureDetector(
-      onTap: () => setState(() {
-        widget.isListOfEmailsVisible = !widget.isListOfEmailsVisible;
-        widget.fontSizeOfDefAndUndef = 16;
-
-        if (widget.isListOfEmailsVisible == false) {
-          widget.definedText = "Zdefiniowane";
-          widget.undefinedText = "Niezdefiniowane";
-        }
-        if (_animationControllerForEmails.value == 0.0) {
-          _animationControllerForEmails.forward();
-          widget.definedText = "Zde...";
-          widget.undefinedText = "Nie...";
-        } else {
-          _animationControllerForEmails.reverse();
-        }
-        print("animation or email value:");
-        print(_animationForEmails.value);
-      }),
-      child: UserEmailsStatusPanel(widget.emailSettings, _animationForEmails),
-    );
-  }
-
-
-
-
   void setAnimationParameters() {
     _animationControllerForInvoices =
         AnimationController(duration: Duration(milliseconds: 600), vsync: this);

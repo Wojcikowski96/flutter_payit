@@ -86,11 +86,9 @@ class _FrostedEmailPanelState extends State<FrostedEmailPanel>
                     ),
                   ],
                 ),
-
             ),
             Visibility(
               visible: widget.isThisVisible ? false : true,
-
                 child: Column(
                   children: [
                     SizedBox(
@@ -176,7 +174,7 @@ class _FrostedEmailPanelState extends State<FrostedEmailPanel>
     for (List<dynamic> singleEmailSetting in emailSettings) {
       print("SingleEmailSetting w populacji " + singleEmailSetting[0]);
       populatedList
-          .add(new NotificationItem(singleEmailSetting[0], true, "0%"));
+          .add(new NotificationItem(singleEmailSetting[0], true, "n/d"));
     }
     return populatedList;
   }

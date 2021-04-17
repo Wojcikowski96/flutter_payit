@@ -84,9 +84,7 @@ public class MainActivity extends FlutterActivity {
 
         GeneratedPluginRegistrant.registerWith(this);
         forService = new Intent(this, MyService.class);
-
         methodChannel = new MethodChannel(getFlutterView(), CHANNEL);
-
         methodChannel.setMethodCallHandler((methodCall, result) -> {
             System.out.println("new MethodChannel ID wątku "+Thread.currentThread().getId()+" methodCall.method "+methodCall.method);
 
@@ -336,7 +334,7 @@ public class MainActivity extends FlutterActivity {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-
+        System.out.println("Wywołuję sync completed we flutterze");
         CreateNewFinishedSyncNotification(emailAddress, UID, context);
         new Handler(Looper.getMainLooper()).post(() -> methodChannel.invokeMethod("syncCompleted",emailAddress,null));
 

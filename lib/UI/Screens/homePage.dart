@@ -22,6 +22,7 @@ import 'package:flutter_payit/Utils/userOperationsOnEmails.dart';
 import 'package:flutter_payit/PdfParser/pdfParser.dart';
 import 'package:path/path.dart';
 import 'package:watcher/watcher.dart';
+import "dart:collection";
 
 Timer oldTimer;
 
@@ -42,7 +43,6 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
   double paymentAmount;
   String categoryName;
 
-  String syncedEmailBoxName = "...";
   static const methodChannel = const MethodChannel("com.example.flutter_payit");
 
   Map<DateTime, List> paymentEvents = new Map();
@@ -69,6 +69,7 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
   double fontSizeOfDefAndUndef = 16;
 
   List<String> userEmailsNames = new List();
+  List<String> userCategoriesNames = new List();
   List<WarningNotification> warnings = new List();
   List<Invoice> definedInvoicesInfo = new List();
   List<Invoice> undefinedInvoicesInfo = new List();
@@ -79,6 +80,7 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
   List<List<String>> trustedEmails = new List();
 
   String selectedEmailAddress;
+  String selectedCategoryName;
   static String username = "<Username>";
 
   Color definedColor = Colors.blue;
@@ -96,7 +98,6 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
     if (widget.definedInvoicesInfo.isNotEmpty) {
       definedColor = widget.definedInvoicesInfo.last.color;
     }
-
     userEmailsNames.add("Wszystkie adresy");
     Future.delayed(Duration.zero, () async {
       username = await getUsernameFromFlutterStorage();
@@ -104,7 +105,7 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
       preferences = await DatabaseOperations().getUserPrefsFromDB(username);
       generateDirectory();
       emailSettings = await UserOperationsOnEmails().getEmailSettings(username);
-      notificationItems = populateNotificationItemsList(emailSettings);
+      //notificationItems = populateNotificationItemsList(emailSettings);
       //methodChannel.setMethodCallHandler(javaMethod);
       trustedEmails =
           await UserOperationsOnEmails().getInvoiceSenders(username);
@@ -144,7 +145,11 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
             : print("Nothing to do");
 
       await setModifiedInvoicesForDrawing();
-
+      getCustomSendersMails(trustedEmails);
+      print("Zawartość listy z kategoriami:");
+      print(userCategoriesNames);
+      print("Zawartość listy z nazwami adresów");
+      print(userEmailsNames);
       setState(() {
         isProgressOfInsertingVisible = false;
       });
@@ -162,7 +167,8 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
           widget.isCalendarViewEnabled,
           methodChannel,
           username,
-          buildDropdownButton(),
+          buildDropdownButtonForUserEmails(),
+          buildDropdownButtonForUserCategoryNames(),
           warnings,
           undefinedInvoicesInfo,
           definedInvoicesInfo,
@@ -185,20 +191,8 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
           definedText,
           undefinedText,
           fontSizeOfDefAndUndef,
-      emailSettings);
+          emailSettings);
     }
-  }
-
-  List<NotificationItem> populateNotificationItemsList(
-      List<List<dynamic>> emailSettings) {
-    List<NotificationItem> populatedList = new List();
-
-    for (List<dynamic> singleEmailSetting in emailSettings) {
-      print("SingleEmailSetting w populacji " + singleEmailSetting[0]);
-      populatedList
-          .add(new NotificationItem(singleEmailSetting[0], true, "0%"));
-    }
-    return populatedList;
   }
 
   void generateDirectory() {
@@ -331,14 +325,16 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
       });
   }
 
-  DropdownButton<String> buildDropdownButton() {
+  DropdownButton<String> buildDropdownButtonForUserEmails() {
     return new DropdownButton<String>(
       isExpanded: true,
       value: selectedEmailAddress,
+      hint: Text(userEmailsNames[0]),
       items: userEmailsNames.map((String value) {
         return new DropdownMenuItem<String>(
           value: value,
           child: Container(
+            alignment: Alignment.center,
             child: FittedBox(
               fit: BoxFit.scaleDown,
               child: new Text(
@@ -358,6 +354,60 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
     );
   }
 
+  DropdownButton<String> buildDropdownButtonForUserCategoryNames() {
+    return new DropdownButton<String>(
+      isExpanded: true,
+      hint: Center(
+          child: Text(
+        "Wszystko",
+        style: TextStyle(fontSize: 30, color: Colors.white),
+      )),
+      value: selectedCategoryName,
+      items: userCategoriesNames.map((String value) {
+        return new DropdownMenuItem<String>(
+          value: value,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.lightBlue,
+              borderRadius: BorderRadius.all(Radius.circular(20)),
+            ),
+            alignment: Alignment.center,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                children: [
+                  new Text(
+                    value,
+                    maxLines: 1,
+                    style: TextStyle(fontSize: 35, color: Colors.white),
+                  ),
+
+                  Container(
+                    color: Colors.white,
+                    child: Text(
+                      generateNumOfCategory(value, definedInvoicesInfo)
+                          .toString(),
+                      style: TextStyle(
+                        color: Colors.lightBlue,
+                        fontSize: 30
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+      onChanged: (String val) {
+        setState(() {
+          selectedCategoryName = val;
+          filterByUserMailboxCustomName(selectedCategoryName);
+        });
+      },
+    );
+  }
+
   downloadAttachmentForAllMailboxes(List<List<dynamic>> emailSettings,
       List<List<String>> trustedEmails) async {
     print("Zaciągam maile");
@@ -367,13 +417,8 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
 
     int i = 0;
     for (var singleEmailSettings in emailSettings) {
-      //AppNotification appNotification = new AppNotification(singleEmailSettings[0], false);
       print("Zaciągam maile po stronie Dart " + singleEmailSettings.toString());
-
       tempUserEmailsNames.add(singleEmailSettings[0].toString());
-      //appNotifications.add(appNotification);
-
-      //tempNotificationItems.add(UiElements().notificationItem(appNotification, true, false));
 
       List<dynamic> downloadAttachmentArgs = [
         singleEmailSettings,
@@ -389,8 +434,18 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
     setState(() {
       userEmailsNames = tempUserEmailsNames;
       selectedEmailAddress = userEmailsNames.last;
-      //notificationItems = tempNotificationItems;
     });
+  }
+
+  getCustomSendersMails(List<List<String>> trustedEmails) {
+    List<String> customNames = new List();
+    customNames.add("Wszystko");
+    for (List<String> singleInvoiceInfo in trustedEmails) {
+      customNames.add(singleInvoiceInfo[1]);
+    }
+    List<String> removedDuplicates =
+        LinkedHashSet<String>.from(customNames).toList();
+    userCategoriesNames = removedDuplicates;
   }
 
   List<String> getMailSenderAddresses(List<List<String>> trustedEmails) {
@@ -438,8 +493,34 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
     });
   }
 
+  void filterByUserMailboxCustomName(String selectedCategoryName) {
+    List<Invoice> tempInvoicesInfo = new List();
 
+    tempInvoicesInfo.addAll(definedInvoicesInfo);
 
+    List<int> doUsuniecia = new List();
+
+    for (int i = 0; i < tempInvoicesInfo.length; i++) {
+      if (tempInvoicesInfo[i].categoryName != selectedCategoryName) {
+        doUsuniecia.add(i);
+      }
+    }
+
+    if (selectedCategoryName != "Wszyscy nadawcy") {
+      int j = 0;
+      for (int i in doUsuniecia) {
+        tempInvoicesInfo.removeAt(i - j);
+        j++;
+      }
+    } else {
+      tempInvoicesInfo = definedInvoicesInfo;
+    }
+
+    setState(() {
+      paymentEvents =
+          CalendarUtils().generatePaymentEvents(tempInvoicesInfo, preferences);
+    });
+  }
 
   bool checkIfInvoiceIsDefined(
       double paymentAmount, String paymentDate, String account) {
@@ -451,5 +532,15 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
       flag = false;
     }
     return flag;
+  }
+
+  int generateNumOfCategory(String value, List<Invoice> definedInvoicesInfo) {
+    int counter = 0;
+    for (Invoice invoice in definedInvoicesInfo) {
+      if (invoice.categoryName == value) {
+        counter++;
+      }
+    }
+    return counter;
   }
 }

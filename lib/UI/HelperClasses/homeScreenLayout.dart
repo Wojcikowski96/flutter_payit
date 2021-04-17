@@ -23,6 +23,7 @@ class HomeScreenLayout extends StatefulWidget {
   MethodChannel methodChannel;
   String username;
   DropdownButton<String> selectEmailAddress;
+  DropdownButton <String> selectCategoryName;
   bool isNotificationsClicked;
   List<WarningNotification> warnings;
   List<Invoice> undefinedInvoicesInfo;
@@ -61,6 +62,7 @@ class HomeScreenLayout extends StatefulWidget {
       this.methodChannel,
       this.username,
       this.selectEmailAddress,
+      this.selectCategoryName,
       this.warnings,
       this.undefinedInvoicesInfo,
       this.definedInvoicesInfo,
@@ -143,12 +145,12 @@ class _HomeScreenLayoutState extends State<HomeScreenLayout> {
                 widget.undefinedInvoicesInfo,
                 widget.definedInvoicesInfo,
                 widget.notificationItem),
-        appBar: homePageAppBar(context),
+        appBar: homePageAppBar(context, widget.selectCategoryName),
         drawer: UiElements().homePageDrawerMenu(context, widget.methodChannel,
             widget.username, widget.selectEmailAddress));
   }
 
-  AppBar homePageAppBar(BuildContext context) {
+  AppBar homePageAppBar(BuildContext context, DropdownButton <String> selectCategoryName) {
     return AppBar(
       title: Text(
         "PayIT",
@@ -157,6 +159,7 @@ class _HomeScreenLayoutState extends State<HomeScreenLayout> {
 
       iconTheme: IconThemeData(color: Colors.white), //add this line here
       actions: <Widget>[
+        Container(width: 250, height: 20, child: selectCategoryName),
         IconButton(
           icon: widget.isCalendarViewEnabled
               ? UiElements().listIcon()
