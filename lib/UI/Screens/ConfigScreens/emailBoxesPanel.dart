@@ -20,12 +20,9 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
   final TextEditingController emailController = new TextEditingController();
   final TextEditingController emailPasswordController =
       new TextEditingController();
-  final TextEditingController emailHostController =
-  new TextEditingController();
-  final TextEditingController emailPortController =
-  new TextEditingController();
-  final TextEditingController emailTypeController =
-  new TextEditingController();
+  final TextEditingController emailHostController = new TextEditingController();
+  final TextEditingController emailPortController = new TextEditingController();
+  final TextEditingController emailTypeController = new TextEditingController();
   var storage = FlutterSecureStorage();
   String username = "JohnDoe", password = "qwerty";
   List<Padding> emailPanels = new List();
@@ -33,8 +30,6 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
   List<String> emailKeys = new List();
   final DBRef = FirebaseDatabase.instance.reference();
   bool isSwitched = false;
-
-
 
   @override
   void initState() {
@@ -47,9 +42,6 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
       setState(() {
         username = tempUsername;
       });
-
-
-
 
       List<Padding> tempEmailPanels = await getLoggedUserData(
           await DatabaseOperations().getUserEmailsFromDb(username));
@@ -65,55 +57,41 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(0.0),
-        child: Column(children: [
-          SizedBox(
-            height: 40,
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Center(
-                child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      "Twoje adresy mailowe",
-                      style: TextStyle(fontSize: 35, color: Colors.blue),
-                    ))),
-          ),
-          Container(
-            child: Image.asset(
-              "mailboxes.png",
-              height: 150,
-              width: 150,
-            ),
-          ),
-          Expanded(
-            flex: 15,
-            child: Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: ListView(
-                children: List.generate(
-                    emailPanels.length, (index) => emailPanels[index]),
+    return WillPopScope(
+      onWillPop: askForSaving,
+      child: Scaffold(
+        body: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              expandedHeight: MediaQuery.of(context).size.height / 2,
+              collapsedHeight: MediaQuery.of(context).size.height / 10,
+              shape: ContinuousRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30))),
+              forceElevated: true,
+              title: Center(
+                  child: Text(
+                "Twoje skrzynki e-mail",
+                style: TextStyle(color: Colors.white, fontSize: 30),
+              )),
+              pinned: true,
+              flexibleSpace: FlexibleSpaceBar(
+                background: Image.asset(
+                  "mailboxes.png",
+                ),
               ),
             ),
-          ),
-          SizedBox(
-            height: 35,
-          ),
-          UiElements().drawButton(200,80, "Zatwierdź i wróć", Colors.white, Colors.blue, Colors.blue, context, homePage(DateTime.now(),new List(), true),null, null),
-          SizedBox(
-            height: 10,
-          ),
-        ]),
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blue,
-        child: Icon(Icons.add),
-        onPressed: () {
-          displayDialog(context, "Dodaj swój e-mail");
-        },
+            _getSlivers(emailPanels, context),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.blue,
+          child: Icon(Icons.add),
+          onPressed: () {
+            displayDialog(context, "Dodaj swój e-mail");
+          },
+        ),
       ),
     );
   }
@@ -170,6 +148,86 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     );
   }
 
+  Future<bool> askForSaving() {
+    return showDialog(
+          context: context,
+          builder: (context) => new AlertDialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(Constants.padding)),
+            title: Text('Opuszczasz ekran ustawień'),
+            content: Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(20))),
+              height: MediaQuery.of(context).size.height / 10.8,
+              child: Column(
+                children: [
+                  new Text('Uwzględnić dodane adresy?'),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: new Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => Navigator.of(context).pop(false),
+                            child: Container(
+                                decoration: BoxDecoration(
+                                    color: Colors.lightBlue,
+                                    borderRadius: BorderRadius.all(Radius.circular(20))),
+                                child: Center(
+                                    child: Text(
+                                  "NIE",
+                                  style: TextStyle(
+                                      fontSize: 24, color: Colors.white),
+                                ))),
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            width: 20,
+                          ),
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => homePage(
+                                      DateTime.now(), new List(), true)),
+                            ),
+                            child: Container(
+                                decoration: BoxDecoration(
+                                    color: Colors.lightBlue,
+                                    borderRadius: BorderRadius.all(Radius.circular(20))),
+                                child: Center(
+                                    child: Text("TAK",
+                                        style: TextStyle(
+                                            fontSize: 24,
+                                            color: Colors.white)))),
+                          ),
+                        )
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+        ) ??
+        false;
+  }
+
+  SliverList _getSlivers(List emailPanels, BuildContext context) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (BuildContext context, int index) {
+          return emailPanels[index];
+        },
+        childCount: emailPanels.length,
+      ),
+    );
+  }
+
   Future<List<Padding>> getLoggedUserData(
       List<UserEmail> userEmailsList) async {
     List<Padding> emailPanels = new List();
@@ -203,7 +261,13 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     List<String> tempUserEmails = userEmails;
     String emailKey = email.replaceAll(new RegExp(r'\.'), '');
 
-    List<String> emailConfig = [email, emailPassword, emailHostName, emailPortNumber, emailType];
+    List<String> emailConfig = [
+      email,
+      emailPassword,
+      emailHostName,
+      emailPortNumber,
+      emailType
+    ];
 
     if (emailConfig == null) {
       Fluttertoast.showToast(
@@ -279,7 +343,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
   }
 
   void displayDialog(BuildContext context, String title) => showDialog(
-    context: context,
+        context: context,
         builder: (context) => AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(Constants.padding),
@@ -290,10 +354,10 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
                   color: Colors.blue,
                   borderRadius: BorderRadius.all(Radius.circular(10))),
               child: Center(
-              child: Text(
-              title,
-              style: TextStyle(color: Colors.white),
-            )),
+                  child: Text(
+                title,
+                style: TextStyle(color: Colors.white),
+              )),
             ),
             content: Padding(
               padding: const EdgeInsets.all(8.0),
@@ -354,7 +418,17 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              UiElements().drawButton(210,40, "Odkryj ustawienia", Colors.white, Colors.blue, Colors.blue, context, null, [context],fillEmailParams),
+                              UiElements().drawButton(
+                                  210,
+                                  40,
+                                  "Odkryj ustawienia",
+                                  Colors.white,
+                                  Colors.blue,
+                                  Colors.blue,
+                                  context,
+                                  null,
+                                  [context],
+                                  fillEmailParams),
                               Expanded(
                                 flex: 1,
                                 child: CircleAvatar(
@@ -384,7 +458,6 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
                               )
                             ],
                           ),
-
                         ],
                       ),
                     ),
@@ -457,7 +530,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
                           focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(30),
                               borderSide:
-                              BorderSide(color: Colors.grey, width: 2)),
+                                  BorderSide(color: Colors.grey, width: 2)),
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: BorderSide(
@@ -503,37 +576,39 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     emailPortController.text = "Pobieram ...";
     emailTypeController.text = "Pobieram ...";
 
-    AlertDialog discoverSettingsDialog = new UiElements().showLoaderDialog(context, "Odkrywam ustawienia...",true);
+    AlertDialog discoverSettingsDialog = new UiElements()
+        .showLoaderDialog(context, "Odkrywam ustawienia...", true);
 
-    List<String> emailParams = await UserOperationsOnEmails().discoverSettings(email, password);
+    List<String> emailParams =
+        await UserOperationsOnEmails().discoverSettings(email, password);
 
     Navigator.pop(context);
 
     setState(() {
-    emailHostController.text = emailParams[2];
-    emailPortController.text = emailParams[3];
-    emailTypeController.text = emailParams[4];
+      emailHostController.text = emailParams[2];
+      emailPortController.text = emailParams[3];
+      emailTypeController.text = emailParams[4];
     });
-
   }
 
-  void addEmail(BuildContext context)  {
+  void addEmail(BuildContext context) {
     print("Username " + username);
     print(emailController.text);
     print(emailPasswordController.text);
 
-    if(emailController.text=="" || emailPasswordController.text=="" || emailHostController.text=="" || emailPortController.text=="" || emailTypeController.text==""){
-
+    if (emailController.text == "" ||
+        emailPasswordController.text == "" ||
+        emailHostController.text == "" ||
+        emailPortController.text == "" ||
+        emailTypeController.text == "") {
       Fluttertoast.showToast(
           msg: 'Nie wszystkie pola zostały wypełnione',
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.CENTER,
           timeInSecForIos: 1,
           backgroundColor: Colors.red,
-          textColor: Colors.white
-      );
-
-    }else{
+          textColor: Colors.white);
+    } else {
       Navigator.pop(context, false);
       prepareListsForDrawing();
     }

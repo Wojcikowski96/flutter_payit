@@ -9,6 +9,8 @@ import 'package:flutter_payit/Objects/warningNotification.dart';
 import 'package:flutter_payit/UI/HelperClasses/frostedEmailPanel.dart';
 import 'package:flutter_payit/UI/HelperClasses/mainUI.dart';
 import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
+import 'package:flutter_payit/UI/Screens/ConfigScreens/emailBoxesPanel.dart';
+import 'package:flutter_payit/UI/Screens/ConfigScreens/trustedList.dart';
 
 import 'calendarView.dart';
 import 'consolidedInvoicesView.dart';
@@ -25,7 +27,6 @@ class HomeScreenLayout extends StatefulWidget {
   DropdownButton<String> selectEmailAddress;
   DropdownButton <String> selectCategoryName;
   bool isNotificationsClicked;
-  List<WarningNotification> warnings;
   List<Invoice> undefinedInvoicesInfo;
   List<Invoice> definedInvoicesInfo;
   List<NotificationItem> notificationItem;
@@ -35,7 +36,8 @@ class HomeScreenLayout extends StatefulWidget {
   Map<DateTime, List> paymentEvents;
 
   bool isProgressOfInsertingVisible;
-  bool isContainerWithNotificationsVisible;
+
+  bool isWaringIconVisible = false;
   bool isTrustedEmailsEmpty;
   bool isUserEmailsEmpty;
   bool isListOfEmailsVisible;
@@ -63,7 +65,6 @@ class HomeScreenLayout extends StatefulWidget {
       this.username,
       this.selectEmailAddress,
       this.selectCategoryName,
-      this.warnings,
       this.undefinedInvoicesInfo,
       this.definedInvoicesInfo,
       this.notificationItem,
@@ -71,7 +72,6 @@ class HomeScreenLayout extends StatefulWidget {
       this.isUserEmailsEmpty,
       this.paymentEvents,
       this.isProgressOfInsertingVisible,
-      this.isContainerWithNotificationsVisible,
       this.isListOfEmailsVisible,
       this.isPlaceholderTextVisible,
       this.isUndefinedVisible,
@@ -93,13 +93,32 @@ class HomeScreenLayout extends StatefulWidget {
 
 class _HomeScreenLayoutState extends State<HomeScreenLayout> {
   String selectedEmailAddress;
+  List<WarningNotification> warnings = new List();
+  bool isContainerWithNotificationsVisible = false;
+ @override
+ void initState() {
+    // TODO: implement initState
+    super.initState();
+    if(widget.isTrustedEmailsEmpty){
+      setState(() {
+        warnings.add(new WarningNotification(
+            "Brak zaufanych adresów", TrustedListPanel()));
+      });
+    }
+    if(widget.isUserEmailsEmpty){
+      setState(() {
+        warnings.add(new WarningNotification("Brak skrzynek e-mail", EmailBoxesPanel()));
+      });
+    }
+    if (widget.isTrustedEmailsEmpty || widget.isUserEmailsEmpty) {
+      isContainerWithNotificationsVisible = true;
+      widget.isWaringIconVisible = true;
+    }
+  }
   @override
   Widget build(BuildContext context) {
-    if (widget.isTrustedEmailsEmpty || widget.isUserEmailsEmpty) {
-      widget.isContainerWithNotificationsVisible = true;
-    }
     print("Czy kontener z notyfikacjami widoczny w homescreen layout");
-    print(widget.isContainerWithNotificationsVisible);
+    print(isContainerWithNotificationsVisible);
     return Scaffold(
         key: widget.scaffoldKey,
         body: widget.isCalendarViewEnabled
@@ -128,14 +147,14 @@ class _HomeScreenLayoutState extends State<HomeScreenLayout> {
                       widget.emailSettings),
                       FrostedEmailPanel(widget.emailSettings, true),
                   AnimatedOpacity(
-                      opacity: widget.isContainerWithNotificationsVisible
+                      opacity: isContainerWithNotificationsVisible
                           ? 1.0
                           : 0.0,
                       duration: Duration(milliseconds: 500),
                       child: new FrostedContainer(
                           context,
-                          widget.warnings,
-                          widget.isContainerWithNotificationsVisible,
+                          warnings,
+                          isContainerWithNotificationsVisible,
                           widget.isTrustedEmailsEmpty,
                           widget.isUserEmailsEmpty))
                 ],
@@ -159,41 +178,49 @@ class _HomeScreenLayoutState extends State<HomeScreenLayout> {
 
       iconTheme: IconThemeData(color: Colors.white), //add this line here
       actions: <Widget>[
-        Container(width: 250, height: 20, child: selectCategoryName),
-        IconButton(
-          icon: widget.isCalendarViewEnabled
-              ? UiElements().listIcon()
-              : UiElements().calendarIcon(),
-          onPressed: () {
-            setState(() {
-              widget.isCalendarViewEnabled = !widget.isCalendarViewEnabled;
-            });
-          },
-        ),
-        Stack(
-          alignment: Alignment.bottomRight,
+        Row(
           children: [
+            Center(child: Container(width: MediaQuery.of(context).size.width/1.7, height: 50, child: selectCategoryName)),
             IconButton(
-              icon: widget.warnings.length != 0
-                  ? Icon(
-                      Icons.warning_amber_outlined,
-                      color: Colors.red,
-                    )
-                  : Icon(
-                      Icons.notifications,
-                      color: Colors.white,
-                    ),
-              iconSize: widget.warnings.length != 0 ? 40 : 25,
+              icon: widget.isCalendarViewEnabled
+                  ? UiElements().listIcon()
+                  : UiElements().calendarIcon(),
               onPressed: () {
                 setState(() {
-                  widget.isContainerWithNotificationsVisible =
-                      !widget.isContainerWithNotificationsVisible;
+                  widget.isCalendarViewEnabled = !widget.isCalendarViewEnabled;
                 });
               },
             ),
-            UiElements().notificationsNumIcon(widget.warnings.length),
+            Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                IconButton(
+                  icon: widget.isWaringIconVisible
+                      ? Icon(
+                    Icons.warning_amber_outlined,
+                    color: Colors.red,
+                  )
+                      : Icon(
+                    Icons.notifications,
+                    color: Colors.white,
+                  ),
+                  iconSize: widget.isWaringIconVisible ? 40 : 25,
+                  onPressed: () {
+                    setState(() {
+                      print("czy kontener z notyf widoczny?");
+                      print(isContainerWithNotificationsVisible);
+                      isContainerWithNotificationsVisible =
+                      !isContainerWithNotificationsVisible;
+                    });
+                  },
+                ),
+                UiElements().notificationsNumIcon(warnings.length),
+              ],
+            ),
           ],
         ),
+
+
       ],
     );
   }

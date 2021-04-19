@@ -169,7 +169,6 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
           username,
           buildDropdownButtonForUserEmails(),
           buildDropdownButtonForUserCategoryNames(),
-          warnings,
           undefinedInvoicesInfo,
           definedInvoicesInfo,
           notificationItems,
@@ -177,7 +176,6 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
           isUserEmailsEmpty,
           paymentEvents,
           isProgressOfInsertingVisible,
-          isContainerWithNotificationsVisible,
           isListOfEmailsVisible,
           isPlaceholderTextVisible,
           isUndefinedVisible,
@@ -329,17 +327,48 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
     return new DropdownButton<String>(
       isExpanded: true,
       value: selectedEmailAddress,
-      hint: Text(userEmailsNames[0]),
       items: userEmailsNames.map((String value) {
         return new DropdownMenuItem<String>(
           value: value,
-          child: Container(
-            alignment: Alignment.center,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: new Text(
-                value,
-                maxLines: 1,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+                borderRadius: BorderRadius.all(Radius.circular(20)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 7,
+                      child: Center(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: new Text(
+                            value,
+                            style: TextStyle(color: Colors.white,
+                            fontSize: 30),
+                            maxLines: 1,
+                          ),
+                        ),
+                      ),
+                    ),
+                      Container(
+                        color: Colors.white,
+                        child: Center(
+                          child: Text(
+                            generateNumOfAttachments(value, definedInvoicesInfo)
+                                .toString(),
+                            style: TextStyle(fontSize: 20, color: Colors.blue),
+                          ),
+                        ),
+                      ),
+
+                  ],
+                ),
               ),
             ),
           ),
@@ -357,58 +386,66 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
   DropdownButton<String> buildDropdownButtonForUserCategoryNames() {
     return new DropdownButton<String>(
       isExpanded: true,
-      hint: Row(
-        children: [
-          Center(
-              child: Text(
-            "Wszystko",
-            style: TextStyle(fontSize: 30, color: Colors.white),
-          )),
-          SizedBox(width: 50),
-          Container(
-            alignment: Alignment.center,
-              color: Colors.white,
-            child: Text(
-              definedInvoicesInfo.length.toString(),
-              style: TextStyle(
-                  color: Colors.lightBlue,
-                  fontSize: 30
-              ),
-            )
-          )
-        ],
-      ),
+      hint: Text("Filtruj wg. nadawcy", style: TextStyle(color: Colors.white),),
+        //Padding(
+////        padding: const EdgeInsets.all(8.0),
+////        child: Row(
+////          crossAxisAlignment: CrossAxisAlignment.center,
+////          mainAxisAlignment: MainAxisAlignment.center,
+////          children: [
+////            Center(
+////                child: Text(
+////              "Wszystko",
+////              style: TextStyle(fontSize: 20, color: Colors.white),
+////            )),
+////            SizedBox(width: 50),
+////            Container(
+////                alignment: Alignment.center,
+////                color: Colors.white,
+////                child: Text(
+////                  definedInvoicesInfo.length.toString(),
+////                  style: TextStyle(color: Colors.lightBlue, fontSize: 20),
+////                ))
+////          ],
+////        ),
+////      ),
       value: selectedCategoryName,
       items: userCategoriesNames.map((String value) {
         return new DropdownMenuItem<String>(
           value: value,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.lightBlue,
-              borderRadius: BorderRadius.all(Radius.circular(20)),
-            ),
-            alignment: Alignment.center,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Row(
-                children: [
-                  new Text(
-                    value,
-                    maxLines: 1,
-                    style: TextStyle(fontSize: 35, color: Colors.white),
-                  ),
-                  SizedBox(width: 50),
-                  Container(
-                    color: Colors.white,
-                    child: Text(
-                      generateNumOfCategory(value, definedInvoicesInfo).toString(),
-                      style: TextStyle(
-                        color: Colors.lightBlue,
-                        fontSize: 30
+          child: Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.lightBlue,
+                borderRadius: BorderRadius.all(Radius.circular(20)),
+              ),
+              alignment: Alignment.center,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          value,
+                          maxLines: 1,
+                          style: TextStyle(fontSize: 20, color: Colors.white),
+                        ),
                       ),
                     ),
-                  )
-                ],
+                    Center(
+                      child: Text(
+                        generateNumOfCategory(value, definedInvoicesInfo)
+                            .toString(),
+                        style: TextStyle(color: Colors.white, fontSize: 20),
+                      ),
+                    ),
+
+
+                  ],
+                ),
               ),
             ),
           ),
@@ -551,13 +588,29 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
 
   int generateNumOfCategory(String value, List<Invoice> definedInvoicesInfo) {
     int counter = 0;
-    if(value != "Wszystko"){
+    if (value != "Wszystko") {
       for (Invoice invoice in definedInvoicesInfo) {
         if (invoice.categoryName == value) {
           counter++;
         }
       }
-    }else{
+    } else {
+      counter = definedInvoicesInfo.length;
+    }
+    return counter;
+  }
+
+  int generateNumOfAttachments(
+      String value, List<Invoice> definedInvoicesInfo) {
+    print(definedInvoicesInfo);
+    int counter = 0;
+    if (value != "Wszystkie adresy") {
+      for (Invoice invoice in definedInvoicesInfo) {
+        if (invoice.userMail == value) {
+          counter++;
+        }
+      }
+    } else {
       counter = definedInvoicesInfo.length;
     }
     return counter;

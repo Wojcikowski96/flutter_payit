@@ -23,18 +23,18 @@ class _FrostedContainerState extends State<FrostedContainer> {
   @override
   void initState() {
     super.initState();
-    widget.warnings.clear();
-    if(widget.isTrustedEmailsEmpty){
-      setState(() {
-        widget.warnings.add(new WarningNotification(
-            "Brak zaufanych adresów", TrustedListPanel()));
-      });
-    }
-    if(widget.isUserEmailsEmpty){
-      setState(() {
-        widget.warnings.add(new WarningNotification("Brak skrzynek e-mail", EmailBoxesPanel()));
-      });
-    }
+//      if(widget.isTrustedEmailsEmpty){
+//        setState(() {
+//          widget.warnings.add(new WarningNotification(
+//              "Brak zaufanych adresów", TrustedListPanel()));
+//        });
+//      }
+//      if(widget.isUserEmailsEmpty){
+//        setState(() {
+//          widget.warnings.add(new WarningNotification("Brak skrzynek e-mail", EmailBoxesPanel()));
+//        });
+//      }
+
   }
   @override
   Widget build(BuildContext context) {
