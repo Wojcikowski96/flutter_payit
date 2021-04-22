@@ -5,7 +5,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_payit/Database/databaseOperations.dart';
 import 'package:flutter_payit/UI/Screens/homePage.dart';
 
-
 class TimeInterval extends StatefulWidget {
   @override
   _TimeIntervalState createState() => _TimeIntervalState();
@@ -13,6 +12,7 @@ class TimeInterval extends StatefulWidget {
 
 class _TimeIntervalState extends State<TimeInterval> {
   String username;
+  List <Padding> settingsTiles = new List();
   var storage = FlutterSecureStorage();
   List<int> preferences = [0, 0, 0, 0];
   final TextEditingController urgentController = new TextEditingController();
@@ -26,6 +26,9 @@ class _TimeIntervalState extends State<TimeInterval> {
   @override
   void initState() {
     super.initState();
+    settingsTiles.add(settingTileForUrgency("Zdefiniuj stopnie pilności:"));
+    settingsTiles.add(settingTileForInterval("Sprawdzaj pocztę co:"));
+    settingsTiles.add(dailyRemindFreqTile("Dzienne przypomnienia:"));
     Future.delayed(Duration.zero, () async {
       username = (await storage.read(key: "username")).toString();
       print(username);
@@ -36,6 +39,7 @@ class _TimeIntervalState extends State<TimeInterval> {
       });
       setTextsFromDb();
     });
+
   }
 
   @override
@@ -44,342 +48,225 @@ class _TimeIntervalState extends State<TimeInterval> {
     double height = MediaQuery.of(context).size.height;
     print("preferences w buildzie timeInterval");
     print(preferences);
-    return Scaffold(
-        body: SingleChildScrollView(
-            child: Container(
-                width: width,
-                child: Column(children: <Widget>[
-                  SizedBox(
-                    height: height * 0.08,
-                  ),
-                  Container(
-                    child: Image.asset(
-                      "time.png",
-                      height: 150,
-                      width: 150,
-                      color: Colors.blue,
-                    ),
-                  ),
-                  Text(
-                    "Zdefiniuj stopnie pilności:",
-                    style: TextStyle(
-                      fontSize: 30,
-                      color: Colors.blue,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 30,
-                  ),
-                  Text(
-                    "Dla pilnych:",
-                    style: TextStyle(
-                      fontSize: 25,
-                      color: Colors.blue,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  Container(
-                      margin: EdgeInsets.only(right: 10, left: 10),
-                      width: 250,
-                      child: Row(
-                        children: [
-                          Expanded(
-                              flex: 2,
-                              child: Align(
-                                  alignment: Alignment.centerRight,
-                                  child: FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      child: Text(
-                                        "Mniej niż: ",
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          color: Colors.black54,
-                                        ),
-                                      )))),
-                          Expanded(
-                            flex: 2,
-                            child: TextField(
-                              controller: urgentController,
-                              decoration: InputDecoration(
-                                  contentPadding:
-                                      EdgeInsets.only(top: 20, bottom: 20),
-                                  prefixIcon: Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 20, right: 20),
-                                    child: Icon(Icons.timer),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey.withOpacity(0.7),
-                                  hintText: preferences[0].toString(),
-                                  focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                      borderSide: BorderSide(
-                                          color: Colors.blueAccent, width: 2)),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                      borderSide: BorderSide(
-                                        width: 2,
-                                        color: Colors.blueAccent,
-                                      ))),
-                            ),
-                          ),
-                          Expanded(
-                              flex: 1,
-                              child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Text(" dni",
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        color: Colors.black54,
-                                      )))),
-                        ],
-                      )),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Text(
-                    "Dla mało pilnych:",
-                    style: TextStyle(
-                      fontSize: 25,
-                      color: Colors.blue,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  Container(
-                      margin: EdgeInsets.only(right: 10, left: 10),
-                      width: 250,
-                      child: Row(
-                        children: [
-                          Expanded(
-                              flex: 2,
-                              child: Align(
-                                  alignment: Alignment.centerRight,
-                                  child: FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      child: Text(
-                                        "Więcej niż: ",
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          color: Colors.black54,
-                                        ),
-                                      )))),
-                          Expanded(
-                            flex: 2,
-                            child: TextField(
-                              controller: notUrgentController,
-                              decoration: InputDecoration(
-                                  contentPadding:
-                                      EdgeInsets.only(top: 20, bottom: 20),
-                                  prefixIcon: Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 20, right: 20),
-                                    child: Icon(Icons.timer),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey.withOpacity(0.7),
-                                  hintText: preferences[1].toString(),
-                                  focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                      borderSide: BorderSide(
-                                          color: Colors.blueAccent, width: 2)),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                      borderSide: BorderSide(
-                                        width: 2,
-                                        color: Colors.blueAccent,
-                                      ))),
-                            ),
-                          ),
-                          Expanded(
-                              flex: 1,
-                              child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Text(" dni",
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        color: Colors.black54,
-                                      )))),
-                        ],
-                      )),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Text(
-                    "Sprawdzaj pocztę co:",
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  Container(
-                      margin: EdgeInsets.only(right: 10, left: 10),
-                      width: 250,
-                      child: Row(
-                        children: [
-                          Expanded(
-                              flex: 2,
-                              child: Align(
-                                  alignment: Alignment.centerRight,
-                                  child: FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      child: (Text(
-                                        "Co: ",
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          color: Colors.black54,
-                                        ),
-                                      ))))),
-                          Expanded(
-                            flex: 2,
-                            child: TextField(
-                              controller: monitorController,
-                              decoration: InputDecoration(
-                                  contentPadding:
-                                      EdgeInsets.only(top: 20, bottom: 20),
-                                  prefixIcon: Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 20, right: 20),
-                                    child: Icon(Icons.timer),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey.withOpacity(0.7),
-                                  hintText: preferences[2].toString(),
-                                  focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                      borderSide: BorderSide(
-                                          color: Colors.blueAccent, width: 2)),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                      borderSide: BorderSide(
-                                        width: 2,
-                                        color: Colors.blueAccent,
-                                      ))),
-                            ),
-                          ),
-                          Expanded(
-                              flex: 1,
-                              child: Text(
-                                " s",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  color: Colors.black54,
-                                ),
-                              )),
-                        ],
-                      )),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      "Dzienna liczba przypomnień:",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 30,
-                        color: Colors.blue,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  Container(
-                      margin: EdgeInsets.only(right: 10, left: 10),
-                      width: 250,
-                      child: Row(
-                        children: [
-                          Expanded(
-                              flex: 2,
-                              child: Align(
-                                  alignment: Alignment.centerRight,
-                                  child: Text(
-                                    " Dziennie: ",
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      color: Colors.black54,
-                                    ),
-                                  ))),
-                          Expanded(
-                            flex: 2,
-                            child: TextField(
-                              controller: remindsController,
-                              decoration: InputDecoration(
-                                  contentPadding:
-                                      EdgeInsets.only(top: 20, bottom: 20),
-                                  prefixIcon: Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 20, right: 20),
-                                    child: Icon(Icons.timer),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey.withOpacity(0.7),
-                                  hintText: preferences[3].toString(),
-                                  focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                      borderSide: BorderSide(
-                                          color: Colors.blueAccent, width: 2)),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                      borderSide: BorderSide(
-                                        width: 2,
-                                        color: Colors.blueAccent,
-                                      ))),
-                            ),
-                          ),
-                          Expanded(
-                              flex: 1,
-                              child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Text(
-                                    " raz/y",
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      color: Colors.black54,
-                                    ),
-                                  ))),
-                        ],
-                      )),
-                  SizedBox(
-                    height: 35,
-                  ),
-                  SizedBox(
-                    width: 200,
-                    height: 80,
-                    child: RaisedButton(
-                      color: Colors.white,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18.0),
-                          side: BorderSide(color: Colors.blue, width: 5)),
-                      onPressed: () {
-                        writeData();
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => homePage(DateTime.now(), new List(), true)),
-                        );
-                      },
-                      child: Center(
-                        child: Text(
-                          'Zatwierdź i wróć',
-                          maxLines: 2,
-                          style: TextStyle(color: Colors.blue, fontSize: 20),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                ]))));
+    return WillPopScope(
+      onWillPop: applySettings,
+      child: Scaffold(
+          body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: MediaQuery.of(context).size.height / 2,
+            collapsedHeight: MediaQuery.of(context).size.height / 10,
+            shape: ContinuousRectangleBorder(
+                borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(30),
+                    bottomRight: Radius.circular(30))),
+            forceElevated: true,
+            title: Center(
+                child: Text(
+              "Skonfiguruj pracę aplikacji",
+              style: TextStyle(color: Colors.white, fontSize: 25),
+            )),
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Image.asset(
+                "time.png",
+                color: Colors.white,
+              ),
+            ),
+          ),
+          _getSlivers(settingsTiles, context),
+        ],
+      )),
+    );
+//            child: Container(
+//                width: width,
+//                child: Column(children: <Widget>[
+//                  SizedBox(
+//                    height: height * 0.08,
+//                  ),
+//                  Container(
+//                    child: Image.asset(
+//                      "time.png",
+//                      height: 150,
+//                      width: 150,
+//                      color: Colors.blue,
+//                    ),
+//                  ),
+//                  Text(
+//                    "Zdefiniuj stopnie pilności:",
+//                    style: TextStyle(
+//                      fontSize: 30,
+//                      color: Colors.blue,
+//                      fontWeight: FontWeight.bold,
+//                    ),
+//                  ),
+//                  SizedBox(
+//                    height: 30,
+//                  ),
+//                  Text(
+//                    "Dla pilnych:",
+//                    style: TextStyle(
+//                      fontSize: 25,
+//                      color: Colors.blue,
+//                    ),
+//                  ),
+//                  SizedBox(
+//                    height: 5,
+//                  ),
+//                  urgentContainer(),
+//                  SizedBox(
+//                    height: 20,
+//                  ),
+//                  Text(
+//                    "Dla mało pilnych:",
+//                    style: TextStyle(
+//                      fontSize: 25,
+//                      color: Colors.blue,
+//                    ),
+//                  ),
+//                  SizedBox(
+//                    height: 5,
+//                  ),
+//                  notUrgentContainer(),
+//                  SizedBox(
+//                    height: 20,
+//                  ),
+//                  Text(
+//                    "Sprawdzaj pocztę co:",
+//                    style: TextStyle(
+//                      fontSize: 30,
+//                      fontWeight: FontWeight.bold,
+//                      color: Colors.blue,
+//                    ),
+//                  ),
+//                  SizedBox(
+//                    height: 5,
+//                  ),
+//                  Container(
+//                      margin: EdgeInsets.only(right: 10, left: 10),
+//                      width: 250,
+//                      child: Row(
+//                        children: [
+//                          Expanded(
+//                              flex: 2,
+//                              child: Align(
+//                                  alignment: Alignment.centerRight,
+//                                  child: FittedBox(
+//                                      fit: BoxFit.scaleDown,
+//                                      child: (Text(
+//                                        "Co: ",
+//                                        style: TextStyle(
+//                                          fontSize: 20,
+//                                          color: Colors.black54,
+//                                        ),
+//                                      ))))),
+//                          Expanded(
+//                            flex: 2,
+//                            child: TextField(
+//                              controller: monitorController,
+//                              decoration: InputDecoration(
+//                                  contentPadding:
+//                                      EdgeInsets.only(top: 20, bottom: 20),
+//                                  prefixIcon: Padding(
+//                                    padding: const EdgeInsets.only(
+//                                        left: 20, right: 20),
+//                                    child: Icon(Icons.timer),
+//                                  ),
+//                                  filled: true,
+//                                  fillColor: Colors.grey.withOpacity(0.7),
+//                                  hintText: preferences[2].toString(),
+//                                  focusedBorder: OutlineInputBorder(
+//                                      borderRadius: BorderRadius.circular(30),
+//                                      borderSide: BorderSide(
+//                                          color: Colors.blueAccent, width: 2)),
+//                                  border: OutlineInputBorder(
+//                                      borderRadius: BorderRadius.circular(20),
+//                                      borderSide: BorderSide(
+//                                        width: 2,
+//                                        color: Colors.blueAccent,
+//                                      ))),
+//                            ),
+//                          ),
+//                          Expanded(
+//                              flex: 1,
+//                              child: Text(
+//                                " s",
+//                                style: TextStyle(
+//                                  fontSize: 20,
+//                                  color: Colors.black54,
+//                                ),
+//                              )),
+//                        ],
+//                      )),
+//                  SizedBox(
+//                    height: 20,
+//                  ),
+//                  FittedBox(
+//                    fit: BoxFit.scaleDown,
+//                    child: Text(
+//                      "Dzienna liczba przypomnień:",
+//                      style: TextStyle(
+//                        fontWeight: FontWeight.bold,
+//                        fontSize: 30,
+//                        color: Colors.blue,
+//                      ),
+//                    ),
+//                  ),
+//                  SizedBox(
+//                    height: 5,
+//                  ),
+//                  containerForInterval(),
+//                  SizedBox(
+//                    height: 35,
+//                  ),
+//                  SizedBox(
+//                    width: 200,
+//                    height: 80,
+//                    child: RaisedButton(
+//                      color: Colors.white,
+//                      shape: RoundedRectangleBorder(
+//                          borderRadius: BorderRadius.circular(18.0),
+//                          side: BorderSide(color: Colors.blue, width: 5)),
+//                      onPressed: () {
+//                        writeData();
+//                        Navigator.pushReplacement(
+//                          context,
+//                          MaterialPageRoute(builder: (context) => homePage(DateTime.now(), new List(), true)),
+//                        );
+//                      },
+//                      child: Center(
+//                        child: Text(
+//                          'Zatwierdź i wróć',
+//                          maxLines: 2,
+//                          style: TextStyle(color: Colors.blue, fontSize: 20),
+//                        ),
+//                      ),
+//                    ),
+//                  ),
+//                  SizedBox(
+//                    height: 10,
+//                  ),
+//                ]))));
+  }
+
+  SliverList _getSlivers(List emailPanels, BuildContext context) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (BuildContext context, int index) {
+          return emailPanels[index];
+        },
+        childCount: emailPanels.length,
+      ),
+    );
+  }
+
+  Future<bool> applySettings(){
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+          builder: (context) => homePage(
+              DateTime.now(), new List(), true)),
+    );
   }
 
   void setTextsFromDb() {
@@ -387,6 +274,347 @@ class _TimeIntervalState extends State<TimeInterval> {
     notUrgentController.text = preferences[2].toString();
     monitorController.text = preferences[0].toString();
     remindsController.text = preferences[1].toString();
+  }
+
+  Padding settingTileForUrgency(String settingTittle) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(11),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: Offset(2, 3), // changes position of shadow
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Text(
+                settingTittle,
+                style: TextStyle(color: Colors.blue, fontSize: 30, fontWeight: FontWeight.bold),
+              ),
+              Text("Dla pilnych płatności", style: TextStyle(color: Colors.blue, fontSize: 25),),
+              urgentContainer(),
+              Text("Dla małopilnych płatności", style: TextStyle(color: Colors.blue, fontSize: 25),),
+              notUrgentContainer(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Padding settingTileForInterval(String settingTittle) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(11),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: Offset(2, 3), // changes position of shadow
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Text(
+                settingTittle,
+                style: TextStyle(color: Colors.blue, fontSize: 30, fontWeight: FontWeight.bold),
+              ),
+              containerForInterval(),
+
+            ],
+          ),
+        ),
+
+      ),
+    );
+  }
+
+  Padding dailyRemindFreqTile(String settingTittle) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(11),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: Offset(2, 3), // changes position of shadow
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Text(
+                settingTittle,
+                style: TextStyle(color: Colors.blue, fontSize: 30, fontWeight: FontWeight.bold),
+              ),
+              containerForDailyReminds()
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Padding containerForDailyReminds() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+          margin: EdgeInsets.only(right: 10, left: 10),
+          width: 250,
+          child: Row(
+            children: [
+              Expanded(
+                  flex: 2,
+                  child: Align(
+                      alignment: Alignment.centerRight,
+                      child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: (Text(
+                            "Dziennie: ",
+                            style: TextStyle(
+                              fontSize: 20,
+                              color: Colors.black54,
+                            ),
+                          ))))),
+              Expanded(
+                flex: 2,
+                child: TextField(
+                  controller: monitorController,
+                  decoration: InputDecoration(
+                      contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only(left: 20, right: 20),
+                        child: Icon(Icons.timer),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.withOpacity(0.7),
+                      hintText: preferences[2].toString(),
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide:
+                              BorderSide(color: Colors.blueAccent, width: 2)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: BorderSide(
+                            width: 2,
+                            color: Colors.blueAccent,
+                          ))),
+                ),
+              ),
+              Expanded(
+                  flex: 1,
+                  child: Text(
+                    " raz/y",
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.black54,
+                    ),
+                  )),
+            ],
+          )),
+    );
+  }
+
+  Padding containerForInterval() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+          margin: EdgeInsets.only(right: 10, left: 10),
+          width: 250,
+          child: Row(
+            children: [
+              Expanded(
+                  flex: 2,
+                  child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        " Co: ",
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.black54,
+                        ),
+                      ))),
+              Expanded(
+                flex: 2,
+                child: TextField(
+                  controller: remindsController,
+                  decoration: InputDecoration(
+                      contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only(left: 20, right: 20),
+                        child: Icon(Icons.timer),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.withOpacity(0.7),
+                      hintText: preferences[3].toString(),
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide:
+                              BorderSide(color: Colors.blueAccent, width: 2)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: BorderSide(
+                            width: 2,
+                            color: Colors.blueAccent,
+                          ))),
+                ),
+              ),
+              Expanded(
+                  flex: 1,
+                  child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        " s",
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.black54,
+                        ),
+                      ))),
+            ],
+          )),
+    );
+  }
+
+  Padding notUrgentContainer() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+          margin: EdgeInsets.only(right: 10, left: 10),
+          width: 250,
+          child: Row(
+            children: [
+              Expanded(
+                  flex: 2,
+                  child: Align(
+                      alignment: Alignment.centerRight,
+                      child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            "Więcej niż: ",
+                            style: TextStyle(
+                              fontSize: 20,
+                              color: Colors.black54,
+                            ),
+                          )))),
+              Expanded(
+                flex: 2,
+                child: TextField(
+                  controller: notUrgentController,
+                  decoration: InputDecoration(
+                      contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only(left: 20, right: 20),
+                        child: Icon(Icons.timer),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.withOpacity(0.7),
+                      hintText: preferences[1].toString(),
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide:
+                              BorderSide(color: Colors.blueAccent, width: 2)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: BorderSide(
+                            width: 2,
+                            color: Colors.blueAccent,
+                          ))),
+                ),
+              ),
+              Expanded(
+                  flex: 1,
+                  child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(" dni",
+                          style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.black54,
+                          )))),
+            ],
+          )),
+    );
+  }
+
+  Padding urgentContainer() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+          margin: EdgeInsets.only(right: 10, left: 10),
+          width: 250,
+          child: Row(
+            children: [
+              Expanded(
+                  flex: 2,
+                  child: Align(
+                      alignment: Alignment.centerRight,
+                      child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            "Mniej niż: ",
+                            style: TextStyle(
+                              fontSize: 20,
+                              color: Colors.black54,
+                            ),
+                          )))),
+              Expanded(
+                flex: 2,
+                child: TextField(
+                  controller: urgentController,
+                  decoration: InputDecoration(
+                      contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only(left: 20, right: 20),
+                        child: Icon(Icons.timer),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.withOpacity(0.7),
+                      hintText: preferences[0].toString(),
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide:
+                              BorderSide(color: Colors.blueAccent, width: 2)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: BorderSide(
+                            width: 2,
+                            color: Colors.blueAccent,
+                          ))),
+                ),
+              ),
+              Expanded(
+                  flex: 1,
+                  child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(" dni",
+                          style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.black54,
+                          )))),
+            ],
+          )),
+    );
   }
 
   Future<void> writeData() async {

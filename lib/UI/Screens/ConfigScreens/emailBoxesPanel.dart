@@ -58,7 +58,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     return WillPopScope(
-      onWillPop: askForSaving,
+      onWillPop: applySettings,
       child: Scaffold(
         body: CustomScrollView(
           slivers: [
@@ -131,16 +131,6 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
                   },
                 ),
               ),
-//              Expanded(
-//                flex: 2,
-//                child: IconButton(
-//                  color: Colors.blue,
-//                  icon: Center(child: Icon(Icons.edit, size: 30.0)),
-//                  onPressed: () {
-//                    displayDialog(context,"Edytuj adres email");
-//                  },
-//                ),
-//              ),
             ],
           ),
         ),
@@ -148,73 +138,13 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     );
   }
 
-  Future<bool> askForSaving() {
-    return showDialog(
-          context: context,
-          builder: (context) => new AlertDialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(Constants.padding)),
-            title: Text('Opuszczasz ekran ustawień'),
-            content: Container(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(20))),
-              height: MediaQuery.of(context).size.height / 10.8,
-              child: Column(
-                children: [
-                  new Text('Uwzględnić dodane adresy?'),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: new Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => Navigator.of(context).pop(false),
-                            child: Container(
-                                decoration: BoxDecoration(
-                                    color: Colors.lightBlue,
-                                    borderRadius: BorderRadius.all(Radius.circular(20))),
-                                child: Center(
-                                    child: Text(
-                                  "NIE",
-                                  style: TextStyle(
-                                      fontSize: 24, color: Colors.white),
-                                ))),
-                          ),
-                        ),
-                        Expanded(
-                          child: Container(
-                            width: 20,
-                          ),
-                        ),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => homePage(
-                                      DateTime.now(), new List(), true)),
-                            ),
-                            child: Container(
-                                decoration: BoxDecoration(
-                                    color: Colors.lightBlue,
-                                    borderRadius: BorderRadius.all(Radius.circular(20))),
-                                child: Center(
-                                    child: Text("TAK",
-                                        style: TextStyle(
-                                            fontSize: 24,
-                                            color: Colors.white)))),
-                          ),
-                        )
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            ),
-          ),
-        ) ??
-        false;
+  Future<bool> applySettings(){
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+          builder: (context) => homePage(
+              DateTime.now(), new List(), true)),
+    );
   }
 
   SliverList _getSlivers(List emailPanels, BuildContext context) {
