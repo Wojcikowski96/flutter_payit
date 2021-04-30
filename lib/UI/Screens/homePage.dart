@@ -5,21 +5,21 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_payit/JavaDownloaderInvoke/downloader.dart';
-import 'package:flutter_payit/Objects/notificationItem.dart';
-import 'package:flutter_payit/Objects/warningNotification.dart';
-import 'package:flutter_payit/UI/HelperClasses/homeScreenLayout.dart';
-import 'package:flutter_payit/UI/HelperClasses/mainUI.dart';
-import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
-import 'package:flutter_payit/Utils/utils.dart';
+import 'package:payit/JavaDownloaderInvoke/downloader.dart';
+import 'package:payit/Objects/notificationItem.dart';
+import 'package:payit/Objects/warningNotification.dart';
+import 'package:payit/UI/HelperClasses/homeScreenLayout.dart';
+import 'package:payit/UI/HelperClasses/mainUI.dart';
+import 'package:payit/UI/HelperClasses/uiElements.dart';
+import 'package:payit/Utils/utils.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider_ex/path_provider_ex.dart';
-import 'package:flutter_payit/CalendarUtils/calendarUtils.dart';
-import 'package:flutter_payit/Database/databaseOperations.dart';
-import 'package:flutter_payit/Objects/invoice.dart';
-import 'package:flutter_payit/Utils/userOperationsOnEmails.dart';
-import 'package:flutter_payit/PdfParser/pdfParser.dart';
+import 'package:payit/CalendarUtils/calendarUtils.dart';
+import 'package:payit/Database/databaseOperations.dart';
+import 'package:payit/Objects/invoice.dart';
+import 'package:payit/Utils/userOperationsOnEmails.dart';
+import 'package:payit/PdfParser/pdfParser.dart';
 import 'package:path/path.dart';
 import 'package:watcher/watcher.dart';
 import "dart:collection";
@@ -43,7 +43,7 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
   double paymentAmount;
   String categoryName;
 
-  static const methodChannel = const MethodChannel("com.example.flutter_payit");
+  static const methodChannel = const MethodChannel("com.example.payit");
 
   Map<DateTime, List> paymentEvents = new Map();
 
@@ -510,7 +510,7 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
 
   void startServiceInPlatform() async {
     if (Platform.isAndroid) {
-      //var methodChannel = MethodChannel("com.example.flutter_payit");
+      //var methodChannel = MethodChannel("com.example.payit");
       String data = await methodChannel.invokeMethod("startService");
       //print("Serwis odpal się"+ data);
     }

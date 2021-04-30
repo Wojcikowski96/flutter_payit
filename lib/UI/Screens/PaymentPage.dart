@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_payit/Objects/invoice.dart';
-import 'package:flutter_payit/UI/Screens/paymentDataWidget.dart';
+import 'package:payit/Objects/invoice.dart';
+import 'package:payit/UI/Screens/paymentDataWidget.dart';
 
 class PaymentPage extends StatelessWidget {
   final PageController pageController;

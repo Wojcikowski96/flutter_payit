@@ -1,4 +1,4 @@
-package com.example.flutter_payit;
+package com.example.payit;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

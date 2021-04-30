@@ -1,14 +1,10 @@
-package com.example.flutter_payit;
+package com.example.payit;
 
-import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,9 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.Normalizer;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -43,8 +37,6 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
 
 import javax.mail.Address;
 import javax.mail.AuthenticationFailedException;
@@ -65,7 +57,7 @@ import javax.mail.internet.MimeUtility;
 
 public class MainActivity extends FlutterActivity {
     public static final int NOTIFICATION_ID = 666;
-    private static final String CHANNEL = "com.example.flutter_payit";
+    private static final String CHANNEL = "com.example.payit";
 
     private Intent forService;
     private MethodChannel methodChannel;

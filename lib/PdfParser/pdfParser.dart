@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:core';
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:flutter_payit/Utils/utils.dart';
+import 'package:payit/Utils/utils.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';

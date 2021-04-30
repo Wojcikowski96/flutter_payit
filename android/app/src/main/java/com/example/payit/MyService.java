@@ -1,4 +1,4 @@
-package com.example.flutter_payit;
+package com.example.payit;
 
 import android.app.Service;
 import android.content.Intent;
@@ -7,8 +7,6 @@ import android.os.IBinder;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-
-import io.flutter.view.FlutterMain;
 
 public class MyService extends Service {
 

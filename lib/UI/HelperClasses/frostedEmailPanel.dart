@@ -3,8 +3,8 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_payit/Objects/notificationItem.dart';
-import 'package:flutter_payit/UI/HelperClasses/userEmailsStatusPanel.dart';
+import 'package:payit/Objects/notificationItem.dart';
+import 'package:payit/UI/HelperClasses/userEmailsStatusPanel.dart';
 
 class FrostedEmailPanel extends StatefulWidget {
   List<List<dynamic>> emailSettings;
@@ -23,7 +23,7 @@ class _FrostedEmailPanelState extends State<FrostedEmailPanel>
 
   int animatedHeight;
 
-  static const methodChannel = const MethodChannel("com.example.flutter_payit");
+  static const methodChannel = const MethodChannel("com.example.payit");
   List<NotificationItem> notificationItems = new List();
 
   @override

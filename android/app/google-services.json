@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:134130269608:android:1fac17c41468806ebc319d",
         "android_client_info": {
-          "package_name": "com.example.flutter_payit"
+          "package_name": "com.example.payit"
         }
       },
       "oauth_client": [

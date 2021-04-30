@@ -2,16 +2,16 @@ import 'dart:core';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_payit/Database/databaseOperations.dart';
-import 'package:flutter_payit/LifeCycleHandler/lifeCycle.dart';
-import 'package:flutter_payit/Objects/notificationItem.dart';
-import 'package:flutter_payit/PdfParser/pdfParser.dart';
-import 'package:flutter_payit/UI/HelperClasses/userEmailsStatusPanel.dart';
-import 'package:flutter_payit/UI/Screens/PaymentPage.dart';
-import 'package:flutter_payit/Utils/userOperationsOnEmails.dart';
-import 'package:flutter_payit/Utils/utils.dart';
-import 'package:flutter_payit/UI/HelperClasses/calendarWidget.dart';
-import 'package:flutter_payit/Objects/invoice.dart';
+import 'package:payit/Database/databaseOperations.dart';
+import 'package:payit/LifeCycleHandler/lifeCycle.dart';
+import 'package:payit/Objects/notificationItem.dart';
+import 'package:payit/PdfParser/pdfParser.dart';
+import 'package:payit/UI/HelperClasses/userEmailsStatusPanel.dart';
+import 'package:payit/UI/Screens/PaymentPage.dart';
+import 'package:payit/Utils/userOperationsOnEmails.dart';
+import 'package:payit/Utils/utils.dart';
+import 'package:payit/UI/HelperClasses/calendarWidget.dart';
+import 'package:payit/Objects/invoice.dart';
 import 'package:intl/intl.dart';
 
 class CalendarView extends StatefulWidget {

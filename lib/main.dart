@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_payit/IsUserLoggedChecker/MySharedPreferences.dart';
-import 'package:flutter_payit/UI/Screens/homePage.dart';
+import 'package:payit/IsUserLoggedChecker/MySharedPreferences.dart';
+import 'package:payit/UI/Screens/homePage.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:flutter_payit/UI/Screens/loginScreen.dart';
+import 'package:payit/UI/Screens/loginScreen.dart';
 import 'package:bringtoforeground/bringtoforeground.dart';
 
 String selectedNotificationPayload;
@@ -14,7 +14,7 @@ Future<void> main() async {
 
 void launchApp(DateTime date) {
   WidgetsFlutterBinding.ensureInitialized();
-  initializeDateFormatting().then((_) => runApp(MyApp(date)));
+  initializeDateFormatting().then((_) => runApp(MyApp(date),));
 }
 
 class MyApp extends StatefulWidget {
@@ -28,7 +28,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  static const platform = const MethodChannel("com.example.flutter_payit");
+  static const platform = const MethodChannel("com.example.payit");
   bool isLoggedIn = false;
 
   @override
@@ -51,6 +51,6 @@ class _MyAppState extends State<MyApp> {
         theme: ThemeData(
           primarySwatch: Colors.lightBlue,
         ),
-        home: isLoggedIn ? homePage(DateTime.now(),new List(), true) : LoginPage());
+        home: isLoggedIn ? homePage(DateTime.now(), new List(), true) : LoginPage());
   }
 }

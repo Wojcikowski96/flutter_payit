@@ -1,4 +1,4 @@
-package com.example.flutter_payit;
+package com.example.payit;
 
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;

@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_payit/Objects/invoice.dart';
+import 'package:payit/Objects/invoice.dart';
 
 class Utils{
   Color setUrgencyColorBasedOnDate(DateTime date, List<int> preferences) {

@@ -3,10 +3,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter_payit/Utils/userOperationsOnEmails.dart';
+import 'package:payit/Utils/userOperationsOnEmails.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-import 'package:flutter_payit/UI/HelperClasses/dialog.dart';
+import 'package:payit/UI/HelperClasses/dialog.dart';
 import 'loginScreen.dart';
 
 

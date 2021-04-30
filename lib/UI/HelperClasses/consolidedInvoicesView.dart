@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_payit/Database/databaseOperations.dart';
-import 'package:flutter_payit/Objects/invoice.dart';
-import 'package:flutter_payit/Objects/notificationItem.dart';
-import 'package:flutter_payit/UI/Screens/paymentDataWidget.dart';
+import 'package:payit/Database/databaseOperations.dart';
+import 'package:payit/Objects/invoice.dart';
+import 'package:payit/Objects/notificationItem.dart';
+import 'package:payit/UI/Screens/paymentDataWidget.dart';
 
 import 'consolidedEventsView.dart';
 

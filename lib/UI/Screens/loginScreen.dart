@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
-import 'package:flutter_payit/IsUserLoggedChecker/MySharedPreferences.dart';
-import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
+import 'package:payit/IsUserLoggedChecker/MySharedPreferences.dart';
+import 'package:payit/UI/HelperClasses/uiElements.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'homePage.dart';
 import 'registerPage.dart';

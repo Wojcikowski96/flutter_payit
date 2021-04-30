@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_payit/constrants.dart';
+import 'package:payit/constrants.dart';
 
 class MyDialog extends StatefulWidget {
   final String title, descriptions, text, img;

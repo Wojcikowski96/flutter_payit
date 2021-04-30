@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_payit/Objects/warningNotification.dart';
-import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
-import 'file:///C:/Users/wojci/AndroidStudioProjects/flutter_payit/lib/UI/Screens/ConfigScreens/emailBoxesPanel.dart';
-import 'package:flutter_payit/UI/Screens/ConfigScreens/trustedList.dart';
+import 'package:payit/UI/Screens/ConfigScreens/emailBoxesPanel.dart';
+import 'package:payit/Objects/warningNotification.dart';
+import 'package:payit/UI/HelperClasses/uiElements.dart';
+import 'package:payit/UI/Screens/ConfigScreens/trustedList.dart';
 import 'package:shimmer/shimmer.dart';
 
 class MainUI {

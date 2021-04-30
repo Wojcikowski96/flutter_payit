@@ -1,7 +1,4 @@
-package com.example.flutter_payit;
-
-import android.os.Handler;
-import android.os.Looper;
+package com.example.payit;
 
 import androidx.annotation.NonNull;
 

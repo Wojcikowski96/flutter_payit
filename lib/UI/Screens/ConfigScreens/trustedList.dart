@@ -1,12 +1,12 @@
 
 import 'package:flutter/material.dart';
-import 'package:flutter_payit/Database/databaseOperations.dart';
+import 'package:payit/Database/databaseOperations.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:flutter_payit/constrants.dart';
-import 'package:flutter_payit/UI/HelperClasses/dialog.dart';
-import 'package:flutter_payit/UI/Screens/homePage.dart';
+import 'package:payit/constrants.dart';
+import 'package:payit/UI/HelperClasses/dialog.dart';
+import 'package:payit/UI/Screens/homePage.dart';
 
 class TrustedListPanel extends StatefulWidget {
   @override

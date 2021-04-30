@@ -1,8 +1,7 @@
-package com.example.flutter_payit;
+package com.example.payit;
 
 import android.app.PendingIntent;
 import android.content.Context;
-import android.media.RingtoneManager;
 import android.os.Build;
 import android.provider.Settings;
 

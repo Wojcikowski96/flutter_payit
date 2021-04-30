@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_payit/Objects/invoice.dart';
-import 'package:flutter_payit/UI/Screens/homePage.dart';
-import 'package:flutter_payit/UI/Screens/paymentDataWidget.dart';
+import 'package:payit/Objects/invoice.dart';
+import 'package:payit/UI/Screens/homePage.dart';
+import 'package:payit/UI/Screens/paymentDataWidget.dart';
 
 
 class ExpandableListViewItem extends StatefulWidget {

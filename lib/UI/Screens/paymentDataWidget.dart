@@ -1,8 +1,8 @@
 
 import 'package:flutter/material.dart';
-import 'package:flutter_payit/UI/HelperClasses/dialog.dart';
-import 'package:flutter_payit/UI/Screens/pdfView.dart';
-import 'package:flutter_payit/Objects/invoice.dart';
+import 'package:payit/UI/HelperClasses/dialog.dart';
+import 'package:payit/UI/Screens/pdfView.dart';
+import 'package:payit/Objects/invoice.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class PaymentWidget {

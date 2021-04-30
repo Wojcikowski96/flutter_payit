@@ -1,8 +1,8 @@
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_payit/Objects/invoice.dart';
-import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
-import 'package:flutter_payit/Utils/utils.dart';
+import 'package:payit/Objects/invoice.dart';
+import 'package:payit/UI/HelperClasses/uiElements.dart';
+import 'package:payit/Utils/utils.dart';
 
 class CalendarUtils{
   Map<DateTime, List> generatePaymentEvents(List<Invoice> invoicesInfo, List<int> preferences) {

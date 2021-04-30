@@ -3,13 +3,13 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_payit/IsUserLoggedChecker/MySharedPreferences.dart';
-import 'package:flutter_payit/Main/main.dart';
-import 'package:flutter_payit/Objects/invoice.dart';
-import 'package:flutter_payit/Objects/warningNotification.dart';
-import 'package:flutter_payit/UI/Screens/ConfigScreens/emailBoxesPanel.dart';
-import 'package:flutter_payit/UI/Screens/ConfigScreens/timeInterval.dart';
-import 'package:flutter_payit/UI/Screens/ConfigScreens/trustedList.dart';
+import 'package:payit/IsUserLoggedChecker/MySharedPreferences.dart';
+import 'file:///C:/Users/wojci/AndroidStudioProjects/flutter_payit/lib/main.dart';
+import 'package:payit/Objects/invoice.dart';
+import 'package:payit/Objects/warningNotification.dart';
+import 'package:payit/UI/Screens/ConfigScreens/emailBoxesPanel.dart';
+import 'package:payit/UI/Screens/ConfigScreens/timeInterval.dart';
+import 'package:payit/UI/Screens/ConfigScreens/trustedList.dart';
 
 import 'consolidedEventsView.dart';
 

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class LifecycleWatcher extends StatefulWidget {
-  static const methodChannel = const MethodChannel("com.example.flutter_payit");
+  static const methodChannel = const MethodChannel("com.example.payit");
   @override
   _LifecycleWatcherState createState() => _LifecycleWatcherState();
 }

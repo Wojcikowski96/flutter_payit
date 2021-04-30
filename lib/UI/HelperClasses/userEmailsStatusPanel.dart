@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_payit/Objects/notificationItem.dart';
+import 'package:payit/Objects/notificationItem.dart';
 
 class UserEmailsStatusPanel extends StatefulWidget {
   List<List<dynamic>> emailSettings;

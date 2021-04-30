@@ -1,4 +1,4 @@
-package com.example.flutter_payit;
+package com.example.payit;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -11,7 +11,6 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 
 public class AccessTokenFromRefreshToken {

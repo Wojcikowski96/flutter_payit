@@ -2,13 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_payit/UI/HelperClasses/uiElements.dart';
+import 'package:payit/UI/HelperClasses/uiElements.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
-import 'package:flutter_payit/Database/databaseOperations.dart';
+import 'package:payit/Database/databaseOperations.dart';
 import 'homePage.dart';
-import 'package:flutter_payit/Objects/invoice.dart';
+import 'package:payit/Objects/invoice.dart';
 
 class PdfView extends StatefulWidget {
   Invoice invoice;
