@@ -38,14 +38,15 @@ class DatabaseOperations {
   }
 
   void addUserEmailToDatabase(String emailKey, String email,
-      String emailPassword, List<String> emailConfig, String username) {
+      String emailPassword, List<String> emailConfig, String username, Future <String> codeKey) {
     DBRef.child('Users').child(username).child('myEmails').child(emailKey).set({
       "username": email,
       "password": emailPassword,
       "hostname": emailConfig[2],
       "port": emailConfig[3],
       "protocol": emailConfig[4],
-      "lastUID": 0
+      "lastUID": 0,
+      "access_token": codeKey
     });
   }
 
@@ -91,6 +92,7 @@ class DatabaseOperations {
             values['port'],
             values['protocol'],
             values['lastUID'],
+            values['access_token'],
             key));
       });
     }

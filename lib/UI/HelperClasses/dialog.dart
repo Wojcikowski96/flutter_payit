@@ -55,7 +55,8 @@ class _MyDialogState extends State<MyDialog> {
                 SizedBox(height: 20,),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Text(widget.descriptions, style: TextStyle(fontSize: 20,),
+                  child: Text(
+                      widget.descriptions, style: TextStyle(fontSize: 20,),
                       textAlign: TextAlign.center
                   ),
                 ),
@@ -66,8 +67,10 @@ class _MyDialogState extends State<MyDialog> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     color: Colors.blue,
-                    onPressed: () => Navigator.pop(context, false), // passing false
-                    child: Text(widget.text, style: TextStyle(color: Colors.white),),
+                    onPressed: () => Navigator.pop(context, false),
+                    // passing false
+                    child: Text(
+                      widget.text, style: TextStyle(color: Colors.white),),
                   ),
                 )
               ],
@@ -75,4 +78,4 @@ class _MyDialogState extends State<MyDialog> {
           ),
         ));
   }
-}
+  }

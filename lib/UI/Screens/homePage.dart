@@ -105,6 +105,8 @@ class _homePageState extends State<homePage> with TickerProviderStateMixin {
       preferences = await DatabaseOperations().getUserPrefsFromDB(username);
       generateDirectory();
       emailSettings = await UserOperationsOnEmails().getEmailSettings(username);
+      print("Zawartość nowego emailsettings");
+      print(emailSettings);
       //notificationItems = populateNotificationItemsList(emailSettings);
       //methodChannel.setMethodCallHandler(javaMethod);
       trustedEmails =

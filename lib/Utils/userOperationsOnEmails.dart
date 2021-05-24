@@ -1,6 +1,11 @@
+
 import 'package:enough_mail/discover/discover.dart';
 import 'package:firebase_database/firebase_database.dart';
-
+import 'package:flutter/cupertino.dart';
+import 'package:payit/UI/HelperClasses/uiElements.dart';
+//import 'package:payit/Utils/OAuth2KeyGenerator.dart';
+//import 'package:url_launcher/url_launcher.dart';
+//import 'dart:html' as html;
 class UserOperationsOnEmails {
   Future<List<List<dynamic>>> getEmailSettings(String username) async {
     final DBRef = FirebaseDatabase.instance.reference();
@@ -20,6 +25,7 @@ class UserOperationsOnEmails {
           values['hostname'].toString(),
           values['port'].toString(),
           values['protocol'].toString(),
+          values['codeKey'],
           values['lastUID']
         ];
         emailSettings.add(singleEmailSettings);
@@ -52,7 +58,7 @@ class UserOperationsOnEmails {
     return trustedEmailsProps;
   }
 
-  Future<List<String>> discoverSettings(String email, String password) async {
+  Future<List<String>> discoverSettings(String email, String password, BuildContext context) async {
     var config = await Discover.discover(email, isLogEnabled: true);
     List<String> data = new List();
     data.add(email);
@@ -73,11 +79,19 @@ class UserOperationsOnEmails {
         data.add((provider.preferredIncomingServer.port).toString());
         data.add(provider.preferredIncomingServer.type.toString());
       }
+
       print("Data for downloader:");
       print(data);
       return data;
     }
   }
+//  launchURL(String url) async {
+//    if (await canLaunch(url)) {
+//      await launch(url, forceWebView: true);
+//    } else {
+//      throw 'Could not launch $url';
+//    }
+//  }
 
   bool ifEmailIsOnet(String email) {
     List<String> onetDomains = [

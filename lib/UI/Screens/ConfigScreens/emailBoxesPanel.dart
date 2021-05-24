@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:core';
 import 'package:flutter/material.dart';
 import 'package:payit/Objects/userEmail.dart';
 import 'package:payit/UI/HelperClasses/dialog.dart';
 import 'package:payit/UI/HelperClasses/uiElements.dart';
+import 'package:payit/Utils/OAuth2KeyGenerator.dart';
 import 'package:payit/Utils/userOperationsOnEmails.dart';
 import 'package:payit/Utils/userOperationsOnEmails.dart';
 import 'package:payit/Utils/userOperationsOnEmails.dart';
@@ -13,6 +15,7 @@ import 'package:payit/constrants.dart';
 import 'package:payit/Database/databaseOperations.dart';
 import 'package:payit/UI/HelperClasses/dialog.dart';
 import 'package:payit/UI/Screens/homePage.dart';
+import 'package:http/http.dart' as http;
 
 class EmailBoxesPanel extends StatefulWidget {
   @override
@@ -26,14 +29,17 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
   final TextEditingController emailHostController = new TextEditingController();
   final TextEditingController emailPortController = new TextEditingController();
   final TextEditingController emailTypeController = new TextEditingController();
+  final TextEditingController URLController = new TextEditingController();
+  final TextEditingController CodeController = new TextEditingController();
   var storage = FlutterSecureStorage();
   String username = "JohnDoe", password = "qwerty";
   List<Padding> emailPanels = new List();
   List<String> userEmails = new List();
   List<String> emailKeys = new List();
+  String codeFromJson;
   final DBRef = FirebaseDatabase.instance.reference();
   bool isSwitched = false;
-
+  bool isEmailKeyNeeded = false;
   @override
   void initState() {
     super.initState();
@@ -92,7 +98,9 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
           backgroundColor: Colors.blue,
           child: Icon(Icons.add),
           onPressed: () {
-            displayDialog(context, "Dodaj swój e-mail");
+            URLController.text = OAuth2KeyGenerator().constructAuthorizationURL();
+            displayDialog(URLController,context, "Dodaj swój e-mail");
+
           },
         ),
       ),
@@ -183,7 +191,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     return emailPanels;
   }
 
-  prepareListsForDrawing() async {
+  prepareListsForDrawing(Future<String> requestForCode) async {
     String email = emailController.text;
     String emailPassword = emailPasswordController.text;
     String emailHostName = emailHostController.text;
@@ -226,7 +234,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     }
 
     DatabaseOperations().addUserEmailToDatabase(
-        emailKey, email, emailPassword, emailConfig, username);
+        emailKey, email, emailPassword, emailConfig, username, requestForCode);
 
     List<Padding> tempEmailPanels = emailPanels;
     tempEmailPanels.add(emailPanel(email, emailKey));
@@ -275,8 +283,8 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     return emailAlreadyExists;
   }
 
-  void displayDialog(BuildContext context, String title) => showDialog(
-        context: context,
+  void displayDialog(TextEditingController URLController, BuildContext context, String title) => showDialog(
+    context: context,
         builder: (context) => AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(Constants.padding),
@@ -336,6 +344,81 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
                               borderRadius: BorderRadius.circular(30),
                               borderSide:
                                   BorderSide(color: Colors.grey, width: 2)),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide(
+                                width: 2,
+                                color: Colors.grey,
+                              ))),
+                    ),
+                    SizedBox(height: 25),
+                    TextField(
+                      controller: emailPasswordController,
+                      decoration: InputDecoration(
+                          contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.only(left: 20, right: 20),
+                            child: Icon(Icons.person_outline),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey.withOpacity(0.7),
+                          hintText: "Hasło do maila",
+                          focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30),
+                              borderSide:
+                              BorderSide(color: Colors.grey, width: 2)),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide(
+                                width: 2,
+                                color: Colors.grey,
+                              ))),
+                    ),
+                    Column(
+                      children: [
+                        SizedBox(width: MediaQuery.of(context).size.width/5, height: MediaQuery.of(context).size.height/5,child: Image.asset("gmaillogo.png")),
+                        FittedBox(fit: BoxFit.fill, child: Text("Jeśli dodajesz konto g-mail:", style: TextStyle(fontSize: 30, color: Colors.blue), maxLines: 1,)),
+                      ],
+                    ),
+                    SizedBox(height: 25),
+                    TextField(
+                      controller: URLController,
+                      decoration: InputDecoration(
+                          contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.only(left: 20, right: 20),
+                            child: Icon(Icons.person_outline),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey.withOpacity(0.7),
+                          hintText: "Hasło do maila",
+                          focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30),
+                              borderSide:
+                              BorderSide(color: Colors.grey, width: 2)),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide(
+                                width: 2,
+                                color: Colors.grey,
+                              ))),
+                    ),
+                    SizedBox(height: 25),
+                    TextField(
+                      controller: CodeController,
+                      decoration: InputDecoration(
+                          contentPadding: EdgeInsets.only(top: 20, bottom: 20),
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.only(left: 20, right: 20),
+                            child: Icon(Icons.person_outline),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey.withOpacity(0.7),
+                          hintText: "Wpisz kod",
+                          focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30),
+                              borderSide:
+                              BorderSide(color: Colors.grey, width: 2)),
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: BorderSide(
@@ -483,7 +566,10 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
                         color: Colors.blue,
                         onPressed: () {
                           if (!checkIfEmailsTheSame(emailController.text))
-                            addEmail(context);
+                           {
+                             addEmail(context, requestForCode(CodeController.text));
+
+                           }
                           else {
                             Fluttertoast.showToast(
                                 msg: 'Taki mail jest już zdefiniowany',
@@ -513,8 +599,11 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
         .showLoaderDialog(context, "Odkrywam ustawienia...", true);
 
     List<String> emailParams =
-        await UserOperationsOnEmails().discoverSettings(email, password);
+        await UserOperationsOnEmails().discoverSettings(email, password, context);
+    if(!CodeController.text.isEmpty){
+      emailParams.add(CodeController.text);
 
+    }
     Navigator.pop(context);
 
     setState(() {
@@ -524,7 +613,7 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
     });
   }
 
-  void addEmail(BuildContext context) {
+  void addEmail(BuildContext context, Future<String> requestForCode) {
     print("Username " + username);
     print(emailController.text);
     print(emailPasswordController.text);
@@ -543,7 +632,30 @@ class _EmailBoxesPanelState extends State<EmailBoxesPanel> {
           textColor: Colors.white);
     } else {
       Navigator.pop(context, false);
-      prepareListsForDrawing();
+      prepareListsForDrawing(requestForCode);
+    }
+  }
+
+  Future <String> requestForCode(String code) async{
+    const requestURL = 'https://accounts.google.com/o/oauth2/token';
+
+    var res = await http.post(requestURL,
+        body: jsonEncode(<String, dynamic>{
+          "client_id": "134130269608-orkfln10pvuof63jf6qcllu8u3o91q4c.apps.googleusercontent.com",
+          "client_secret": "YJqoPIPXo5A79WmhGVZr-UUp",
+          "code": code,
+          "redirect_uri": "urn:ietf:wg:oauth:2.0:oob",
+          "grant_type": "authorization_code",
+          "scope": "https://mail.google.com/"
+        }),
+    );
+    if (res.statusCode == 200) {
+      var jsonResponse = json.decode(res.body);
+      print("Response json");
+      print(jsonResponse);
+      return jsonResponse['access_token'];
+    }else{
+      print("Request nie zadziałał");
     }
   }
 }

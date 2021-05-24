@@ -88,6 +88,7 @@ public class MainActivity extends FlutterActivity {
                     String host = methodCall.argument("host");
                     String port = methodCall.argument("port");
                     String protocol = methodCall.argument("protocol");
+                    String codeKey = methodCall.argument("codeKey");
                     List<String> trustedEmails = methodCall.argument("trustedEmails");
                     String path = methodCall.argument("path");
                     String username = methodCall.argument("username");
@@ -103,7 +104,7 @@ public class MainActivity extends FlutterActivity {
 
                                 System.out.println("UID z bazy "+UID);
                                 if (threadMap.get(emailAddress)==null || !threadMap.get(emailAddress).isAlive()) {
-                                    DownloadThread thread = new DownloadThread(host, port, emailAddress, password, protocol, UID, trustedEmails, path, username, MainActivity.this);
+                                    DownloadThread thread = new DownloadThread(host, port, emailAddress, password, protocol, codeKey, UID, trustedEmails, path, username, MainActivity.this);
                                     thread.start();
                                     threadMap.put(emailAddress,thread);
                                 }
@@ -184,7 +185,7 @@ public class MainActivity extends FlutterActivity {
         }
     }
 
-    public void downloadEmailAttachments(String host, String port, String emailAddress, String password, String protocol, int UID, List<String> trustedEmails, String path, String username, Context context) {
+    public void downloadEmailAttachments(String host, String port, String emailAddress, String password, String protocol, String codeKey, int UID, List<String> trustedEmails, String path, String username, Context context) {
 
         File tempDir = new File(path.replaceAll("invoicesPDF","Temp"));
         tempDir.mkdirs();
@@ -200,18 +201,19 @@ public class MainActivity extends FlutterActivity {
         System.setProperty("mail.mime.decodeparameters", "false");
 
         String protocolPart = getProtocolType(protocol);
-        Properties properties = generateProperties(host, port, protocolPart);
+        Properties properties = generateProperties(host, port, protocolPart, emailAddress);
 
         Session session = Session.getInstance(properties, new Authenticator() {
             public PasswordAuthentication getPasswordAuthentication() {
+                if(!emailAddress.contains("gmail"))
                 return new PasswordAuthentication(emailAddress, password);
+                else return null;
             }
         });
 
         try {
             // connects to the message store
-            Store store = session.getStore(protocolPart);
-            store.connect(emailAddress, password);
+            Store store = getStore(emailAddress, password, protocolPart, session, codeKey);
 
             // opens the inbox folder
             Folder folderInbox = store.getFolder("INBOX");
@@ -219,7 +221,6 @@ public class MainActivity extends FlutterActivity {
             folderInbox.open(Folder.READ_ONLY);
 
             ref = FirebaseDatabase.getInstance().getReference().child("Users").child(username).child("myEmails").child(emailAddress.replace(".", "")).child("lastUID");
-
             // fetches new messages from server
             Message[] arrayMessages = ((UIDFolder) folderInbox).getMessagesByUID(UID + 1, UIDFolder.MAXUID);
 
@@ -332,21 +333,41 @@ public class MainActivity extends FlutterActivity {
 
     }
 
+    private Store getStore(String emailAddress, String password, String protocolPart, Session session, String codeKey) throws MessagingException {
+        if (!emailAddress.contains("gmail")) {
+            Store store = session.getStore(protocolPart);
+            store.connect(emailAddress, password);
+            return store;
+        } else {
+            Store store = session.getStore("imap");
+            store.connect("imap.gmail.com", emailAddress,codeKey);
+            return store;
+        }
+
+    }
+
     @NotNull
-    private Properties generateProperties(String host, String port, String protocolPart) {
+    private Properties generateProperties(String host, String port, String protocolPart, String emailAddress) {
         //String oauthToken = AccessTokenFromRefreshToken.getAccessToken();
         //System.out.println("OauthToken" + oauthToken);
         Properties properties = new Properties();
+        if(!emailAddress.contains("gmail")){
 
-        // server setting
-        properties.put(String.format("mail.%s.host", protocolPart), host);
-        properties.put(String.format("mail.%s.port", protocolPart), port);
-        properties.put(String.format("mail.%s.auth", protocolPart), "true");
+       // server setting
+       properties.put(String.format("mail.%s.host", protocolPart), host);
+       properties.put(String.format("mail.%s.port", protocolPart), port);
+       properties.put(String.format("mail.%s.auth", protocolPart), "true");
 
-        // SSL setting
-        properties.put(String.format("mail.ssl.%s.enable", protocolPart), "true");
+       // SSL setting
+       properties.put(String.format("mail.ssl.%s.enable", protocolPart), "true");
+   }else{
+            properties.put("mail.imap.ssl.enable", "true"); // required for Gmail
+            properties.put("mail.imap.auth.mechanisms", "XOAUTH2");
+   }
         return properties;
     }
+
+
 
     @NotNull
     private String getProtocolType(String protocol) {
@@ -421,17 +442,18 @@ public class MainActivity extends FlutterActivity {
 
     public class DownloadThread extends Thread {
 
-        private String host, port, emailAddress, password, protocol, path, username;
+        private String host, port, emailAddress, password, protocol, path, username, codeKey;
         private int UID;
         private List<String> trustedEmails;
         private Context context;
 
-        DownloadThread(String host, String port, String emailAddress, String password, String protocol, Integer UID, List<String> trustedEmails, String path, String username, Context context) {
+        DownloadThread(String host, String port, String emailAddress, String password, String protocol, String codeKey, Integer UID, List<String> trustedEmails, String path, String username, Context context) {
             this.host=host;
             this.port = port;
             this.emailAddress=emailAddress;
             this.password=password;
             this.protocol=protocol;
+            this.codeKey=codeKey;
             this.UID =UID;
             this.trustedEmails=trustedEmails;
             this.path=path;
@@ -440,7 +462,7 @@ public class MainActivity extends FlutterActivity {
         }
 
         public void run() {
-                downloadEmailAttachments(host, port, emailAddress, password, protocol, UID, trustedEmails, path, username, context);
+                downloadEmailAttachments(host, port, emailAddress, password, protocol, codeKey, UID, trustedEmails, path, username, context);
         }
     }
 

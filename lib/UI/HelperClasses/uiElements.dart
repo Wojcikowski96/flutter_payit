@@ -10,10 +10,12 @@ import 'package:payit/Objects/warningNotification.dart';
 import 'package:payit/UI/Screens/ConfigScreens/emailBoxesPanel.dart';
 import 'package:payit/UI/Screens/ConfigScreens/timeInterval.dart';
 import 'package:payit/UI/Screens/ConfigScreens/trustedList.dart';
+import 'package:payit/Utils/OAuth2KeyGenerator.dart';
 
 import 'consolidedEventsView.dart';
 
 class UiElements {
+  final TextEditingController URLController = new TextEditingController();
   SizedBox drawButton(
       double width,
       double height,
@@ -89,6 +91,28 @@ class UiElements {
             padding: const EdgeInsets.only(left: 20, right: 20),
             child: Icon(icon),
           ),
+          filled: true,
+          fillColor: fillColor,
+          hintText: hintText,
+          focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide(color: Colors.grey, width: 2)),
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide(
+                width: 2,
+                color: Colors.grey,
+              ))),
+    );
+  }
+
+  TextField myCustomTextfieldForOAuth(TextEditingController controller, String hintText,
+      Color fillColor, String content) {
+    controller.text = content;
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+          contentPadding: EdgeInsets.only(top: 20, bottom: 20),
           filled: true,
           fillColor: fillColor,
           hintText: hintText,
@@ -199,7 +223,39 @@ class UiElements {
     );
   }
 
-  Opacity notificationsNumIcon(int notificationsLength) {
+  Dialog showDialogForOAuth(BuildContext context) {
+    return Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        elevation: 5,
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(0.0),
+          child: Container(
+            height: 500,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.blue,
+                        width: 4,
+                      ),
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.all(Radius.circular(10))),
+                  child: Text(
+                    "Skopiuj poniższy link aby uzyskać klucz:",
+                    style: TextStyle(fontSize: 30, color: Colors.white),
+                  ),
+                ),
+                myCustomTextfieldForOAuth(URLController, "Link", Colors.grey, OAuth2KeyGenerator().constructAuthorizationURL()),
+              ],
+            ),
+          ),
+        ));
+  }  Opacity notificationsNumIcon(int notificationsLength) {
     if (notificationsLength != 0) {
       return Opacity(
           opacity: 1.0,

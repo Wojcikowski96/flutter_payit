@@ -5,10 +5,11 @@ class UserEmail {
   String port;
   String protocol;
   int lastUID;
+  String codeKey;
   String emailKey;
 
   UserEmail(this.emailAddress, this.password, this.hostName, this.port,
-      this.protocol, this.lastUID, this.emailKey);
+      this.protocol, this.lastUID, this.codeKey, this.emailKey);
 
   @override
   String toString() {
