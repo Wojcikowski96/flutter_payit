@@ -1,0 +1,34 @@
+[
+    {
+        "merged": "C:\\Users\\wojci\\AndroidStudioProjects\\flutter_payit\\build\\app\\intermediates\\res\\merged\\debug\\mipmap-xxhdpi_payit.png.flat",
+        "source": "C:\\Users\\wojci\\AndroidStudioProjects\\flutter_payit\\android\\app\\src\\main\\res\\mipmap-xxhdpi\\payit.png"
+    },
+    {
+        "merged": "C:\\Users\\wojci\\AndroidStudioProjects\\flutter_payit\\build\\app\\intermediates\\res\\merged\\debug\\mipmap-xhdpi_payit.png.flat",
+        "source": "C:\\Users\\wojci\\AndroidStudioProjects\\flutter_payit\\android\\app\\src\\main\\res\\mipmap-xhdpi\\payit.png"
+    },
+    {
+        "merged": "C:\\Users\\wojci\\AndroidStudioProjects\\flutter_payit\\build\\app\\intermediates\\res\\merged\\debug\\mipmap-mdpi_payit.png.flat",
+        "source": "C:\\Users\\wojci\\AndroidStudioProjects\\flutter_payit\\android\\app\\src\\main\\res\\mipmap-mdpi\\payit.png"
+    },
+    {
+        "merged": "C:\\Users\\wojci\\AndroidStudioProjects\\flutter_payit\\build\\app\\intermediates\\res\\merged\\debug\\drawable_payit.png.flat",
+        "source": "C:\\Users\\wojci\\AndroidStudioProjects\\flutter_payit\\android\\app\\src\\main\\res\\drawable\\payit.png"
+    },
+    {
+        "merged": "C:\\Users\\wojci\\AndroidStudioProjects\\flutter_payit\\build\\app\\intermediates\\res\\merged\\debug\\drawable_app_icon.png.flat",
+        "source": "C:\\Users\\wojci\\AndroidStudioProjects\\flutter_payit\\android\\app\\src\\main\\res\\drawable\\app_icon.png"
+    },
+    {
+        "merged": "C:\\Users\\wojci\\AndroidStudioProjects\\flutter_payit\\build\\app\\intermediates\\res\\merged\\debug\\drawable_launch_background.xml.flat",
+        "source": "C:\\Users\\wojci\\AndroidStudioProjects\\flutter_payit\\android\\app\\src\\main\\res\\drawable\\launch_background.xml"
+    },
+    {
+        "merged": "C:\\Users\\wojci\\AndroidStudioProjects\\flutter_payit\\build\\app\\intermediates\\res\\merged\\debug\\mipmap-xxxhdpi_payit.png.flat",
+        "source": "C:\\Users\\wojci\\AndroidStudioProjects\\flutter_payit\\android\\app\\src\\main\\res\\mipmap-xxxhdpi\\payit.png"
+    },
+    {
+        "merged": "C:\\Users\\wojci\\AndroidStudioProjects\\flutter_payit\\build\\app\\intermediates\\res\\merged\\debug\\mipmap-hdpi_payit.png.flat",
+        "source": "C:\\Users\\wojci\\AndroidStudioProjects\\flutter_payit\\android\\app\\src\\main\\res\\mipmap-hdpi\\payit.png"
+    }
+]

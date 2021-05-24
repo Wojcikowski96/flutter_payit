@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="default_web_client_id" translatable="false">134130269608-3oo2qcudud6pdrhjdkc88455t6sl3odd.apps.googleusercontent.com</string>
+    <string name="firebase_database_url" translatable="false">https://the-bill-collector.firebaseio.com</string>
+    <string name="gcm_defaultSenderId" translatable="false">134130269608</string>
+    <string name="google_api_key" translatable="false">AIzaSyDbBAITH1Tc6PwnhfOE7BISlvN4AHIfFuY</string>
+    <string name="google_app_id" translatable="false">1:134130269608:android:1fac17c41468806ebc319d</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyDbBAITH1Tc6PwnhfOE7BISlvN4AHIfFuY</string>
+    <string name="google_storage_bucket" translatable="false">the-bill-collector.appspot.com</string>
+    <string name="project_id" translatable="false">the-bill-collector</string>
+</resources>
